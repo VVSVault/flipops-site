@@ -8,7 +8,7 @@ export function KPICards() {
     <section className="py-12 bg-muted/30 border-y">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
-          <p className="text-sm font-medium text-muted-foreground">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
             Built by an active investor
           </p>
         </div>
@@ -26,7 +26,7 @@ export function KPICards() {
               <div className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {metric.value}
               </div>
-              <div className="text-sm text-muted-foreground mt-2">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 {metric.label}
               </div>
             </motion.div>

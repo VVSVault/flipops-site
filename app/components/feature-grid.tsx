@@ -17,10 +17,10 @@ export function FeatureGrid() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl lg:text-5xl font-bold mb-4">
+            <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
               Deal-Flow Automations
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Stop missing deals. Our AI analyzes every lead instantly so you can focus on the winners.
             </p>
           </motion.div>
@@ -36,12 +36,12 @@ export function FeatureGrid() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="p-6 h-full hover:shadow-lg transition-shadow">
+                  <Card className="p-6 h-full hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mb-4">
                       <Icon className="h-6 w-6 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">{feature.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {feature.description}
                     </p>
                   </Card>
@@ -62,10 +62,10 @@ export function FeatureGrid() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl lg:text-5xl font-bold mb-4">
+            <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
               Operations Automations
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Keep projects on time and on budget. Stop bleeding cash on interest and utilities.
             </p>
           </motion.div>
@@ -81,12 +81,12 @@ export function FeatureGrid() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="p-6 h-full hover:shadow-lg transition-shadow">
+                  <Card className="p-6 h-full hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-accent/10 mb-4">
                       <Icon className="h-6 w-6 text-accent" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">{feature.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {feature.description}
                     </p>
                   </Card>

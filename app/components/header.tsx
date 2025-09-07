@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
+import { ThemeToggle } from '@/app/components/theme-toggle';
 
 const navItems = [
   { href: '#deal-flow', label: 'Deal Flow' },
@@ -64,6 +65,7 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+            <ThemeToggle />
             <Link href="/login">
               <Button variant="outline" className="ml-4" size="sm">
                 Login

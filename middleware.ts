@@ -7,7 +7,6 @@ const isPublicRoute = createRouteMatcher([
   "/privacy",
   "/terms",
   "/api/webhook(.*)",
-  "/app(.*)",  // Temporarily make app routes public for testing
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

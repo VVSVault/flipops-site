@@ -43,10 +43,10 @@ export function CaseStudies() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl lg:text-5xl font-bold mb-4">
+          <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
             Real Results from My Portfolio
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             See how automation transformed actual flips. These aren&apos;t hypotheticals.
           </p>
         </motion.div>

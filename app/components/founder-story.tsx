@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Quote } from 'lucide-react';
 
 export function FounderStory() {
-  const founderName = process.env.NEXT_PUBLIC_FOUNDER_NAME || 'Tanner Carlson';
+  const founderName = process.env.NEXT_PUBLIC_FOUNDER_NAME || 'Elijah Sullivan';
 
   return (
     <section className="py-16 lg:py-24">

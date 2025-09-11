@@ -60,7 +60,7 @@ export function Hero() {
               <Button size="lg" onClick={openCalendly}>
                 Book a Free Automation Audit
               </Button>
-              <Link href="/login">
+              <Link href="/sign-in">
                 <Button size="lg" variant="outline">
                   Login to Dashboard
                 </Button>

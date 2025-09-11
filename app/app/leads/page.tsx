@@ -4,8 +4,7 @@ import { useState } from "react";
 import { 
   Search, 
   Filter, 
-  Download, 
-  Plus,
+  Download,
   MoreVertical,
   Phone,
   Mail,
@@ -93,28 +92,24 @@ export default function LeadsPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Leads</h1>
-          <p className="text-gray-400 mt-2">Manage and track all your real estate leads</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Leads</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Manage and track all your real estate leads</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Lead
-        </Button>
       </div>
 
       {/* Filters and Search */}
-      <Card className="bg-gray-800 border-gray-700">
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardContent className="p-4">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 placeholder="Search by property, owner, or ID..."
-                className="pl-10 bg-gray-900 border-gray-700 text-white"
+                className="pl-10 bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
               />
             </div>
             <Select defaultValue="all">
-              <SelectTrigger className="w-full lg:w-[180px] bg-gray-900 border-gray-700 text-white">
+              <SelectTrigger className="w-full lg:w-[180px] bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -127,7 +122,7 @@ export default function LeadsPage() {
               </SelectContent>
             </Select>
             <Select defaultValue="all">
-              <SelectTrigger className="w-full lg:w-[180px] bg-gray-900 border-gray-700 text-white">
+              <SelectTrigger className="w-full lg:w-[180px] bg-gray-100 dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white">
                 <SelectValue placeholder="Source" />
               </SelectTrigger>
               <SelectContent>
@@ -151,38 +146,38 @@ export default function LeadsPage() {
       </Card>
 
       {/* Leads Table */}
-      <Card className="bg-gray-800 border-gray-700">
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow className="border-gray-700">
-                <TableHead className="text-gray-400">ID</TableHead>
-                <TableHead className="text-gray-400">Property</TableHead>
-                <TableHead className="text-gray-400">Owner</TableHead>
-                <TableHead className="text-gray-400">Source</TableHead>
-                <TableHead className="text-gray-400">Signals</TableHead>
-                <TableHead className="text-gray-400">Score</TableHead>
-                <TableHead className="text-gray-400">Status</TableHead>
-                <TableHead className="text-gray-400">Last Outbound</TableHead>
-                <TableHead className="text-gray-400">Sentiment</TableHead>
-                <TableHead className="text-gray-400">Next Task</TableHead>
-                <TableHead className="text-gray-400"></TableHead>
+              <TableRow className="border-gray-200 dark:border-gray-700">
+                <TableHead className="text-gray-600 dark:text-gray-400">ID</TableHead>
+                <TableHead className="text-gray-600 dark:text-gray-400">Property</TableHead>
+                <TableHead className="text-gray-600 dark:text-gray-400">Owner</TableHead>
+                <TableHead className="text-gray-600 dark:text-gray-400">Source</TableHead>
+                <TableHead className="text-gray-600 dark:text-gray-400">Signals</TableHead>
+                <TableHead className="text-gray-600 dark:text-gray-400">Score</TableHead>
+                <TableHead className="text-gray-600 dark:text-gray-400">Status</TableHead>
+                <TableHead className="text-gray-600 dark:text-gray-400">Last Outbound</TableHead>
+                <TableHead className="text-gray-600 dark:text-gray-400">Sentiment</TableHead>
+                <TableHead className="text-gray-600 dark:text-gray-400">Next Task</TableHead>
+                <TableHead className="text-gray-600 dark:text-gray-400"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {mockLeads.map((lead) => (
                 <TableRow 
                   key={lead.id} 
-                  className="border-gray-700 hover:bg-gray-750 cursor-pointer"
+                  className="border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer"
                   onClick={() => openLeadDrawer(lead)}
                 >
-                  <TableCell className="font-mono text-sm text-gray-300">
+                  <TableCell className="font-mono text-sm text-gray-700 dark:text-gray-300">
                     {lead.id}
                   </TableCell>
-                  <TableCell className="text-white font-medium">
+                  <TableCell className="text-gray-900 dark:text-white font-medium">
                     {lead.property}
                   </TableCell>
-                  <TableCell className="text-gray-300">{lead.owner}</TableCell>
+                  <TableCell className="text-gray-700 dark:text-gray-300">{lead.owner}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{lead.source}</Badge>
                   </TableCell>
@@ -206,7 +201,7 @@ export default function LeadsPage() {
                   <TableCell>
                     <Badge>{lead.status}</Badge>
                   </TableCell>
-                  <TableCell className="text-gray-400 text-sm">
+                  <TableCell className="text-gray-600 dark:text-gray-400 text-sm">
                     {lead.lastOutbound}
                   </TableCell>
                   <TableCell>
@@ -217,11 +212,11 @@ export default function LeadsPage() {
                       {lead.sentiment}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-gray-300 text-sm">
+                  <TableCell className="text-gray-700 dark:text-gray-300 text-sm">
                     {lead.nextTask}
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -234,12 +229,12 @@ export default function LeadsPage() {
 
       {/* Lead Drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <SheetContent className="w-full sm:max-w-2xl bg-gray-900 border-gray-800">
+        <SheetContent className="w-full sm:max-w-2xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
           {selectedLead && (
             <>
               <SheetHeader>
-                <SheetTitle className="text-white">{selectedLead.property}</SheetTitle>
-                <SheetDescription className="text-gray-400">
+                <SheetTitle className="text-gray-900 dark:text-white">{selectedLead.property}</SheetTitle>
+                <SheetDescription className="text-gray-600 dark:text-gray-400">
                   Lead ID: {selectedLead.id} • Score: {selectedLead.score}
                 </SheetDescription>
               </SheetHeader>
@@ -266,52 +261,52 @@ export default function LeadsPage() {
                 </div>
 
                 {/* Property Details */}
-                <Card className="bg-gray-800 border-gray-700">
+                <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <CardHeader>
-                    <CardTitle className="text-white text-sm">Property Details</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-white text-sm">Property Details</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Address</span>
-                      <span className="text-white">{selectedLead.property}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Address</span>
+                      <span className="text-gray-900 dark:text-white">{selectedLead.property}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Owner</span>
-                      <span className="text-white">{selectedLead.owner}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Owner</span>
+                      <span className="text-gray-900 dark:text-white">{selectedLead.owner}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Source</span>
-                      <span className="text-white">{selectedLead.source}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Source</span>
+                      <span className="text-gray-900 dark:text-white">{selectedLead.source}</span>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Timeline */}
-                <Card className="bg-gray-800 border-gray-700">
+                <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <CardHeader>
-                    <CardTitle className="text-white text-sm">Recent Activity</CardTitle>
+                    <CardTitle className="text-gray-900 dark:text-white text-sm">Recent Activity</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       <div className="flex gap-3">
                         <div className="h-2 w-2 bg-blue-500 rounded-full mt-2" />
                         <div className="flex-1">
-                          <p className="text-white text-sm">SMS sent</p>
-                          <p className="text-gray-400 text-xs">2 days ago • "Hi, are you interested in selling..."</p>
+                          <p className="text-gray-900 dark:text-white text-sm">SMS sent</p>
+                          <p className="text-gray-600 dark:text-gray-400 text-xs">2 days ago • "Hi, are you interested in selling..."</p>
                         </div>
                       </div>
                       <div className="flex gap-3">
                         <div className="h-2 w-2 bg-green-500 rounded-full mt-2" />
                         <div className="flex-1">
-                          <p className="text-white text-sm">Lead scored</p>
-                          <p className="text-gray-400 text-xs">3 days ago • Score: 92 (High potential)</p>
+                          <p className="text-gray-900 dark:text-white text-sm">Lead scored</p>
+                          <p className="text-gray-600 dark:text-gray-400 text-xs">3 days ago • Score: 92 (High potential)</p>
                         </div>
                       </div>
                       <div className="flex gap-3">
                         <div className="h-2 w-2 bg-gray-500 rounded-full mt-2" />
                         <div className="flex-1">
-                          <p className="text-white text-sm">Lead created</p>
-                          <p className="text-gray-400 text-xs">5 days ago • Source: PPC Campaign</p>
+                          <p className="text-gray-900 dark:text-white text-sm">Lead created</p>
+                          <p className="text-gray-600 dark:text-gray-400 text-xs">5 days ago • Source: PPC Campaign</p>
                         </div>
                       </div>
                     </div>

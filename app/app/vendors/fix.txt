@@ -1,0 +1,6 @@
+Lines to keep:
+1-930: Main vendor page with expandable cards
+1218-end: Vendor Matching Drawer and modals
+
+Lines to remove:
+931-1217: Leftover drawer code that references selectedVendor

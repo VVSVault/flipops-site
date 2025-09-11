@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
+import { QuickAddLead } from "@/app/components/quick-add-lead";
 import { 
   Home, 
   Users, 
@@ -27,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/app/components/theme-toggle";
+import { ActivityMonitor } from "@/app/components/activity-monitor";
 
 const navigation = [
   { name: "Overview", href: "/app", icon: Home },
@@ -50,9 +52,11 @@ export default function AppLayout({
 }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [quickAddLeadOpen, setQuickAddLeadOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <ActivityMonitor>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -153,7 +157,11 @@ export default function AppLayout({
               <Bell className="h-5 w-5" />
               <span className="absolute top-1 right-1 h-2 w-2 bg-blue-500 rounded-full" />
             </Button>
-            <Button variant="default" size="sm">
+            <Button 
+              variant="default" 
+              size="sm"
+              onClick={() => setQuickAddLeadOpen(true)}
+            >
               Quick Add Lead
             </Button>
           </div>
@@ -164,6 +172,13 @@ export default function AppLayout({
           {children}
         </main>
       </div>
+      
+      {/* Quick Add Lead Modal */}
+      <QuickAddLead 
+        open={quickAddLeadOpen} 
+        onOpenChange={setQuickAddLeadOpen} 
+      />
     </div>
+    </ActivityMonitor>
   );
 }

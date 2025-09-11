@@ -262,7 +262,7 @@ export default function DashboardPage() {
                 <span className="text-sm font-medium text-gray-900 dark:text-white">Email Service</span>
               </div>
               <p className="text-xs text-gray-600 dark:text-gray-400">Queue: 12 pending</p>
-              <p className="text-xs text-yellow-500">Minor delays (&lt; 5 min)</p>
+              <p className="text-xs text-yellow-500">Minor delays (less than 5 min)</p>
             </div>
             
             <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg">

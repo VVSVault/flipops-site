@@ -66,7 +66,7 @@ export function Header() {
               </Link>
             ))}
             <ThemeToggle />
-            <Link href="/login">
+            <Link href="/sign-in">
               <Button variant="outline" className="ml-4" size="sm">
                 Login
               </Button>
@@ -96,7 +96,7 @@ export function Header() {
                     {item.label}
                   </Link>
                 ))}
-                <Link href="/login" className="w-full">
+                <Link href="/sign-in" className="w-full">
                   <Button variant="outline" className="mt-4 w-full">Login</Button>
                 </Link>
                 <Button className="mt-2 w-full">Book Audit</Button>

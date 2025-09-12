@@ -541,7 +541,7 @@ export default function AnalyticsPage() {
                       cx="50%"
                       cy="50%"
                       outerRadius={100}
-                      label={(entry) => `${entry.channel}: ${entry.leads}`}
+                      label={(entry: any) => `${entry.channel}: ${entry.leads}`}
                     >
                       {marketingMetrics.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

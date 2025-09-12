@@ -596,7 +596,7 @@ export function generateDeliveries(campaignId: string, audienceSize: number, sce
         deliveredAt: new Date(sentAt.getTime() + 1000 * 60 * 2),
         repliedAt: hasReplied ? new Date(sentAt.getTime() + 1000 * 60 * 60 * (2 + Math.random() * 48)) : undefined,
         cost: costPerChannel[step.channel as keyof typeof costPerChannel],
-        variant: step.abTest ? (["A", "B", "C"][Math.floor(Math.random() * (step.variants?.length || 1))] as "A" | "B" | "C") : undefined,
+        variant: step.abTest && 'variants' in step ? (["A", "B", "C"][Math.floor(Math.random() * (step.variants?.length || 1))] as "A" | "B" | "C") : undefined,
         replyMessage: hasReplied ? generateReplyMessage(sentiment!) : undefined
       };
       

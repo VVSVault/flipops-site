@@ -141,7 +141,7 @@ export default function DashboardPage() {
                       <span className="text-xs text-gray-600 dark:text-gray-400">Score: {lead.score}</span>
                     </div>
                   </div>
-                  <Link href={`/app/leads/${lead.id}`}>
+                  <Link href={`/app/leads?lead=${lead.id}`}>
                     <Button size="sm" variant="ghost">
                       <ArrowRight className="h-4 w-4" />
                     </Button>

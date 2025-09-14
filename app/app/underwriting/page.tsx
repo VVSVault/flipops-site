@@ -82,11 +82,11 @@ export default function UnderwritingPage() {
       r => r.sessionId === underwritingSeedData.sessions.find(s => s.leadId === selectedDealId)?.id
     );
     setRepairItems(repairsForSession.length > 0 ? repairsForSession : [
-      { id: "NEW-1", sessionId: currentSession?.id || "", category: "Exterior", item: "Roof Replacement", qty: 1, unit: "sqft", unitCost: 7, totalCost: 10500, notes: "" },
-      { id: "NEW-2", sessionId: currentSession?.id || "", category: "Interior", item: "Kitchen Renovation", qty: 1, unit: "job", unitCost: 15000, totalCost: 15000, notes: "" },
-      { id: "NEW-3", sessionId: currentSession?.id || "", category: "Interior", item: "Bathroom Remodel", qty: 2, unit: "each", unitCost: 5000, totalCost: 10000, notes: "" },
-      { id: "NEW-4", sessionId: currentSession?.id || "", category: "Flooring", item: "LVP Installation", qty: 1200, unit: "sqft", unitCost: 4.5, totalCost: 5400, notes: "" },
-      { id: "NEW-5", sessionId: currentSession?.id || "", category: "Interior", item: "Paint Interior", qty: 1, unit: "job", unitCost: 3500, totalCost: 3500, notes: "" }
+      { id: "NEW-1", sessionId: currentSession?.id || "", category: "Exterior", description: "Roof Replacement", qty: 1, uom: "sqft", unitCost: 7, totalCost: 10500, note: "", confidence: "high" as const },
+      { id: "NEW-2", sessionId: currentSession?.id || "", category: "Interior", description: "Kitchen Renovation", qty: 1, uom: "job", unitCost: 15000, totalCost: 15000, note: "", confidence: "high" as const },
+      { id: "NEW-3", sessionId: currentSession?.id || "", category: "Interior", description: "Bathroom Remodel", qty: 2, uom: "each", unitCost: 5000, totalCost: 10000, note: "", confidence: "medium" as const },
+      { id: "NEW-4", sessionId: currentSession?.id || "", category: "Flooring", description: "LVP Installation", qty: 1200, uom: "sqft", unitCost: 4.5, totalCost: 5400, note: "", confidence: "high" as const },
+      { id: "NEW-5", sessionId: currentSession?.id || "", category: "Interior", description: "Paint Interior", qty: 1, uom: "job", unitCost: 3500, totalCost: 3500, note: "", confidence: "medium" as const }
     ]);
     
     // Reset sliders
@@ -164,7 +164,7 @@ export default function UnderwritingPage() {
     setRepairItems(prev => prev.map(item => 
       item.id === itemId 
         ? { ...item, [field]: value, totalCost: field === 'qty' || field === 'unitCost' 
-            ? (field === 'qty' ? value : item.qty) * (field === 'unitCost' ? value : item.unitCost)
+            ? (field === 'qty' ? Number(value) : item.qty) * (field === 'unitCost' ? Number(value) : item.unitCost)
             : item.totalCost }
         : item
     ));

@@ -550,7 +550,7 @@ export function GenerateOfferModal({
               </Select>
             </div>
 
-            {formData.occupancy === "post-closing" && (
+            {(formData.occupancy as string) === "post-closing" && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="rentBackDays">Rent Back Days</Label>
@@ -710,7 +710,7 @@ export function GenerateOfferModal({
                       <span>-${formatCurrency(formData.repairCredits)}</span>
                     </div>
                   )}
-                  {formData.closingCostsPaidBy === "seller" && (
+                  {(formData.closingCostsPaidBy as string) === "seller" && (
                     <div className="flex justify-between text-red-600 dark:text-red-400">
                       <span>- Estimated Closing Costs</span>
                       <span>-${formatCurrency(String(parseFloat(formData.offerPrice) * 0.03))}</span>
@@ -724,7 +724,7 @@ export function GenerateOfferModal({
                           parseFloat(formData.offerPrice || "0") - 
                           parseFloat(formData.sellerCredits || "0") - 
                           parseFloat(formData.repairCredits || "0") -
-                          (formData.closingCostsPaidBy === "seller" ? parseFloat(formData.offerPrice || "0") * 0.03 : 0)
+                          ((formData.closingCostsPaidBy as string) === "seller" ? parseFloat(formData.offerPrice || "0") * 0.03 : 0)
                         ))}
                       </span>
                     </div>

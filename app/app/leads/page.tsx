@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { 
   Search, 
   Filter, 
@@ -78,14 +79,26 @@ const mockLeads = [
   },
 ];
 
-export default function LeadsPage() {
+function LeadsContent() {
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const searchParams = useSearchParams();
 
   const openLeadDrawer = (lead: any) => {
     setSelectedLead(lead);
     setDrawerOpen(true);
   };
+
+  // Check if a lead ID is passed in the URL and open the drawer
+  useEffect(() => {
+    const leadId = searchParams.get('lead');
+    if (leadId) {
+      const lead = mockLeads.find(l => l.id === leadId);
+      if (lead) {
+        openLeadDrawer(lead);
+      }
+    }
+  }, [searchParams]);
 
   return (
     <div className="space-y-6">
@@ -318,5 +331,13 @@ export default function LeadsPage() {
         </SheetContent>
       </Sheet>
     </div>
+  );
+}
+
+export default function LeadsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LeadsContent />
+    </Suspense>
   );
 }

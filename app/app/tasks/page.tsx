@@ -522,7 +522,7 @@ export default function TasksPage() {
 
                   {/* Calendar Grid */}
                   <Card className="overflow-hidden">
-                    <ScrollArea className="w-full" orientation="horizontal">
+                    <ScrollArea className="w-full">
                       <div className="min-w-[700px]">
                         <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-900 z-10">
                           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
@@ -910,9 +910,6 @@ export default function TasksPage() {
                             )}>
                               {subtask.title}
                             </span>
-                            {subtask.assigneeName && (
-                              <span className="text-xs text-gray-500">{subtask.assigneeName}</span>
-                            )}
                           </div>
                         ))}
                       </div>
@@ -927,10 +924,10 @@ export default function TasksPage() {
                         <div key={activity.id} className="flex gap-3">
                           <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
                             {activity.type === 'created' && <Plus className="h-4 w-4 text-gray-500" />}
-                            {activity.type === 'status_changed' && <Activity className="h-4 w-4 text-gray-500" />}
+                            {activity.type === 'updated' && <Activity className="h-4 w-4 text-gray-500" />}
                             {activity.type === 'assigned' && <User className="h-4 w-4 text-gray-500" />}
                             {activity.type === 'commented' && <MessageSquare className="h-4 w-4 text-gray-500" />}
-                            {activity.type === 'priority_changed' && <AlertTriangle className="h-4 w-4 text-gray-500" />}
+                            {activity.type === 'sla-violation' && <AlertTriangle className="h-4 w-4 text-gray-500" />}
                           </div>
                           <div className="flex-1">
                             <p className="text-sm">{activity.description}</p>

@@ -128,8 +128,8 @@ function KPICard({
           )}
         </div>
         <div>
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">{title}</p>
-          <p className="text-lg font-bold">{formattedValue}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">{title}</p>
+          <p className="text-2xl font-bold">{formattedValue}</p>
         </div>
       </CardContent>
     </Card>

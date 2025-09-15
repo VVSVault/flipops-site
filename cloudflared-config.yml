@@ -1,0 +1,9 @@
+tunnel: flipops-demo
+credentials-file: C:\Users\tanne\.cloudflared\8f031eee-f03d-4e4f-8c39-a949249004c1.json
+
+ingress:
+  - hostname: flipops-demo.flipops.io
+    service: http://localhost:3005
+  - hostname: flipops-demo.pages.dev
+    service: http://localhost:3005
+  - service: http_status:404

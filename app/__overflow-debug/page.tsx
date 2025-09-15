@@ -1,7 +1,12 @@
 "use client";
 import { useEffect } from "react";
+import { redirect } from "next/navigation";
 
 export default function OverflowDebugPage() {
+  // Only allow debug pages in development environment
+  if (process.env.NODE_ENV === "production") {
+    redirect("/");
+  }
   useEffect(() => {
     const vw = document.documentElement.clientWidth;
     const nodes = [...document.querySelectorAll('body *')].filter((el: any) => {

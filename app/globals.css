@@ -1,12 +1,21 @@
-/* Tailwind v4 with explicit source paths */
+/* Tailwind v4.1.12 - Stable version with explicit source paths */
+/* Using v4 for performance benefits (10x faster builds) and modern CSS features */
+/* Browser support: Safari 16.4+, Chrome 111+, Firefox 128+ */
 @import "tailwindcss" source("./");
 
 /* Explicit source directories for Tailwind to scan */
+/* Add new directories here when adding new component locations */
 @source "./app";
 @source "./components";
 @source "../components";
+/* Future @source paths to consider:
+ * @source "./lib"; - for utility functions with Tailwind classes
+ * @source "./hooks"; - for hooks that might contain Tailwind classes
+ * @source "./providers"; - for context providers with Tailwind classes
+ */
 
 /* Safelist for dynamic utilities detected in codebase */
+/* These classes are used dynamically or might not be detected by static analysis */
 @source inline("min-w-0 overflow-x-auto overflow-hidden w-full w-screen h-dvh min-h-dvh");
 @source inline("{sm:,md:,lg:,xl:,2xl:}{grid-cols-{1..12} col-span-{1..12} row-span-{1..6}}");
 @source inline("z-{0,10,20,30,40,50} gap-{0..12} p-{0..12} m-{0..12}");

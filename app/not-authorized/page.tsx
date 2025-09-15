@@ -4,7 +4,7 @@ import { ShieldX } from "lucide-react";
 
 export default function NotAuthorizedPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
       <div className="text-center space-y-6 p-8">
         <div className="flex justify-center">
           <div className="p-4 bg-red-500/10 rounded-full">

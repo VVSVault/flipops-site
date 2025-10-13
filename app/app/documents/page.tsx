@@ -304,7 +304,11 @@ export default function DocumentsPage() {
             ) : (
               <div className="w-4" />
             )}
-            <FolderOpen className={cn("h-4 w-4", folder.color && `text-[${folder.color}]`)} />
+            <FolderOpen className={cn("h-4 w-4",
+              folder.color === '#3B82F6' ? 'text-blue-500' :
+              folder.color === '#6B7280' ? 'text-gray-500' :
+              ''
+            )} />
             <span className="flex-1 text-sm">{folder.name}</span>
             {docCount > 0 && (
               <Badge variant="secondary" className="text-xs">

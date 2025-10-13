@@ -1,0 +1,269 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Core deal specification
+model DealSpec {
+  id              String    @id @default(cuid())
+  address         String
+  type            String    // SFH, multi-family, commercial
+  maxExposureUsd  Float
+  targetRoiPct    Float
+  arv             Float?    // After Repair Value for ROI calculations
+  region          String?   @default("Miami")
+  grade           String?   @default("Standard")
+  startAt         DateTime?
+  dailyBurnUsd    Float?    @default(0)
+  constraints     String    // Array of constraint objects (JSON string)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  scopeNodes      ScopeTreeNode[]
+  bids            Bid[]
+  changeOrders    ChangeOrder[]
+  events          Event[]
+  budgetLedger    BudgetLedger?
+
+  @@index([address])
+  @@index([createdAt])
+}
+
+// Scope tree for work breakdown
+model ScopeTreeNode {
+  id          String    @id @default(cuid())
+  dealId      String
+  trade       String    // HVAC, Plumbing, Electrical, etc.
+  task        String    // Specific task within trade
+  quantity    Json      // {value: number, unit: string, method: string}
+  finishLvl   String?   // Standard, Premium, Luxury
+  assumptions Json      // Array of assumption strings (stored as JSON for SQLite)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  deal        DealSpec  @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@unique([dealId, trade, task])
+  @@index([dealId])
+  @@index([trade])
+}
+
+// Cost model for estimation
+model CostModel {
+  id              String    @id @default(cuid())
+  region          String    // Geographic region
+  grade           String    // Standard, Premium, Luxury
+  trade           String    // Trade category
+  task            String    // Specific task
+  unit            String    // sqft, lf, ea, etc.
+  material        Float     // Material cost per unit
+  labor           Float     // Labor cost per unit
+  contingencyPct  Float     // Default contingency percentage
+  riskPremiumPct  Float     // Risk premium percentage
+  source          String?   // Data source
+  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime  @default(now())
+
+  @@unique([region, grade, trade, task, unit])
+  @@index([region, grade])
+  @@index([trade, task])
+}
+
+// Budget tracking ledger
+model BudgetLedger {
+  dealId              String    @id
+  baseline            String      // Baseline budget by trade
+  committed           String      // Committed costs by trade
+  actuals             String      // Actual costs by trade
+  variance            String      // Variance analysis by trade
+  contingencyRemaining Float    // Remaining contingency
+  updatedAt           DateTime  @updatedAt
+  createdAt           DateTime  @default(now())
+
+  // Relations
+  deal                DealSpec  @relation(fields: [dealId], references: [id], onDelete: Cascade)
+}
+
+// Vendor bid tracking
+model Bid {
+  id          String    @id @default(cuid())
+  dealId      String
+  vendorId    String
+  items       String      // Array of bid line items: {trade, task, quantity, unit, unitPrice, totalPrice}
+  subtotal    Float
+  includes    Json      // What's included (stored as JSON for SQLite)
+  excludes    Json      // What's excluded (stored as JSON for SQLite)
+  status      String    @default("pending") // pending, awarded, rejected
+  normalized  Json?     // Normalized bid data for comparison
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  deal        DealSpec  @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  vendor      Vendor?   @relation(fields: [vendorId], references: [id])
+
+  @@index([dealId])
+  @@index([vendorId])
+  @@index([status])
+}
+
+// Change order management
+model ChangeOrder {
+  id          String    @id @default(cuid())
+  dealId      String
+  trade       String
+  deltaUsd    Float     // Cost change
+  impactDays  Int       // Schedule impact in days
+  status      String    // proposed, approved, denied
+  rationale   String?   // Reason for change or denial
+  simResults  Json?     // Simulation results cache
+  decidedAt   DateTime? // When decision was made
+  decidedBy   String?   // Who/what made the decision
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  deal        DealSpec  @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@index([status])
+  @@index([trade])
+}
+
+// Immutable event log
+model Event {
+  id          String    @id @default(cuid())
+  dealId      String?
+  actor       String    // User ID or system component
+  artifact    String    // What was affected (DealSpec, Bid, etc.)
+  action      String    // CREATE, UPDATE, DELETE, APPROVE, BLOCK, etc.
+  diff        String?     // JSON Patch diff
+  checksum    String    // SHA-256 hash for integrity
+  ts          DateTime  @default(now())
+
+  // Relations
+  deal        DealSpec? @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@index([actor])
+  @@index([artifact])
+  @@index([ts])
+}
+
+// Vendor management
+model Vendor {
+  id              String    @id @default(cuid())
+  name            String
+  email           String?
+  phone           String?
+  trade           String      // Array of trades they handle (stored as JSON for SQLite)
+  region          String?
+  onTimePct       Float     @default(100) // On-time percentage
+  onBudgetPct     Float     @default(100) // On-budget percentage
+  reliability     Float     @default(100) // Overall reliability score
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  bids            Bid[]
+  invoices        Invoice[]
+
+  @@index([trade])
+  @@index([region])
+}
+
+// Invoice tracking
+model Invoice {
+  id          String    @id @default(cuid())
+  dealId      String
+  vendorId    String?
+  trade       String
+  lineItemId  String?   // Optional link to specific line item
+  amount      Float
+  docUrl      String?   // S3 URL to document
+  status      String    @default("pending") // pending, approved, paid
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  vendor      Vendor?   @relation(fields: [vendorId], references: [id])
+
+  @@index([dealId])
+  @@index([vendorId])
+  @@index([status])
+}
+
+// Policy configuration by region and grade
+model Policy {
+  id                   String    @id @default(cuid())
+  region               String
+  grade                String    // Standard, Premium, Luxury
+  maxExposureUsd       Float
+  targetRoiPct         Float
+  contingencyTargetPct Float
+  varianceTier1Pct     Float    // 3% default
+  varianceTier2Pct     Float    // 7% default
+  bidSpreadMaxPct      Float    // 15% default
+  coSlaHours           Int       // Change order SLA in hours
+  updatedBy            String?
+  updatedAt            DateTime  @updatedAt
+  createdAt            DateTime  @default(now())
+
+  @@unique([region, grade])
+  @@index([region, grade])
+}
+
+// Property discovery and scoring
+model Property {
+  id               String   @id @default(cuid())
+  address          String
+  city             String
+  state            String
+  zip              String
+  ownerName        String?
+  score            Int
+  potentialProfit  Float
+  foreclosure      Boolean  @default(false)
+  preForeclosure   Boolean  @default(false)
+  taxDelinquent    Boolean  @default(false)
+  vacant           Boolean  @default(false)
+  bankruptcy       Boolean  @default(false)
+  absenteeOwner    Boolean  @default(false)
+  enriched         Boolean  @default(false)
+  metadata         String?  // Additional flexible data (JSON string for SQLite)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([address, city, state, zip])
+  @@index([score])
+  @@index([city, state])
+  @@index([createdAt])
+}
+
+// Notification and event tracking
+model Notification {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  type        String   // g1.denied, property.alert, etc.
+  dealId      String?
+  message     String
+  metadata    String?  // Flexible metadata including dedupe_hash (JSON string for SQLite)
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  n8nExecId   String?  // n8n execution ID
+  n8nWorkflow String?  // n8n workflow name
+  processed   Boolean  @default(false)
+
+  @@index([type, occurredAt])
+  @@index([dealId])
+  @@index([processed])
+}

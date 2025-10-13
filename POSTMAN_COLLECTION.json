@@ -1,0 +1,261 @@
+{
+  "info": {
+    "name": "FlipOps API",
+    "description": "Complete API collection for FlipOps automation system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health & Status",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "Check if Event Seen",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/seen/evt_test_001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "seen", "evt_test_001"]
+            }
+          }
+        },
+        {
+          "name": "Mark Event as Seen",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"evt_test_001\",\n  \"processedAt\": \"2025-01-07T12:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/events/mark-seen",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "mark-seen"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deals",
+      "item": [
+        {
+          "name": "Get Deal Enrichment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/deals/deal_test_001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "deals", "deal_test_001"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications?type=property.alert&limit=10&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "property.alert"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"evt_postman_{{$timestamp}}\",\n  \"type\": \"property.alert\",\n  \"message\": \"Test notification from Postman\",\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"score\": 85\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Score Single Property",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"123 Test Street\",\n  \"city\": \"Miami\",\n  \"state\": \"FL\",\n  \"zip\": \"33139\",\n  \"ownerName\": \"John Doe\",\n  \"foreclosure\": true,\n  \"taxDelinquent\": true,\n  \"vacant\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/n8n",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "webhooks", "n8n"]
+            }
+          }
+        },
+        {
+          "name": "Score Batch Properties",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"address\": \"111 First Street\",\n    \"city\": \"Miami\",\n    \"state\": \"FL\",\n    \"foreclosure\": true\n  },\n  {\n    \"address\": \"222 Second Avenue\",\n    \"city\": \"Miami\",\n    \"state\": \"FL\",\n    \"taxDelinquent\": true,\n    \"vacant\": true\n  },\n  {\n    \"address\": \"333 Third Boulevard\",\n    \"city\": \"Miami\",\n    \"state\": \"FL\",\n    \"foreclosure\": true,\n    \"taxDelinquent\": true,\n    \"bankruptcy\": true\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/n8n",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "webhooks", "n8n"]
+            }
+          }
+        },
+        {
+          "name": "Guardrail Event with HMAC",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "x-webhook-signature",
+                "value": "{{hmacSignature}}",
+                "description": "Generate with: echo -n '{payload}' | openssl dgst -sha256 -hmac 'secret'"
+              },
+              {
+                "key": "x-webhook-timestamp",
+                "value": "{{$timestamp}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"evt_guardrail_{{$timestamp}}\",\n  \"type\": \"g1.denied\",\n  \"version\": 1,\n  \"occurredAt\": \"{{$isoTimestamp}}\",\n  \"tenantId\": \"tn_test\",\n  \"dealId\": \"deal_test_001\",\n  \"p80\": 245000,\n  \"maxExposureUsd\": 230000,\n  \"reason\": \"P80 exceeds maxExposureUsd by $15,000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/n8n",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "webhooks", "n8n"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set timestamp for unique IDs",
+          "pm.variables.set('timestamp', Date.now());",
+          "pm.variables.set('isoTimestamp', new Date().toISOString());",
+          "",
+          "// For HMAC signature generation (requires manual calculation)",
+          "// Use: echo -n '{payload}' | openssl dgst -sha256 -hmac 'your_secret' | cut -d' ' -f2"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "fo_live_10177805c8d743e1a6e1860515dc2b3f",
+      "type": "string"
+    },
+    {
+      "key": "hmacSignature",
+      "value": "calculate_manually",
+      "type": "string"
+    },
+    {
+      "key": "webhookSecret",
+      "value": "7d82e2b8945c43959699bc3a3c1467bdd66954d25d6f41eb",
+      "type": "string"
+    }
+  ]
+}

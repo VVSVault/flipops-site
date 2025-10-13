@@ -8,6 +8,15 @@ const isPublicRoute = createRouteMatcher([
   "/privacy",
   "/terms",
   "/api/webhook(.*)",
+  "/api/deals/approve",          // G1 endpoint
+  "/api/bids/award",             // G2 endpoint
+  "/api/invoices/ingest",        // G3 endpoint
+  "/api/change-orders/submit",   // G4 endpoint
+  "/api/panels/truth",           // Panel endpoint
+  "/api/panels/money",           // Panel endpoint
+  "/api/panels/motion",          // Panel endpoint
+  "/api/test",                   // Test endpoint
+  "/api/debug/(.*)",             // Debug endpoints
   "/not-authorized",
 ]);
 

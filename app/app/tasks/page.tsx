@@ -523,7 +523,7 @@ export default function TasksPage() {
                   {/* Calendar Grid */}
                   <Card className="overflow-hidden">
                     <ScrollArea className="w-full">
-                      <div className="min-w-[700px]">
+                      <div className="min-w-full md:min-w-[700px]">
                         <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-900 z-10">
                           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                             <div key={day} className="p-2 text-center text-xs font-medium text-gray-500 border-r border-gray-200 dark:border-gray-700 last:border-r-0">

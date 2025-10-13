@@ -5,24 +5,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { QuickAddLead } from "@/app/components/quick-add-lead";
-import { 
-  Home, 
-  Users, 
-  Building, 
-  MessageSquare, 
-  Megaphone, 
-  Calculator, 
-  UserCheck, 
-  CheckSquare, 
-  Briefcase, 
-  FileText, 
-  BarChart, 
-  Database, 
+import {
+  Home,
+  Users,
+  Building,
+  MessageSquare,
+  Megaphone,
+  Calculator,
+  UserCheck,
+  CheckSquare,
+  Briefcase,
+  FileText,
+  BarChart,
+  Database,
   Settings,
   Menu,
   X,
   Search,
-  Bell
+  Bell,
+  LayoutDashboard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +31,9 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/app/components/theme-toggle";
 import { ActivityMonitor } from "@/app/components/activity-monitor";
 
-const navigation = [
+const PANELS_ENABLED = process.env.NEXT_PUBLIC_ENABLE_DATASOURCE_PANELS === "1";
+
+const baseNavigation = [
   { name: "Overview", href: "/app", icon: Home },
   { name: "Leads", href: "/app/leads", icon: Users },
   { name: "Inbox", href: "/app/inbox", icon: MessageSquare },
@@ -42,8 +45,21 @@ const navigation = [
   { name: "Documents", href: "/app/documents", icon: FileText },
   { name: "Analytics", href: "/app/analytics", icon: BarChart },
   { name: "Data Sources", href: "/app/data-sources", icon: Database },
-  { name: "Settings", href: "/app/settings", icon: Settings },
 ];
+
+// Add panels link if feature flag is enabled
+if (PANELS_ENABLED) {
+  baseNavigation.push({
+    name: "Panel APIs",
+    href: "/app/data-sources/panels",
+    icon: LayoutDashboard,
+    indent: true
+  });
+}
+
+baseNavigation.push({ name: "Settings", href: "/app/settings", icon: Settings });
+
+const navigation = baseNavigation;
 
 export default function AppLayout({
   children,
@@ -100,6 +116,7 @@ export default function AppLayout({
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    (item as any).indent && "ml-6",
                     isActive
                       ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
                       : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50"

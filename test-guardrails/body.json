@@ -1,0 +1,11 @@
+{
+  "id": "evt_test_g1_001",
+  "type": "g1.denied",
+  "version": 1,
+  "occurredAt": "2025-10-07T12:00:00.000Z",
+  "tenantId": "tn_test",
+  "dealId": "deal_test_001",
+  "p80": 245000,
+  "maxExposureUsd": 230000,
+  "reason": "P80 exceeds maxExposureUsd by $15,000"
+}

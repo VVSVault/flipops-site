@@ -1,13 +1,10 @@
-/* Tailwind v4.1.12 - Stable version with explicit source paths */
-/* Using v4 for performance benefits (10x faster builds) and modern CSS features */
+/* Tailwind v4.1.13 - Next.js 15.5 Production Configuration */
+/* Using automatic content detection for better production compatibility */
 /* Browser support: Safari 16.4+, Chrome 111+, Firefox 128+ */
-@import "tailwindcss" source("./");
+@import "tailwindcss";
 
-/* Explicit source directories for Tailwind to scan */
-/* Add new directories here when adding new component locations */
-@source "./app";
-@source "./components";
-@source "../components";
+/* Tailwind v4 should auto-detect content in Next.js 15.2+ */
+/* If classes are missing, they'll be added via @source inline below */
 /* Future @source paths to consider:
  * @source "./lib"; - for utility functions with Tailwind classes
  * @source "./hooks"; - for hooks that might contain Tailwind classes
@@ -16,7 +13,7 @@
 
 /* Safelist for dynamic utilities detected in codebase */
 /* These classes are used dynamically or might not be detected by static analysis */
-@source inline("min-w-0 overflow-x-auto overflow-hidden w-full w-screen h-dvh min-h-dvh");
+@source inline("min-w-0 overflow-x-auto overflow-hidden w-full h-dvh min-h-dvh");
 @source inline("{sm:,md:,lg:,xl:,2xl:}{grid-cols-{1..12} col-span-{1..12} row-span-{1..6}}");
 @source inline("z-{0,10,20,30,40,50} gap-{0..12} p-{0..12} m-{0..12}");
 @source inline("rounded-{none,sm,md,lg,xl,2xl,3xl,full}");
@@ -25,6 +22,18 @@
 @source inline("top-{0,1,2,3,4,5,6,8,10,12,16,20,24} left-{0,1,2,3,4,5,6,8,10,12,16,20,24}");
 @source inline("right-{0,1,2,3,4,5,6,8,10,12,16,20,24} bottom-{0,1,2,3,4,5,6,8,10,12,16,20,24}");
 @source inline("inset-{0,1,2,3,4,auto} inset-x-{0,1,2,3,4,auto} inset-y-{0,1,2,3,4,auto}");
+/* Specific colors used in documents folders */
+@source inline("text-blue-500 text-gray-500 text-red-500 text-green-500 text-yellow-500 text-purple-500");
+/* Status-related colors from dashboard and components */
+@source inline("bg-primary bg-accent bg-muted-foreground bg-background/80 bg-transparent");
+/* Critical layout utilities that might be missed in production */
+@source inline("flex flex-col flex-row flex-1 items-center justify-center justify-between justify-start justify-end");
+@source inline("grid grid-cols-1 grid-cols-2 grid-cols-3 grid-cols-4 grid-cols-5 grid-cols-6");
+@source inline("space-x-2 space-x-4 space-y-2 space-y-4 space-y-6 space-y-8");
+@source inline("mx-auto container max-w-7xl max-w-6xl max-w-5xl max-w-4xl max-w-3xl max-w-2xl");
+@source inline("hidden block inline-block inline-flex md:block md:flex lg:block lg:flex");
+@source inline("relative absolute fixed sticky top-0 left-0 right-0 bottom-0");
+@source inline("min-h-screen h-screen h-full w-full min-w-full max-w-full");
 
 /* tw-animate-css for animations */
 @import "tw-animate-css";
@@ -144,7 +153,10 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply overflow-x-hidden;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
   }
 }

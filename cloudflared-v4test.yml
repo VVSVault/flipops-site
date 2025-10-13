@@ -1,0 +1,3 @@
+url: http://localhost:3007
+tunnel: flipops-demo
+credentials-file: cloudflared-creds.json

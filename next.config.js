@@ -11,6 +11,8 @@ const nextConfig = {
     // Skip ESLint during build (for faster deployment)
     ignoreDuringBuilds: true,
   },
+  // Disable static optimization for pages using Clerk
+  output: 'standalone',
 }
 
 module.exports = nextConfig

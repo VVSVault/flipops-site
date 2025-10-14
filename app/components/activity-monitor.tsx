@@ -9,11 +9,17 @@ const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes in milliseconds
 const WARNING_TIME = 60 * 1000; // Show warning 1 minute before logout
 
 export function ActivityMonitor({ children }: { children: React.ReactNode }) {
+  const [isMounted, setIsMounted] = useState(false);
   const { isSignedIn } = useAuth();
   const { signOut } = useClerk();
   const router = useRouter();
   const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(60);
+
+  // Only run on client side
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const resetTimer = useCallback(() => {
     setShowWarning(false);
@@ -27,7 +33,7 @@ export function ActivityMonitor({ children }: { children: React.ReactNode }) {
   }, [signOut, router]);
 
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!isMounted || !isSignedIn) return;
 
     let inactivityTimer: NodeJS.Timeout;
     let warningTimer: NodeJS.Timeout;
@@ -100,7 +106,12 @@ export function ActivityMonitor({ children }: { children: React.ReactNode }) {
         document.removeEventListener(event, resetTimers);
       });
     };
-  }, [isSignedIn, handleLogout, showWarning]);
+  }, [isMounted, isSignedIn, handleLogout, showWarning]);
+
+  // Don't render anything until mounted (prevents SSR issues)
+  if (!isMounted) {
+    return <>{children}</>;
+  }
 
   // Warning modal
   if (showWarning && isSignedIn) {

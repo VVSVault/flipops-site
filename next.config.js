@@ -11,10 +11,6 @@ const nextConfig = {
     // Skip ESLint during build (for faster deployment)
     ignoreDuringBuilds: true,
   },
-  // Dynamic rendering for all pages
-  experimental: {
-    runtime: 'nodejs',
-  },
 }
 
 module.exports = nextConfig

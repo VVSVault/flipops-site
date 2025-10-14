@@ -11,11 +11,9 @@ const nextConfig = {
     // Skip ESLint during build (for faster deployment)
     ignoreDuringBuilds: true,
   },
-  // Disable static export for API routes to work
-  output: 'standalone',
-  // Skip static generation errors
-  generateBuildId: async () => {
-    return 'build-' + Date.now()
+  // Dynamic rendering for all pages
+  experimental: {
+    runtime: 'nodejs',
   },
 }
 

@@ -33,6 +33,13 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env.local
 .env.development
+.env.production.local
+.env*.local
+
+# Google OAuth and service account credentials
+google-service-account.json
+oauth-token.json
+*-service-account.json
 
 # wrangler
 .wrangler/

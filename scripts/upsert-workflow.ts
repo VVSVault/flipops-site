@@ -31,7 +31,7 @@ class WorkflowUpserter {
 
   constructor() {
     this.baseUrl = process.env.N8N_BASE_URL || 'https://primary-production-8b46.up.railway.app/api/v1';
-    this.apiKey = process.env.N8N_API_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0M2IwYmI1YS1hNjI0LTQxYWMtOWU2Ny05OTMyZTI2YzlhOWEiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU5ODI3NTA1LCJleHAiOjE3NjI0MDUyMDB9.hlcaGCrFW8ItKSdCvo2giGx4WIzSofPRc7xo7cSmyAo';
+    this.apiKey = process.env.N8N_API_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0M2IwYmI1YS1hNjI0LTQxYWMtOWU2Ny05OTMyZTI2YzlhOWEiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzYwNjU5MDE4LCJleHAiOjE3NjMxODI4MDB9.EjoViKzuZ_yYtcYNk7eyJepdD8UgbaYHCyCZYpYMXwM';
 
     if (!this.apiKey) {
       throw new Error('N8N_API_KEY environment variable is required');
@@ -43,7 +43,7 @@ class WorkflowUpserter {
    */
   private async getExistingWorkflows(): Promise<N8nApiResponse[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/workflows`, {
+      const response = await fetch(`${this.baseUrl}/api/v1/workflows`, {
         headers: {
           'X-N8N-API-KEY': this.apiKey,
           'Accept': 'application/json'
@@ -73,7 +73,7 @@ class WorkflowUpserter {
       workflowData.settings = {};
     }
 
-    const response = await fetch(`${this.baseUrl}/workflows`, {
+    const response = await fetch(`${this.baseUrl}/api/v1/workflows`, {
       method: 'POST',
       headers: {
         'X-N8N-API-KEY': this.apiKey,
@@ -102,7 +102,7 @@ class WorkflowUpserter {
       workflowData.settings = {};
     }
 
-    const response = await fetch(`${this.baseUrl}/workflows/${id}`, {
+    const response = await fetch(`${this.baseUrl}/api/v1/workflows/${id}`, {
       method: 'PUT',
       headers: {
         'X-N8N-API-KEY': this.apiKey,
@@ -124,7 +124,7 @@ class WorkflowUpserter {
    * Activate a workflow
    */
   private async activateWorkflow(id: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/workflows/${id}/activate`, {
+    const response = await fetch(`${this.baseUrl}/api/v1/workflows/${id}/activate`, {
       method: 'POST',
       headers: {
         'X-N8N-API-KEY': this.apiKey,

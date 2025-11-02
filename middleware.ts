@@ -9,6 +9,8 @@ const isPublicRoute = createRouteMatcher([
   "/terms",
   "/api/webhook(.*)",
   "/api/webhooks/(.*)",          // All webhook endpoints including n8n
+  "/api/properties/(.*)",        // Property scoring endpoints
+  "/api/notifications(.*)",      // Notifications endpoint
   "/api/deals/approve",          // G1 endpoint
   "/api/bids/award",             // G2 endpoint
   "/api/invoices/ingest",        // G3 endpoint

@@ -229,16 +229,49 @@ model Property {
   city             String
   state            String
   zip              String
+  county           String?
+  apn              String?  // Assessor Parcel Number
   ownerName        String?
-  score            Int
-  potentialProfit  Float
+
+  // Property details
+  propertyType     String?
+  bedrooms         Int?
+  bathrooms        Int?
+  squareFeet       Int?
+  lotSize          Int?
+  yearBuilt        Int?
+
+  // Financial
+  assessedValue    Float?
+  taxAmount        Float?
+  lastSaleDate     String?
+  lastSalePrice    Float?
+  estimatedValue   Float?
+
+  // Scoring (optional until calculated)
+  score            Int?
+  scoreBreakdown   String?  // JSON string with score details
+  scoredAt         DateTime?
+  potentialProfit  Float?
+
+  // Distress flags
   foreclosure      Boolean  @default(false)
   preForeclosure   Boolean  @default(false)
   taxDelinquent    Boolean  @default(false)
   vacant           Boolean  @default(false)
   bankruptcy       Boolean  @default(false)
   absenteeOwner    Boolean  @default(false)
+
+  // Contact info (from skip tracing)
+  phoneNumbers     String?  // JSON array
+  emails           String?  // JSON array
+
+  // Source tracking
+  dataSource       String
+  sourceId         String?
   enriched         Boolean  @default(false)
+
+  // Metadata
   metadata         String?  // Additional flexible data (JSON string for SQLite)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -247,6 +280,7 @@ model Property {
   @@index([score])
   @@index([city, state])
   @@index([createdAt])
+  @@index([dataSource])
 }
 
 // Notification and event tracking

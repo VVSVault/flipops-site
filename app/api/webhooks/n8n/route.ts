@@ -87,7 +87,7 @@ function verifyWebhookSignature(
 
 // Process individual property record
 async function processProperty(property: z.infer<typeof PropertySchema>) {
-  // Calculate property score based on various factors
+  // Calculate property score based on various factors (0-100 scale)
   let score = 50; // Base score
 
   // Distress indicators add to score
@@ -96,6 +96,9 @@ async function processProperty(property: z.infer<typeof PropertySchema>) {
   if (property.taxDelinquent) score += 15;
   if (property.vacant) score += 10;
   if (property.absenteeOwner) score += 5;
+
+  // Cap score at 100
+  score = Math.min(score, 100);
 
   // Calculate potential profit (simplified)
   const arv = property.estimatedValue || 0;
@@ -156,15 +159,92 @@ export async function POST(req: NextRequest) {
       for (const property of properties) {
         try {
           const processed = await processProperty(property);
-          results.push({
-            success: true,
-            address: processed.address,
-            score: processed.score,
-            potentialProfit: processed.potentialProfit,
-          });
 
-          // TODO: Save to database via Prisma
-          // await prisma.property.create({ data: processed });
+          // Save to database via Prisma
+          const { PrismaClient } = await import('@prisma/client');
+          const prisma = new PrismaClient();
+
+          try {
+            await prisma.property.upsert({
+              where: {
+                address_city_state_zip: {
+                  address: processed.address,
+                  city: processed.city,
+                  state: processed.state,
+                  zip: processed.zip,
+                },
+              },
+              create: {
+                address: processed.address,
+                city: processed.city,
+                state: processed.state,
+                zip: processed.zip,
+                county: processed.county,
+                apn: processed.apn,
+                ownerName: processed.ownerName,
+                propertyType: processed.propertyType,
+                bedrooms: processed.bedrooms,
+                bathrooms: processed.bathrooms,
+                squareFeet: processed.squareFeet,
+                lotSize: processed.lotSize,
+                yearBuilt: processed.yearBuilt,
+                assessedValue: processed.assessedValue,
+                taxAmount: processed.taxAmount,
+                lastSaleDate: processed.lastSaleDate,
+                lastSalePrice: processed.lastSalePrice,
+                estimatedValue: processed.estimatedValue,
+                foreclosure: processed.foreclosure || false,
+                preForeclosure: processed.preForeclosure || false,
+                taxDelinquent: processed.taxDelinquent || false,
+                vacant: processed.vacant || false,
+                bankruptcy: processed.bankruptcy || false,
+                absenteeOwner: processed.absenteeOwner || false,
+                phoneNumbers: processed.phoneNumbers ? JSON.stringify(processed.phoneNumbers) : null,
+                emails: processed.emails ? JSON.stringify(processed.emails) : null,
+                dataSource: processed.dataSource,
+                sourceId: processed.sourceId,
+                metadata: processed.metadata ? JSON.stringify(processed.metadata) : null,
+                // Don't set score yet - let the scoring workflow handle that
+              },
+              update: {
+                // Update existing property with new data (but don't overwrite score)
+                ownerName: processed.ownerName,
+                propertyType: processed.propertyType,
+                bedrooms: processed.bedrooms,
+                bathrooms: processed.bathrooms,
+                squareFeet: processed.squareFeet,
+                lotSize: processed.lotSize,
+                yearBuilt: processed.yearBuilt,
+                assessedValue: processed.assessedValue,
+                taxAmount: processed.taxAmount,
+                lastSaleDate: processed.lastSaleDate,
+                lastSalePrice: processed.lastSalePrice,
+                estimatedValue: processed.estimatedValue,
+                foreclosure: processed.foreclosure || false,
+                preForeclosure: processed.preForeclosure || false,
+                taxDelinquent: processed.taxDelinquent || false,
+                vacant: processed.vacant || false,
+                bankruptcy: processed.bankruptcy || false,
+                absenteeOwner: processed.absenteeOwner || false,
+                phoneNumbers: processed.phoneNumbers ? JSON.stringify(processed.phoneNumbers) : null,
+                emails: processed.emails ? JSON.stringify(processed.emails) : null,
+                metadata: processed.metadata ? JSON.stringify(processed.metadata) : null,
+                updatedAt: new Date(),
+              },
+            });
+            await prisma.$disconnect();
+
+            results.push({
+              success: true,
+              address: processed.address,
+              score: null, // Score will be calculated by scoring workflow
+              potentialProfit: null,
+            });
+          } catch (dbError) {
+            console.error('Failed to save property to database:', dbError);
+            await prisma.$disconnect();
+            throw dbError;
+          }
 
           // TODO: Queue for enrichment if needed
           // if (!property.phoneNumbers?.length) {

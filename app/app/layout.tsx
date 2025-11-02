@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/app/components/theme-toggle";
-import { ActivityMonitor } from "@/app/components/activity-monitor";
+import { ClientActivityMonitor } from "@/app/components/client-activity-monitor";
 
 const PANELS_ENABLED = process.env.NEXT_PUBLIC_ENABLE_DATASOURCE_PANELS === "1";
 
@@ -71,7 +71,7 @@ export default function AppLayout({
   const [quickAddLeadOpen, setQuickAddLeadOpen] = useState(false);
 
   return (
-    <ActivityMonitor>
+    <ClientActivityMonitor>
       <div className="min-h-dvh bg-gray-50 dark:bg-gray-900">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
@@ -196,6 +196,6 @@ export default function AppLayout({
         onOpenChange={setQuickAddLeadOpen} 
       />
     </div>
-    </ActivityMonitor>
+    </ClientActivityMonitor>
   );
 }

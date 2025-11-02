@@ -1,110 +1,135 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
-
-// Validation schemas
-const createNotificationSchema = z.object({
-  eventId: z.string().min(1),
-  type: z.string().min(1),
-  dealId: z.string().optional(),
-  message: z.string().min(1),
-  metadata: z.any().optional(),
-  n8nExecId: z.string().optional(),
-  n8nWorkflow: z.string().optional()
+// Schema for notification data
+const NotificationSchema = z.object({
+  type: z.enum(['success', 'error', 'warning', 'info', 'webhook_success', 'webhook_error', 'batch_complete']).optional().default('info'),
+  source: z.string().optional().default('n8n'),
+  workflow: z.string().optional(),
+  message: z.string().optional(),
+  data: z.any().optional(),
+  metadata: z.record(z.any()).optional(),
+  stats: z.object({
+    total: z.number().optional(),
+    success: z.number().optional(),
+    failed: z.number().optional(),
+    skipped: z.number().optional(),
+    duration: z.number().optional(),
+  }).optional(),
+  timestamp: z.string().optional(),
 });
 
-const querySchema = z.object({
-  type: z.string().optional(),
-  limit: z.string().transform(Number).optional().default('50'),
-  offset: z.string().transform(Number).optional().default('0')
-});
+// Store notifications in memory
+const recentNotifications: any[] = [];
+const MAX_NOTIFICATIONS = 100;
 
-// GET /api/notifications - List notifications
-export async function GET(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const searchParams = Object.fromEntries(request.nextUrl.searchParams);
-    const query = querySchema.parse(searchParams);
+    // Basic API key authentication
+    const apiKey = req.headers.get('x-api-key');
+    const expectedApiKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
 
-    const where = query.type ? { type: query.type } : {};
-
-    const [notifications, total] = await Promise.all([
-      prisma.notification.findMany({
-        where,
-        orderBy: { occurredAt: 'desc' },
-        take: query.limit,
-        skip: query.offset
-      }),
-      prisma.notification.count({ where })
-    ]);
-
-    return NextResponse.json({
-      data: notifications,
-      total,
-      limit: query.limit,
-      offset: query.offset
-    });
-
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (expectedApiKey && apiKey !== expectedApiKey) {
       return NextResponse.json(
-        { error: 'Invalid query parameters', details: error.errors },
-        { status: 400 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
-    console.error('Error fetching notifications:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    // Parse request body
+    const body = await req.json();
+    const notification = NotificationSchema.parse({
+      ...body,
+      timestamp: body.timestamp || new Date().toISOString(),
+    });
+
+    // Store in memory
+    recentNotifications.push(notification);
+    if (recentNotifications.length > MAX_NOTIFICATIONS) {
+      recentNotifications.shift();
+    }
+
+    // Log to console
+    console.log('[Notification]', {
+      type: notification.type,
+      source: notification.source,
+      workflow: notification.workflow,
+      message: notification.message,
+      stats: notification.stats,
+    });
+
+    // Return success response
+    return NextResponse.json({
+      success: true,
+      message: 'Notification logged',
+      id: crypto.randomUUID(),
+      timestamp: notification.timestamp,
+    }, { status: 200 });
+
+  } catch (error) {
+    console.error('[Notification Error]', error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: error.errors,
+      }, { status: 400 });
+    }
+
+    return NextResponse.json({
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    }, { status: 500 });
   }
 }
 
-// POST /api/notifications - Create notification
-export async function POST(request: NextRequest) {
+// GET endpoint to retrieve recent notifications
+export async function GET(req: NextRequest) {
   try {
-    const body = await request.json();
-    const validated = createNotificationSchema.parse(body);
+    // Basic API key authentication
+    const apiKey = req.headers.get('x-api-key');
+    const expectedApiKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
 
-    // Check for duplicate eventId
-    const existing = await prisma.notification.findUnique({
-      where: { eventId: validated.eventId },
-      select: { id: true }
-    });
-
-    if (existing) {
+    if (expectedApiKey && apiKey !== expectedApiKey) {
       return NextResponse.json(
-        { error: 'Event already processed', eventId: validated.eventId },
-        { status: 409 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
-    // Create notification
-    const notification = await prisma.notification.create({
-      data: {
-        ...validated,
-        occurredAt: new Date()
-      }
+    // Get query parameters
+    const { searchParams } = new URL(req.url);
+    const type = searchParams.get('type');
+    const limit = parseInt(searchParams.get('limit') || '20');
+
+    // Filter notifications
+    let filtered = [...recentNotifications];
+
+    if (type) {
+      filtered = filtered.filter((n: any) => n.type === type);
+    }
+
+    // Sort by timestamp (newest first) and limit
+    filtered.sort((a: any, b: any) => {
+      const aTime = new Date(a.timestamp || 0).getTime();
+      const bTime = new Date(b.timestamp || 0).getTime();
+      return bTime - aTime;
     });
+    filtered = filtered.slice(0, limit);
 
-    console.log(`Created notification: ${notification.eventId} (${notification.type})`);
-
-    return NextResponse.json(notification, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      count: filtered.length,
+      total: recentNotifications.length,
+      notifications: filtered,
+    }, { status: 200 });
 
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request body', details: error.errors },
-        { status: 400 }
-      );
-    }
+    console.error('[Notification GET Error]', error);
 
-    console.error('Error creating notification:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    }, { status: 500 });
   }
 }

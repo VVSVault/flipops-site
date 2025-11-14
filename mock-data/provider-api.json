@@ -1,0 +1,102 @@
+{
+  "status": "success",
+  "data": [
+    {
+      "address1": "1212 Wynwood Ave",
+      "city": "Miami",
+      "state": "FL",
+      "zip": "33127",
+      "apn": "12345-021",
+      "owner": "Xavier Rodriguez",
+      "flags": {
+        "foreclosure": true,
+        "preForeclosure": false,
+        "taxDelinquent": true,
+        "vacant": true,
+        "bankruptcy": false,
+        "absenteeOwner": true
+      },
+      "recordedAt": "2024-03-20",
+      "property_value": 320000,
+      "last_sale_date": "2019-05-15"
+    },
+    {
+      "address1": "1313 Design District",
+      "city": "Miami",
+      "state": "FL",
+      "zip": "33137",
+      "apn": "12345-022",
+      "owner": "Yolanda Smith",
+      "flags": {
+        "foreclosure": false,
+        "preForeclosure": true,
+        "taxDelinquent": false,
+        "vacant": false,
+        "bankruptcy": true,
+        "absenteeOwner": false
+      },
+      "recordedAt": "2024-03-19",
+      "property_value": 580000,
+      "last_sale_date": "2020-11-20"
+    },
+    {
+      "address1": "1414 Edgewater Dr",
+      "city": "Miami",
+      "state": "FL",
+      "zip": "33132",
+      "apn": "12345-023",
+      "owner": "Zachary Taylor",
+      "flags": {
+        "foreclosure": true,
+        "preForeclosure": false,
+        "taxDelinquent": true,
+        "vacant": false,
+        "bankruptcy": false,
+        "absenteeOwner": true
+      },
+      "recordedAt": "2024-03-18",
+      "property_value": 420000,
+      "last_sale_date": "2018-07-30"
+    },
+    {
+      "address1": "1515 Midtown Miami",
+      "city": "Miami",
+      "state": "FL",
+      "zip": "33136",
+      "apn": "12345-024",
+      "owner": "Amanda Wilson",
+      "flags": {
+        "foreclosure": false,
+        "preForeclosure": false,
+        "taxDelinquent": true,
+        "vacant": true,
+        "bankruptcy": false,
+        "absenteeOwner": true
+      },
+      "recordedAt": "2024-03-17",
+      "property_value": 380000,
+      "last_sale_date": "2021-03-10"
+    },
+    {
+      "address1": "1616 Downtown Miami",
+      "city": "Miami",
+      "state": "FL",
+      "zip": "33130",
+      "apn": "12345-025",
+      "owner": "Benjamin Lee",
+      "flags": {
+        "foreclosure": false,
+        "preForeclosure": true,
+        "taxDelinquent": true,
+        "vacant": false,
+        "bankruptcy": true,
+        "absenteeOwner": false
+      },
+      "recordedAt": "2024-03-16",
+      "property_value": 520000,
+      "last_sale_date": "2022-01-15"
+    }
+  ],
+  "count": 5,
+  "timestamp": "2024-03-22T10:00:00Z"
+}

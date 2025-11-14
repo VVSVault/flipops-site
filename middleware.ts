@@ -12,9 +12,18 @@ const isPublicRoute = createRouteMatcher([
   "/api/properties/(.*)",        // Property scoring endpoints
   "/api/notifications(.*)",      // Notifications endpoint
   "/api/deals/approve",          // G1 endpoint
+  "/api/deals/stalled",          // Pipeline monitoring endpoint
+  "/api/deals/active",           // Active deals for data refresh
+  "/api/deals/sync-all",         // Bulk deal sync endpoint
+  "/api/deals/(.*)/refresh",     // Deal data refresh endpoint
+  "/api/contractors/performance", // Contractor performance tracking
+  "/api/contractors/(.*)/update-score", // Update contractor reliability scores
+  "/api/projects/(.*)", // All project endpoints
   "/api/bids/award",             // G2 endpoint
   "/api/invoices/ingest",        // G3 endpoint
+  "/api/invoices/status",        // Invoice monitoring endpoint
   "/api/change-orders/submit",   // G4 endpoint
+  "/api/change-orders/status",   // Change order monitoring endpoint
   "/api/panels/truth",           // Panel endpoint
   "/api/panels/money",           // Panel endpoint
   "/api/panels/motion",          // Panel endpoint

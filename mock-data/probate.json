@@ -1,0 +1,62 @@
+[
+  {
+    "case_number": "2024-CP-001",
+    "decedent_name": "Samuel Wilson",
+    "decedent_address": "6666 Aventura Blvd",
+    "city": "Aventura",
+    "state": "FL",
+    "zip": "33180",
+    "apn": "12345-016",
+    "filed_date": "2024-03-15",
+    "estate_value": 850000,
+    "status": "Open"
+  },
+  {
+    "case_number": "2024-CP-002",
+    "decedent_name": "Teresa Martinez",
+    "decedent_address": "7777 Bal Harbour Dr",
+    "city": "Bal Harbour",
+    "state": "FL",
+    "zip": "33154",
+    "apn": "12345-017",
+    "filed_date": "2024-03-10",
+    "estate_value": 1200000,
+    "status": "Open"
+  },
+  {
+    "case_number": "2024-CP-003",
+    "decedent_name": "Urban Thompson",
+    "decedent_address": "8888 Key Biscayne",
+    "city": "Key Biscayne",
+    "state": "FL",
+    "zip": "33149",
+    "apn": "12345-018",
+    "filed_date": "2024-03-05",
+    "estate_value": 2500000,
+    "status": "Pending"
+  },
+  {
+    "case_number": "2024-CP-004",
+    "decedent_name": "Victoria Davis",
+    "decedent_address": "9999 Pinecrest Dr",
+    "city": "Pinecrest",
+    "state": "FL",
+    "zip": "33156",
+    "apn": "12345-019",
+    "filed_date": "2024-03-01",
+    "estate_value": 675000,
+    "status": "Open"
+  },
+  {
+    "case_number": "2024-CP-005",
+    "decedent_name": "Walter Brown",
+    "decedent_address": "1010 Palmetto Bay",
+    "city": "Palmetto Bay",
+    "state": "FL",
+    "zip": "33157",
+    "apn": "12345-020",
+    "filed_date": "2024-02-28",
+    "estate_value": 450000,
+    "status": "Open"
+  }
+]

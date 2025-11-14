@@ -1,4 +1,4 @@
-# FlipOps API - Current Status & Deployment Issues
+    # FlipOps API - Current Status & Deployment Issues
 
 ## 🎯 Current Objective
 Setting up FlipOps API endpoint for n8n Google Sheets sync workflow to automatically import property data and calculate investment scores.

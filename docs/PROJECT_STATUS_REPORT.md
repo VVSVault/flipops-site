@@ -308,7 +308,7 @@ https://your-domain.com/api/webhooks/n8n
 2. ⬜ Implement database with Prisma
 3. ⬜ Add skip tracing for 85+ scores
 4. ⬜ Deploy to production
-
+1
 ### This Month
 1. ⬜ Add 5+ data sources
 2. ⬜ Process 10,000+ properties

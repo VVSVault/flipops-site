@@ -56,3 +56,12 @@ next-env.d.ts
 /.clerk/
 
 /lib/generated/prisma
+
+# Database
+/prisma/dev.db
+/prisma/dev.db-journal
+*.db
+*.db-journal
+
+# Environment files with secrets
+.env

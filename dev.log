@@ -1,0 +1,1901 @@
+
+> flipops-site@0.1.0 dev
+> next dev
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\tanne\flipopsLP\package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * C:\Users\tanne\flipopsLP\flipops-site\package-lock.json
+
+   ▲ Next.js 15.5.2
+   - Local:        http://localhost:3010
+   - Network:      http://192.168.1.192:3010
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 1975ms
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 568ms (221 modules)
+ ○ Compiling /api/contractors/performance ...
+ ✓ Compiled /api/contractors/performance in 1002ms (348 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (172kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ GET /api/contractors/performance 200 in 1325ms
+ GET /api/contractors/performance 200 in 28ms
+ GET /api/contractors/performance 200 in 23ms
+ ✓ Compiled /api/contractors/[vendorId]/update-score in 239ms (350 modules)
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/%7B%7B%20$json.vendorId%20%7D%7D/update-score 404 in 967ms
+ PUT /api/contractors/%7B%7B%20$json.vendorId%20%7D%7D/update-score 404 in 891ms
+ PUT /api/contractors/%7B%7B%20$json.vendorId%20%7D%7D/update-score 404 in 882ms
+ PUT /api/contractors/%7B%7B%20$json.vendorId%20%7D%7D/update-score 404 in 882ms
+ PUT /api/contractors/%7B%7B%20$json.vendorId%20%7D%7D/update-score 404 in 1001ms
+ GET /api/contractors/performance 200 in 26ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 84ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 71ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 61ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 173ms
+ PUT /api/contractors/undefined/update-score 404 in 173ms
+ GET /api/contractors/performance 200 in 20ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:110:41)
+  108 |
+  109 |   } catch (error) {
+> 110 |     log.error({ error, vendorId: params.vendorId }, 'Failed to update contractor scores');
+      |                                         ^
+  111 |     return NextResponse.json({
+  112 |       error: 'Internal server error',
+  113 |       message: error instanceof Error ? error.message : 'Unknown error',
+{"level":"error","time":1762893357291,"env":"development","error":{"type":"PrismaClientUnknownRequestError","message":"\nInvalid `prisma.vendor.findUnique()` invocation:\n\n\nResponse from the Engine was empty","stack":"PrismaClientUnknownRequestError: \nInvalid `prisma.vendor.findUnique()` invocation:\n\n\nResponse from the Engine was empty\n    at ei.handleRequestError (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:121:7458)\n    at ei.handleAndLogRequestError (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:121:6593)\n    at ei.request (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:121:6300)\n    at async a (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:130:9551)\n    at async PUT (webpack-internal:///(rsc)/./app/api/contractors/[vendorId]/update-score/route.ts:18:32)\n    at async AppRouteRouteModule.do (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:5:38696)\n    at async AppRouteRouteModule.handle (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:5:45978)\n    at async responseGenerator (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&page=%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute.ts&appDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D&isGlobalNotFoundEnabled=!:203:38)\n    at async AppRouteRouteModule.handleResponse (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:1:187565)\n    at async handleResponse (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&page=%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute.ts&appDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D&isGlobalNotFoundEnabled=!:265:32)\n    at async handler (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&page=%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute.ts&appDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D&isGlobalNotFoundEnabled=!:317:13)\n    at async DevServer.renderToResponseWithComponentsImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1422:9)\n    at async DevServer.renderPageComponent (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1474:24)\n    at async DevServer.renderToResponseImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1514:32)\n    at async DevServer.pipeImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1025:25)\n    at async NextNodeServer.handleCatchallRenderRequest (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:916:17)\n    at async C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:399:20\n    at async Span.traceAsyncFn (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:395:24)\n    at async invokeRender (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\router-server.js:240:21)\n    at async handleRequest (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\router-server.js:437:24)\n    at async requestHandlerImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\router-server.js:485:13)\n    at async Server.requestListener (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\start-server.js:226:13)","clientVersion":"6.16.2","name":"PrismaClientUnknownRequestError"},"vendorId":"undefined","msg":"Failed to update contractor scores"}
+ PUT /api/contractors/undefined/update-score 404 in 192ms
+ PUT /api/contractors/undefined/update-score 500 in 189ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 58ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 98ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 119ms
+ GET /api/contractors/performance 200 in 16ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 68ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 72ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 85ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 115ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 147ms
+ GET /api/contractors/performance 200 in 32ms
+ GET /api/contractors/performance 200 in 16ms
+ GET /api/contractors/performance 200 in 17ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 85ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 154ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 64ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+ PUT /api/contractors/undefined/update-score 404 in 142ms
+ PUT /api/contractors/undefined/update-score 404 in 142ms
+ GET /api/contractors/performance 200 in 21ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762894839769,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{"reliability":{"old":93.5,"new":93.2,"delta":-0.29999999999999716}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 81ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762894839840,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{"reliability":{"old":97,"new":96.8,"delta":-0.20000000000000284}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 88ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762894839962,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":60,"new":55,"delta":-5},"onBudgetPct":{"old":50,"new":40,"delta":-10},"reliability":{"old":56,"new":46,"delta":-10}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:110:41)
+  108 |
+  109 |   } catch (error) {
+> 110 |     log.error({ error, vendorId: params.vendorId }, 'Failed to update contractor scores');
+      |                                         ^
+  111 |     return NextResponse.json({
+  112 |       error: 'Internal server error',
+  113 |       message: error instanceof Error ? error.message : 'Unknown error',
+{"level":"error","time":1762894840010,"env":"development","error":{"type":"PrismaClientUnknownRequestError","message":"\nInvalid `prisma.vendor.update()` invocation:\n\n\nResponse from the Engine was empty","stack":"PrismaClientUnknownRequestError: \nInvalid `prisma.vendor.update()` invocation:\n\n\nResponse from the Engine was empty\n    at ei.handleRequestError (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:121:7458)\n    at ei.handleAndLogRequestError (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:121:6593)\n    at ei.request (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:121:6300)\n    at async a (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:130:9551)\n    at async PUT (webpack-internal:///(rsc)/./app/api/contractors/[vendorId]/update-score/route.ts:85:31)\n    at async AppRouteRouteModule.do (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:5:38696)\n    at async AppRouteRouteModule.handle (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:5:45978)\n    at async responseGenerator (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&page=%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute.ts&appDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D&isGlobalNotFoundEnabled=!:203:38)\n    at async AppRouteRouteModule.handleResponse (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:1:187565)\n    at async handleResponse (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&page=%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute.ts&appDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D&isGlobalNotFoundEnabled=!:265:32)\n    at async handler (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&page=%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute.ts&appDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D&isGlobalNotFoundEnabled=!:317:13)\n    at async DevServer.renderToResponseWithComponentsImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1422:9)\n    at async DevServer.renderPageComponent (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1474:24)\n    at async DevServer.renderToResponseImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1514:32)\n    at async DevServer.pipeImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1025:25)\n    at async NextNodeServer.handleCatchallRenderRequest (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:916:17)\n    at async C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:399:20\n    at async Span.traceAsyncFn (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:395:24)\n    at async invokeRender (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\router-server.js:240:21)\n    at async handleRequest (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\router-server.js:437:24)\n    at async requestHandlerImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\router-server.js:485:13)\n    at async Server.requestListener (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\start-server.js:226:13)","clientVersion":"6.16.2","name":"PrismaClientUnknownRequestError"},"vendorId":"cmhnygs5x0002mfhgav66higq","msg":"Failed to update contractor scores"}
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:110:41)
+  108 |
+  109 |   } catch (error) {
+> 110 |     log.error({ error, vendorId: params.vendorId }, 'Failed to update contractor scores');
+      |                                         ^
+  111 |     return NextResponse.json({
+  112 |       error: 'Internal server error',
+  113 |       message: error instanceof Error ? error.message : 'Unknown error',
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 209ms
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 500 in 210ms
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 500 in 210ms
+{"level":"error","time":1762894840052,"env":"development","error":{"type":"PrismaClientUnknownRequestError","message":"\nInvalid `prisma.vendor.update()` invocation:\n\n\nResponse from the Engine was empty","stack":"PrismaClientUnknownRequestError: \nInvalid `prisma.vendor.update()` invocation:\n\n\nResponse from the Engine was empty\n    at ei.handleRequestError (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:121:7458)\n    at ei.handleAndLogRequestError (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:121:6593)\n    at ei.request (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:121:6300)\n    at async a (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\@prisma\\client\\runtime\\library.js:130:9551)\n    at async PUT (webpack-internal:///(rsc)/./app/api/contractors/[vendorId]/update-score/route.ts:85:31)\n    at async AppRouteRouteModule.do (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:5:38696)\n    at async AppRouteRouteModule.handle (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:5:45978)\n    at async responseGenerator (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&page=%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute.ts&appDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D&isGlobalNotFoundEnabled=!:203:38)\n    at async AppRouteRouteModule.handleResponse (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:1:187565)\n    at async handleResponse (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&page=%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute.ts&appDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D&isGlobalNotFoundEnabled=!:265:32)\n    at async handler (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js?name=app%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&page=%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fcontractors%2F%5BvendorId%5D%2Fupdate-score%2Froute.ts&appDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site%5Capp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=C%3A%5CUsers%5Ctanne%5CflipopsLP%5Cflipops-site&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D&isGlobalNotFoundEnabled=!:317:13)\n    at async DevServer.renderToResponseWithComponentsImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1422:9)\n    at async DevServer.renderPageComponent (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1474:24)\n    at async DevServer.renderToResponseImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1514:32)\n    at async DevServer.pipeImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:1025:25)\n    at async NextNodeServer.handleCatchallRenderRequest (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\next-server.js:393:17)\n    at async DevServer.handleRequestImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\base-server.js:916:17)\n    at async C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:399:20\n    at async Span.traceAsyncFn (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\trace\\trace.js:157:20)\n    at async DevServer.handleRequest (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:395:24)\n    at async invokeRender (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\router-server.js:240:21)\n    at async handleRequest (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\router-server.js:437:24)\n    at async requestHandlerImpl (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\router-server.js:485:13)\n    at async Server.requestListener (C:\\Users\\tanne\\flipopsLP\\flipops-site\\node_modules\\next\\dist\\server\\lib\\start-server.js:226:13)","clientVersion":"6.16.2","name":"PrismaClientUnknownRequestError"},"vendorId":"cmhnygs5t0001mfhg5x7ygotm","msg":"Failed to update contractor scores"}
+ GET /api/contractors/performance 200 in 14ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762895095899,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 56ms
+ GET /api/contractors/performance 200 in 16ms
+ GET /api/contractors/performance 200 in 19ms
+ GET /api/contractors/performance 200 in 21ms
+ GET /api/contractors/performance 200 in 17ms
+ GET /api/contractors/performance 200 in 25ms
+ GET /api/contractors/performance 200 in 44ms
+ GET /api/contractors/performance 200 in 24ms
+ GET /api/contractors/performance 200 in 17ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936379055,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":55,"new":50,"delta":-5},"onBudgetPct":{"old":40,"new":30,"delta":-10},"reliability":{"old":46,"new":38,"delta":-8}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 106ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936380040,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":72,"new":67,"delta":-5},"reliability":{"old":77,"new":77.8,"delta":0.7999999999999972}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 65ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936381077,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{"onBudgetPct":{"old":75,"new":65,"delta":-10},"reliability":{"old":80,"new":74.2,"delta":-5.799999999999997}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 83ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936382104,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 74ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936383060,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 51ms
+ GET /api/contractors/performance 200 in 21ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936804780,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":50,"new":45,"delta":-5},"onBudgetPct":{"old":30,"new":20,"delta":-10},"reliability":{"old":38,"new":30,"delta":-8}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 79ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936805762,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{"onBudgetPct":{"old":65,"new":55,"delta":-10},"reliability":{"old":74.2,"new":68.2,"delta":-6}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 55ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936806799,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":67,"new":62,"delta":-5},"reliability":{"old":77.8,"new":75.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 64ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936807792,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 57ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936808736,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 54ms
+ GET /api/contractors/performance 200 in 21ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936812987,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":45,"new":40,"delta":-5},"onBudgetPct":{"old":20,"new":10,"delta":-10},"reliability":{"old":30,"new":22,"delta":-8}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 52ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936813998,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{"onBudgetPct":{"old":55,"new":45,"delta":-10},"reliability":{"old":68.2,"new":62.2,"delta":-6}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 55ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936814936,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":62,"new":57,"delta":-5},"reliability":{"old":75.8,"new":73.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 47ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936815962,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 51ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762936816899,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 48ms
+ GET /api/contractors/performance 200 in 19ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937131497,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":40,"new":35,"delta":-5},"onBudgetPct":{"old":10,"new":0,"delta":-10},"reliability":{"old":22,"new":14,"delta":-8}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 82ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937132435,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{"onBudgetPct":{"old":45,"new":35,"delta":-10},"reliability":{"old":62.2,"new":56.2,"delta":-6}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 66ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937133469,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":57,"new":52,"delta":-5},"reliability":{"old":73.8,"new":71.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 57ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937134473,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 53ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937135403,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 64ms
+ GET /api/contractors/performance 200 in 19ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937301200,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":35,"new":30,"delta":-5},"reliability":{"old":14,"new":12,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 57ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937302226,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{"onBudgetPct":{"old":35,"new":25,"delta":-10},"reliability":{"old":56.2,"new":50.2,"delta":-6}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 58ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937303207,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":52,"new":47,"delta":-5},"reliability":{"old":71.8,"new":69.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 57ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937304236,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 74ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937305258,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 52ms
+ GET /api/contractors/performance 200 in 18ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937322439,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":30,"new":25,"delta":-5},"reliability":{"old":12,"new":10,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 71ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937323535,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{"onBudgetPct":{"old":25,"new":15,"delta":-10},"reliability":{"old":50.2,"new":44.2,"delta":-6}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 60ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937324513,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":47,"new":42,"delta":-5},"reliability":{"old":69.8,"new":67.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 60ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937325484,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 60ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937326464,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 48ms
+ GET /api/contractors/performance 200 in 18ms
+ GET /api/contractors/performance 200 in 15ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937725608,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":25,"new":20,"delta":-5},"reliability":{"old":10,"new":8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 53ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937726559,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{"onBudgetPct":{"old":15,"new":5,"delta":-10},"reliability":{"old":44.2,"new":38.2,"delta":-6}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 51ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937727546,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":42,"new":37,"delta":-5},"reliability":{"old":67.8,"new":65.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 47ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937728563,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 54ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937729622,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 45ms
+ GET /api/contractors/performance 200 in 23ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937846642,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":20,"new":15,"delta":-5},"reliability":{"old":8,"new":6,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 66ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937847616,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{"onBudgetPct":{"old":5,"new":0,"delta":-5},"reliability":{"old":38.2,"new":35.2,"delta":-3}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 56ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937848666,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":37,"new":32,"delta":-5},"reliability":{"old":65.8,"new":63.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 50ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937849787,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 53ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937850748,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 48ms
+ GET /api/contractors/performance 200 in 22ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937868130,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":15,"new":10,"delta":-5},"reliability":{"old":6,"new":4,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 46ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937869043,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 63ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937870172,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":32,"new":27,"delta":-5},"reliability":{"old":63.8,"new":61.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 53ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937871101,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 60ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937872029,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 48ms
+ GET /api/contractors/performance 200 in 18ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937893114,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":10,"new":5,"delta":-5},"reliability":{"old":4,"new":2,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 67ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937894003,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 59ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937894987,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":27,"new":22,"delta":-5},"reliability":{"old":61.8,"new":59.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 52ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937896037,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 51ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762937897060,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 48ms
+ GET /api/contractors/performance 200 in 20ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938239526,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{"onTimePct":{"old":5,"new":0,"delta":-5},"reliability":{"old":2,"new":0,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 52ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938240564,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 56ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938241502,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":22,"new":17,"delta":-5},"reliability":{"old":59.8,"new":57.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 55ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938242580,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 56ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938243478,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 53ms
+ GET /api/contractors/performance 200 in 20ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938254549,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 63ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938255498,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 62ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938256482,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":17,"new":12,"delta":-5},"reliability":{"old":57.8,"new":55.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 53ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938257507,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 65ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938258571,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 54ms
+ GET /api/contractors/performance 200 in 21ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938269972,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 60ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938270960,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 50ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938271998,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":12,"new":7,"delta":-5},"reliability":{"old":55.8,"new":53.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 50ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938273138,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 72ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938273960,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 40ms
+ GET /api/contractors/performance 200 in 19ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938544166,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 77ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938545273,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 55ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938546226,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":7,"new":2,"delta":-5},"reliability":{"old":53.8,"new":51.8,"delta":-2}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 48ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938547161,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 51ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938548246,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 55ms
+ GET /api/contractors/performance 200 in 18ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938561254,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 49ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938562287,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 46ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938563299,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{"onTimePct":{"old":2,"new":0,"delta":-2},"reliability":{"old":51.8,"new":51,"delta":-0.7999999999999972}},"hasChanges":true,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 57ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938564286,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 84ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762938565327,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 55ms
+ GET /api/contractors/performance 200 in 30ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976503957,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 72ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976505075,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 61ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976505981,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 54ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976506973,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 52ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976507952,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 52ms
+ GET /api/contractors/performance 200 in 19ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976622664,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 60ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976623702,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 48ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976624596,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 56ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976625616,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 58ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976626609,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 46ms
+ GET /api/contractors/performance 200 in 17ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976637106,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 74ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976637929,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 58ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976639037,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 60ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976640074,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 64ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976640983,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 53ms
+ GET /api/contractors/performance 200 in 18ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976729227,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 54ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976730265,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 62ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976731208,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 53ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976732327,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 56ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976733237,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 47ms
+ GET /api/contractors/performance 200 in 24ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976748126,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 77ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976749256,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 50ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976750208,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 55ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976751156,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 56ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976752287,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 50ms
+ GET /api/contractors/performance 200 in 23ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976878830,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 66ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976879767,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 53ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976880867,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 52ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976881806,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 55ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762976882841,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 46ms
+ GET /api/contractors/performance 200 in 20ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977190391,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 75ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977191350,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 58ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977192376,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 60ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977193360,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 54ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977194307,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 50ms
+ GET /api/contractors/performance 200 in 22ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977547947,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 55ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977548905,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 52ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977550029,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 55ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977551044,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 61ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977551951,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 58ms
+ GET /api/contractors/performance 200 in 19ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977681208,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 75ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977682289,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 65ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977683187,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 55ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977684286,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 53ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762977685234,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 58ms
+ GET /api/contractors/performance 200 in 21ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978166352,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 66ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978167339,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 59ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978168359,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 60ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978169315,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 52ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978170364,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 46ms
+ GET /api/contractors/performance 200 in 19ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978195159,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 70ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978196038,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 61ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978197051,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 51ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978198000,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 53ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978199027,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 51ms
+ GET /api/contractors/performance 200 in 21ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978616333,"env":"development","vendorId":"cmhnygs670004mfhgw84ei5h3","vendorName":"Budget Builders Inc","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs670004mfhgw84ei5h3/update-score 200 in 57ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978617336,"env":"development","vendorId":"cmhnygs5t0001mfhg5x7ygotm","vendorName":"Elite Electric Co","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5t0001mfhg5x7ygotm/update-score 200 in 48ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978618356,"env":"development","vendorId":"cmhnygs5x0002mfhgav66higq","vendorName":"Quick Fix HVAC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5x0002mfhgav66higq/update-score 200 in 53ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978619306,"env":"development","vendorId":"cmhnygs5n0000mfhgey6bn8ln","vendorName":"Ace Plumbing LLC","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs5n0000mfhgey6bn8ln/update-score 200 in 52ms
+Error: Route "/api/contractors/[vendorId]/update-score" used `params.vendorId`. `params` should be awaited before using its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at PUT (app\api\contractors\[vendorId]\update-score\route.ts:18:29)
+  16 | ) {
+  17 |   try {
+> 18 |     const vendorId = params.vendorId;
+     |                             ^
+  19 |     const body: ScoreUpdate = await req.json();
+  20 |
+  21 |     // Validate vendor exists
+{"level":"info","time":1762978620305,"env":"development","vendorId":"cmhnygs620003mfhg8hxi83i9","vendorName":"Premium Roofing Solutions","changes":{},"hasChanges":false,"msg":"Contractor reliability scores updated"}
+ PUT /api/contractors/cmhnygs620003mfhg8hxi83i9/update-score 200 in 57ms
+ GET /api/contractors/performance 200 in 19ms
+ GET /api/contractors/performance 200 in 15ms

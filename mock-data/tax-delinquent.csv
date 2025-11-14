@@ -1,0 +1,11 @@
+Address,City,State,Zip,Owner,APN,RecordedAt,AmountOwed
+123 Main St,Miami,FL,33139,John Smith,12345-001,2024-01-15,5500
+456 Ocean Dr,Miami Beach,FL,33140,Jane Doe,12345-002,2024-02-01,8200
+789 Collins Ave,Miami,FL,33141,Bob Johnson,12345-003,2024-01-20,3400
+321 Washington Ave,Miami Beach,FL,33139,Alice Brown,12345-004,2024-03-10,12000
+654 Lincoln Rd,Miami,FL,33139,Charlie Wilson,12345-005,2024-02-15,7800
+987 Alton Rd,Miami Beach,FL,33140,Diana Miller,12345-006,2024-01-05,4500
+111 Biscayne Blvd,Miami,FL,33132,Edward Davis,12345-007,2024-03-01,9500
+222 Flagler St,Miami,FL,33130,Frank Garcia,12345-008,2024-02-20,6700
+333 Coral Way,Miami,FL,33145,Grace Martinez,12345-009,2024-01-25,15000
+444 Sunset Dr,Miami,FL,33143,Henry Rodriguez,12345-010,2024-03-15,5200

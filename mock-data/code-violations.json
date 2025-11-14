@@ -1,0 +1,62 @@
+[
+  {
+    "site_address": "555 NW 2nd St",
+    "city": "Miami",
+    "state": "FL",
+    "zip": "33128",
+    "parcel": "12345-011",
+    "owner_name": "Ivan Lopez",
+    "violation_date": "2024-03-20",
+    "violation_type": "Overgrown Vegetation",
+    "status": "Open",
+    "is_vacant": true
+  },
+  {
+    "site_address": "666 SW 8th St",
+    "city": "Miami",
+    "state": "FL",
+    "zip": "33135",
+    "parcel": "12345-012",
+    "owner_name": "Julia Chen",
+    "violation_date": "2024-03-18",
+    "violation_type": "Illegal Dumping",
+    "status": "Open",
+    "is_vacant": false
+  },
+  {
+    "site_address": "777 NE 1st Ave",
+    "city": "Miami",
+    "state": "FL",
+    "zip": "33132",
+    "parcel": "12345-013",
+    "owner_name": "Kevin White",
+    "violation_date": "2024-03-15",
+    "violation_type": "Broken Windows",
+    "status": "Open",
+    "is_vacant": true
+  },
+  {
+    "site_address": "888 Brickell Ave",
+    "city": "Miami",
+    "state": "FL",
+    "zip": "33131",
+    "parcel": "12345-014",
+    "owner_name": "Laura Anderson",
+    "violation_date": "2024-03-10",
+    "violation_type": "Graffiti",
+    "status": "Open",
+    "is_vacant": false
+  },
+  {
+    "site_address": "999 Coconut Grove",
+    "city": "Miami",
+    "state": "FL",
+    "zip": "33133",
+    "parcel": "12345-015",
+    "owner_name": "Michael Taylor",
+    "violation_date": "2024-03-05",
+    "violation_type": "Structural Damage",
+    "status": "Critical",
+    "is_vacant": true
+  }
+]

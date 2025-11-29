@@ -1,4 +1,4 @@
-1"use client";
+"use client";
 
 import { useState } from "react";
 import { 
@@ -44,7 +44,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  DropdownMenu,``
+  DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,

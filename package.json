@@ -31,7 +31,17 @@
     "check:slack": "tsx scripts/check-slack.ts",
     "check:smtp": "tsx scripts/check-smtp.ts",
     "seed:railway": "bash scripts/railway-seed-vars.sh",
-    "health:local": "tsx scripts/health-local.ts"
+    "health:local": "tsx scripts/health-local.ts",
+    "cron:data-refresh": "tsx lib/cron/monitoring/data-refresh-sync.ts",
+    "cron:g1": "tsx lib/cron/guardrails/g1-deal-approval.ts",
+    "cron:g2": "tsx lib/cron/guardrails/g2-bid-spread.ts",
+    "cron:g3": "tsx lib/cron/guardrails/g3-invoice-budget.ts",
+    "cron:g4": "tsx lib/cron/guardrails/g4-change-order.ts",
+    "cron:pipeline": "tsx lib/cron/monitoring/pipeline-monitoring.ts",
+    "cron:contractors": "tsx lib/cron/monitoring/contractor-performance.ts",
+    "cron:attom": "tsx lib/cron/discovery/attom-property-discovery.ts",
+    "cron:skip-trace": "tsx lib/cron/discovery/skip-tracing-enrichment.ts",
+    "cron:all": "npm run cron:data-refresh && npm run cron:g1 && npm run cron:g2 && npm run cron:g3 && npm run cron:g4 && npm run cron:pipeline && npm run cron:contractors && npm run cron:attom && npm run cron:skip-trace"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.894.0",

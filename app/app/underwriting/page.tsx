@@ -42,6 +42,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { underwritingSeedData, type RepairItem } from "./seed-data";
@@ -93,7 +94,18 @@ export default function UnderwritingPage() {
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
   const [savingAnalysis, setSavingAnalysis] = useState(false);
-  
+
+  // Offer creation
+  const [offerDialogOpen, setOfferDialogOpen] = useState(false);
+  const [creatingOffer, setCreatingOffer] = useState(false);
+  const [offerAmount, setOfferAmount] = useState(0);
+  const [offerTerms, setOfferTerms] = useState("cash");
+  const [offerContingencies, setOfferContingencies] = useState<string[]>(["inspection"]);
+  const [offerClosingDate, setOfferClosingDate] = useState("");
+  const [offerExpiresAt, setOfferExpiresAt] = useState("");
+  const [offerEarnestMoney, setOfferEarnestMoney] = useState(0);
+  const [offerNotes, setOfferNotes] = useState("");
+
   // What-if sliders
   const [arvAdjustment, setArvAdjustment] = useState(0);
   const [repairsAdjustment, setRepairsAdjustment] = useState(0);
@@ -198,6 +210,83 @@ export default function UnderwritingPage() {
       toast.error('Failed to save analysis');
     } finally {
       setSavingAnalysis(false);
+    }
+  };
+
+  // Open offer dialog with pre-filled amount
+  const handleOpenOfferDialog = () => {
+    if (!selectedPropertyId) {
+      toast.error('Please select a property first');
+      return;
+    }
+
+    // Pre-fill with suggested offer amount
+    setOfferAmount(Math.round(suggestedOffer));
+
+    // Set default closing date (45 days from now)
+    const closingDate = new Date();
+    closingDate.setDate(closingDate.getDate() + 45);
+    setOfferClosingDate(closingDate.toISOString().split('T')[0]);
+
+    // Set default expiration (7 days from now)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+    setOfferExpiresAt(expiresAt.toISOString().split('T')[0]);
+
+    // Set default earnest money (1% of offer)
+    setOfferEarnestMoney(Math.round(suggestedOffer * 0.01));
+
+    setOfferDialogOpen(true);
+  };
+
+  // Create offer
+  const handleCreateOffer = async () => {
+    if (!selectedPropertyId) {
+      toast.error('Please select a property first');
+      return;
+    }
+
+    if (!offerAmount || offerAmount <= 0) {
+      toast.error('Please enter a valid offer amount');
+      return;
+    }
+
+    try {
+      setCreatingOffer(true);
+
+      const offerData = {
+        propertyId: selectedPropertyId,
+        amount: offerAmount,
+        terms: offerTerms,
+        contingencies: offerContingencies,
+        closingDate: offerClosingDate || null,
+        expiresAt: offerExpiresAt || null,
+        earnestMoney: offerEarnestMoney || null,
+        notes: offerNotes || null,
+      };
+
+      const response = await fetch('/api/offers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(offerData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success('Offer created successfully!');
+        setOfferDialogOpen(false);
+        // Reset form
+        setOfferNotes("");
+        setOfferContingencies(["inspection"]);
+        setOfferTerms("cash");
+      } else {
+        throw new Error('Failed to create offer');
+      }
+    } catch (error) {
+      console.error('Error creating offer:', error);
+      toast.error('Failed to create offer');
+    } finally {
+      setCreatingOffer(false);
     }
   };
 
@@ -482,10 +571,11 @@ export default function UnderwritingPage() {
                 <Save className="h-4 w-4 mr-2" />
                 {savingAnalysis ? 'Saving...' : 'Save Analysis'}
               </Button>
-              <Button 
-                variant="default" 
+              <Button
+                variant="default"
                 size="sm"
-                onClick={() => toast.success("Offer created!")}
+                onClick={handleOpenOfferDialog}
+                disabled={!selectedPropertyId}
               >
                 <Send className="h-4 w-4 mr-2" />
                 Create Offer
@@ -1232,6 +1322,133 @@ export default function UnderwritingPage() {
           </div>
         )}
       </div>
+
+      {/* Offer Creation Dialog */}
+      <Dialog open={offerDialogOpen} onOpenChange={setOfferDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create Offer</DialogTitle>
+            <DialogDescription>
+              Create and track an offer for this property. You can send it as draft or mark it as sent later.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Offer Amount */}
+            <div className="space-y-2">
+              <Label htmlFor="offer-amount">Offer Amount *</Label>
+              <Input
+                id="offer-amount"
+                type="number"
+                value={offerAmount}
+                onChange={(e) => setOfferAmount(parseFloat(e.target.value) || 0)}
+                placeholder="Enter offer amount"
+              />
+              <p className="text-xs text-gray-500">
+                Based on analysis: ${Math.round(suggestedOffer).toLocaleString()} (95% of MAO)
+              </p>
+            </div>
+
+            {/* Terms */}
+            <div className="space-y-2">
+              <Label htmlFor="offer-terms">Terms</Label>
+              <Select value={offerTerms} onValueChange={setOfferTerms}>
+                <SelectTrigger id="offer-terms">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="financing">Financing</SelectItem>
+                  <SelectItem value="seller_financing">Seller Financing</SelectItem>
+                  <SelectItem value="subject_to">Subject To</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Contingencies */}
+            <div className="space-y-2">
+              <Label>Contingencies</Label>
+              <div className="flex flex-wrap gap-2">
+                {["inspection", "financing", "appraisal", "sale_of_home"].map((cont) => (
+                  <div key={cont} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`cont-${cont}`}
+                      checked={offerContingencies.includes(cont)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setOfferContingencies([...offerContingencies, cont]);
+                        } else {
+                          setOfferContingencies(offerContingencies.filter((c) => c !== cont));
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`cont-${cont}`} className="text-sm font-normal capitalize">
+                      {cont.replace(/_/g, " ")}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="closing-date">Closing Date</Label>
+                <Input
+                  id="closing-date"
+                  type="date"
+                  value={offerClosingDate}
+                  onChange={(e) => setOfferClosingDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="expires-at">Offer Expires</Label>
+                <Input
+                  id="expires-at"
+                  type="date"
+                  value={offerExpiresAt}
+                  onChange={(e) => setOfferExpiresAt(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Earnest Money */}
+            <div className="space-y-2">
+              <Label htmlFor="earnest-money">Earnest Money Deposit</Label>
+              <Input
+                id="earnest-money"
+                type="number"
+                value={offerEarnestMoney}
+                onChange={(e) => setOfferEarnestMoney(parseFloat(e.target.value) || 0)}
+                placeholder="Enter earnest money amount"
+              />
+              <p className="text-xs text-gray-500">
+                Recommended: 1-3% of offer amount (${Math.round(offerAmount * 0.01).toLocaleString()} - ${Math.round(offerAmount * 0.03).toLocaleString()})
+              </p>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="offer-notes">Internal Notes</Label>
+              <Input
+                id="offer-notes"
+                value={offerNotes}
+                onChange={(e) => setOfferNotes(e.target.value)}
+                placeholder="Add any notes about this offer..."
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOfferDialogOpen(false)} disabled={creatingOffer}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateOffer} disabled={creatingOffer || !offerAmount}>
+              {creatingOffer ? 'Creating...' : 'Create Offer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

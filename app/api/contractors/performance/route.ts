@@ -33,8 +33,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Extract userId from query params (multi-tenant)
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId parameter is required' },
+        { status: 400 }
+      );
+    }
+
     // Get all vendors with their bids, invoices, and change orders
     const vendors = await prisma.vendor.findMany({
+      where: { userId },
       include: {
         bids: {
           select: {

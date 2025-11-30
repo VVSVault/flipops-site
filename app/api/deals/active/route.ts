@@ -14,6 +14,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Extract userId from query params (multi-tenant)
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId parameter is required' },
+        { status: 400 }
+      );
+    }
+
     // Query for deals that need data refresh
     // Active deals are those that:
     // 1. Have been approved (have G1 APPROVE event)
@@ -35,6 +46,7 @@ export async function GET(req: NextRequest) {
     // Get deals that are either approved or recently created (pending approval)
     const activeDeals = await prisma.dealSpec.findMany({
       where: {
+        userId,
         OR: [
           { id: { in: approvedDealIds } },
           {

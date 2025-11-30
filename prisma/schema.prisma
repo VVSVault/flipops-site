@@ -54,6 +54,7 @@ model User {
   vendors         Vendor[]
   tasks           Task[]
   dealAnalyses    DealAnalysis[]
+  offers          Offer[]
 
   @@index([email])
   @@index([clerkId])
@@ -359,6 +360,7 @@ model Property {
   user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   tasks            Task[]
   dealAnalyses     DealAnalysis[]
+  offers           Offer[]
 
   @@unique([userId, address, city, state, zip])
   @@index([userId])
@@ -440,6 +442,51 @@ model DealAnalysis {
 
   @@index([userId, createdAt])
   @@index([propertyId])
+}
+
+// Offer management and tracking
+model Offer {
+  id            String    @id @default(cuid())
+  userId        String    // Multi-tenant: which investor owns this offer
+  propertyId    String    // Property being offered on
+  analysisId    String?   // Optional link to deal analysis
+
+  // Offer details
+  amount        Float
+  terms         String?   // "cash", "financing", "seller_financing", "subject_to"
+  contingencies String?   // JSON array: ["inspection", "financing", "appraisal", "sale_of_home"]
+  closingDate   DateTime?
+  expiresAt     DateTime? // When offer expires if not accepted
+  earnestMoney  Float?    // Earnest money deposit amount
+  dueDate       DateTime? // Date offer is due/presented
+
+  // Status tracking
+  status        String    @default("draft") // "draft", "sent", "countered", "accepted", "rejected", "expired"
+  sentAt        DateTime?
+  responseAt    DateTime?
+  responseNotes String?   // Notes about seller's response
+
+  // Counter-offer tracking
+  counterAmount Float?    // If seller countered
+  counterTerms  String?   // JSON with counter-offer details
+  counterDate   DateTime?
+
+  // Documentation
+  documentUrl   String?   // Link to offer letter/PDF
+  notes         String?   // Internal notes about this offer
+
+  // Metadata
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property      Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([propertyId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 // Notification and event tracking

@@ -27,6 +27,17 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Extract userId from query params (multi-tenant)
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'userId parameter is required' },
+        { status: 400 }
+      );
+    }
+
     const stalledDeals: StalledDeal[] = [];
     const now = new Date();
 
@@ -47,6 +58,7 @@ export async function GET(req: NextRequest) {
 
     const g1StalledDeals = await prisma.dealSpec.findMany({
       where: {
+        userId,
         id: { notIn: g1ProcessedDealIds },
         createdAt: {
           lte: new Date(now.getTime() - g1Threshold * 60 * 60 * 1000)
@@ -146,6 +158,7 @@ export async function GET(req: NextRequest) {
     const g3DealIds = [...new Set(g3StalledInvoices.map(inv => inv.dealId))];
     const g3Deals = await prisma.dealSpec.findMany({
       where: {
+        userId,
         id: { in: g3DealIds }
       },
       select: {

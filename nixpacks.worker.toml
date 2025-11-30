@@ -1,0 +1,14 @@
+# Nixpacks configuration for FlipOps Worker Service
+# This file tells Railway how to build and run the worker
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm run worker"

@@ -71,6 +71,8 @@ model User {
 model DealSpec {
   id              String    @id @default(cuid())
   userId          String    // Multi-tenant: which investor owns this deal
+  propertyId      String?   // Link to property (for flippers starting renovation)
+  contractId      String?   @unique // Link to contract (for flippers starting renovation)
   address         String
   type            String    // SFH, multi-family, commercial
   maxExposureUsd  Float
@@ -78,7 +80,9 @@ model DealSpec {
   arv             Float?    // After Repair Value for ROI calculations
   region          String?   @default("Miami")
   grade           String?   @default("Standard")
+  status          String    @default("planning") // "planning", "active", "on_hold", "completed", "cancelled"
   startAt         DateTime?
+  completedAt     DateTime? // When renovation was completed
   dailyBurnUsd    Float?    @default(0)
   constraints     String    // Array of constraint objects (JSON string)
   createdAt       DateTime  @default(now())
@@ -86,6 +90,8 @@ model DealSpec {
 
   // Relations
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property        Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  contract        Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
   scopeNodes      ScopeTreeNode[]
   bids            Bid[]
   changeOrders    ChangeOrder[]
@@ -94,7 +100,10 @@ model DealSpec {
   tasks           Task[]
 
   @@index([userId])
+  @@index([propertyId])
+  @@index([contractId])
   @@index([address])
+  @@index([status])
   @@index([createdAt])
 }
 
@@ -368,6 +377,7 @@ model Property {
   dealAnalyses     DealAnalysis[]
   offers           Offer[]
   contracts        Contract[]
+  renovations      DealSpec[]     // Renovation projects for this property
 
   @@unique([userId, address, city, state, zip])
   @@index([userId])
@@ -527,6 +537,7 @@ model Contract {
   property        Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   offer           Offer               @relation(fields: [offerId], references: [id], onDelete: Cascade)
   assignment      ContractAssignment?
+  renovation      DealSpec?           // Renovation project for this contract (flippers)
 
   @@index([userId, status])
   @@index([propertyId])

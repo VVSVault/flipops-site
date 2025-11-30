@@ -196,6 +196,18 @@ export async function GET() {
             buyer: true,
           },
         },
+        renovation: {
+          include: {
+            _count: {
+              select: {
+                scopeNodes: true,
+                bids: true,
+                changeOrders: true,
+                tasks: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -229,6 +241,8 @@ export async function GET() {
           amount: contract.offer.amount,
           status: contract.offer.status,
         },
+        assignment: contract.assignment,
+        renovation: contract.renovation,
       })),
     });
   } catch (error) {

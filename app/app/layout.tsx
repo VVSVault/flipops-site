@@ -25,7 +25,8 @@ import {
   Search,
   Bell,
   LayoutDashboard,
-  FileSignature
+  FileSignature,
+  Hammer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +44,7 @@ const baseNavigation = [
   { name: "Underwriting", href: "/app/underwriting", icon: Calculator },
   { name: "Contracts", href: "/app/contracts", icon: FileSignature },
   { name: "Buyers", href: "/app/buyers", icon: UserCheck },
+  { name: "Renovations", href: "/app/renovations", icon: Hammer },
   { name: "Tasks", href: "/app/tasks", icon: CheckSquare },
   { name: "Vendors", href: "/app/vendors", icon: Briefcase },
   { name: "Documents", href: "/app/documents", icon: FileText },

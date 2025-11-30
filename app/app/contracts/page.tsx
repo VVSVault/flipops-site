@@ -17,6 +17,7 @@ import {
   FileText,
   AlertCircle,
   UserCheck,
+  Hammer,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,6 +90,19 @@ interface Contract {
       email: string | null;
     };
   };
+  renovation?: {
+    id: string;
+    status: string;
+    maxExposureUsd: number;
+    targetRoiPct: number;
+    arv: number | null;
+    _count?: {
+      scopeNodes: number;
+      bids: number;
+      changeOrders: number;
+      tasks: number;
+    };
+  };
 }
 
 interface Buyer {
@@ -131,6 +145,14 @@ export default function ContractsPage() {
   const [assignmentDate, setAssignmentDate] = useState("");
   const [assignmentNotes, setAssignmentNotes] = useState("");
   const [assigningContract, setAssigningContract] = useState(false);
+
+  // Renovation state
+  const [renovationDialogOpen, setRenovationDialogOpen] = useState(false);
+  const [renovationBudget, setRenovationBudget] = useState("");
+  const [renovationTargetRoi, setRenovationTargetRoi] = useState("20");
+  const [renovationArv, setRenovationArv] = useState("");
+  const [renovationStartDate, setRenovationStartDate] = useState("");
+  const [startingRenovation, setStartingRenovation] = useState(false);
 
   // Fetch contracts and buyers
   useEffect(() => {
@@ -342,6 +364,65 @@ export default function ContractsPage() {
     }
   };
 
+  const handleStartRenovation = (contract: Contract) => {
+    setSelectedContract(contract);
+    setRenovationBudget("");
+    setRenovationTargetRoi("20");
+    setRenovationArv("");
+    setRenovationStartDate("");
+    setRenovationDialogOpen(true);
+  };
+
+  const submitRenovation = async () => {
+    if (!selectedContract || !renovationBudget || !renovationTargetRoi) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter budget and target ROI.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setStartingRenovation(true);
+      const response = await fetch("/api/renovations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contractId: selectedContract.id,
+          propertyId: selectedContract.propertyId,
+          maxExposureUsd: parseFloat(renovationBudget),
+          targetRoiPct: parseFloat(renovationTargetRoi),
+          arv: renovationArv ? parseFloat(renovationArv) : null,
+          startAt: renovationStartDate || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to start renovation");
+      }
+
+      toast({
+        title: "Renovation Started",
+        description: "Renovation project successfully created.",
+      });
+
+      fetchContracts();
+      setRenovationDialogOpen(false);
+      setSelectedContract(null);
+    } catch (error) {
+      console.error("Error starting renovation:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to start renovation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setStartingRenovation(false);
+    }
+  };
+
   // Calculate stats
   const stats = {
     total: contracts.length,
@@ -511,6 +592,15 @@ export default function ContractsPage() {
                               <DropdownMenuItem onClick={() => handleAssignContract(contract)}>
                                 <UserCheck className="mr-2 h-4 w-4" />
                                 Assign Contract
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          {!contract.renovation && contract.status === "closed" && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleStartRenovation(contract)}>
+                                <Hammer className="mr-2 h-4 w-4" />
+                                Start Renovation
                               </DropdownMenuItem>
                             </>
                           )}
@@ -737,6 +827,96 @@ export default function ContractsPage() {
             </Button>
             <Button onClick={submitAssignment} disabled={assigningContract || !selectedBuyerId || !assignmentFee}>
               {assigningContract ? "Assigning..." : "Assign Contract"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Start Renovation Dialog */}
+      <Dialog open={renovationDialogOpen} onOpenChange={setRenovationDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Start Renovation Project</DialogTitle>
+            <DialogDescription>
+              Create a renovation project for this closed contract
+            </DialogDescription>
+          </DialogHeader>
+          {selectedContract && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Property</h3>
+                <p className="text-sm text-muted-foreground">
+                  {selectedContract.property.address}, {selectedContract.property.city}, {selectedContract.property.state}
+                </p>
+                <p className="text-lg font-bold mt-1">{formatCurrency(selectedContract.purchasePrice)}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="renovationBudget">Renovation Budget *</Label>
+                  <Input
+                    id="renovationBudget"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    placeholder="50000"
+                    value={renovationBudget}
+                    onChange={(e) => setRenovationBudget(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="renovationTargetRoi">Target ROI (%) *</Label>
+                  <Input
+                    id="renovationTargetRoi"
+                    type="number"
+                    min="0"
+                    step="5"
+                    placeholder="20"
+                    value={renovationTargetRoi}
+                    onChange={(e) => setRenovationTargetRoi(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="renovationArv">After Repair Value (ARV)</Label>
+                  <Input
+                    id="renovationArv"
+                    type="number"
+                    min="0"
+                    step="1000"
+                    placeholder="300000"
+                    value={renovationArv}
+                    onChange={(e) => setRenovationArv(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="renovationStartDate">Start Date</Label>
+                  <Input
+                    id="renovationStartDate"
+                    type="date"
+                    value={renovationStartDate}
+                    onChange={(e) => setRenovationStartDate(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>Tip:</strong> After creating the renovation, you can add scope items, request bids from contractors, and track progress.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRenovationDialogOpen(false)} disabled={startingRenovation}>
+              Cancel
+            </Button>
+            <Button onClick={submitRenovation} disabled={startingRenovation || !renovationBudget || !renovationTargetRoi}>
+              {startingRenovation ? "Creating..." : "Start Renovation"}
             </Button>
           </DialogFooter>
         </DialogContent>

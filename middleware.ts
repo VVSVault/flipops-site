@@ -7,11 +7,17 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/privacy",
   "/terms",
+  "/api/health",                 // Health check endpoint for Railway
   "/api/webhook(.*)",
   "/api/webhooks/(.*)",          // All webhook endpoints including n8n
+  "/api/users",                  // Users endpoint for n8n workflows
   "/api/properties/(.*)",        // Property scoring endpoints
   "/api/notifications(.*)",      // Notifications endpoint
   "/api/deals/approve",          // G1 endpoint
+  "/api/deals/approve/status",   // G1 monitoring endpoint
+  "/api/deals/bid-spread/status", // G2 monitoring endpoint
+  "/api/deals/budget-variance/status", // G3 monitoring endpoint
+  "/api/deals/change-orders/status", // G4 monitoring endpoint
   "/api/deals/stalled",          // Pipeline monitoring endpoint
   "/api/deals/active",           // Active deals for data refresh
   "/api/deals/sync-all",         // Bulk deal sync endpoint
@@ -20,6 +26,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/contractors/(.*)/update-score", // Update contractor reliability scores
   "/api/projects/(.*)", // All project endpoints
   "/api/bids/award",             // G2 endpoint
+  "/api/bids/award/status",      // G2 monitoring endpoint
   "/api/invoices/ingest",        // G3 endpoint
   "/api/invoices/status",        // Invoice monitoring endpoint
   "/api/change-orders/submit",   // G4 endpoint

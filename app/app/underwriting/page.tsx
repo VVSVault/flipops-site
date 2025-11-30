@@ -45,14 +45,54 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { underwritingSeedData, type RepairItem } from "./seed-data";
+import { useUser } from "@clerk/nextjs";
+
+interface Property {
+  id: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string | null;
+  propertyType: string | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  squareFeet: number | null;
+  yearBuilt: number | null;
+  assessedValue: number | null;
+  estimatedValue: number | null;
+  score: number | null;
+  dataSource: string | null;
+  ownerName: string | null;
+  enriched: boolean;
+  createdAt: Date;
+}
+
+interface SavedAnalysis {
+  id: string;
+  arv: number;
+  arvMethod: string;
+  repairTotal: number;
+  maxOffer: number;
+  offerAmount: number | null;
+  name: string | null;
+  notes: string | null;
+  createdAt: Date;
+}
 
 export default function UnderwritingPage() {
+  const { isLoaded, user } = useUser();
+
   // State management
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loadingProperties, setLoadingProperties] = useState(true);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
   const [selectedDealId, setSelectedDealId] = useState<string>("LEAD-001");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("summary");
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
+  const [savingAnalysis, setSavingAnalysis] = useState(false);
   
   // What-if sliders
   const [arvAdjustment, setArvAdjustment] = useState(0);
@@ -65,8 +105,111 @@ export default function UnderwritingPage() {
   
   // Repairs state
   const [repairItems, setRepairItems] = useState<RepairItem[]>([]);
-  
-  // Get current deal data
+
+  // Fetch properties from database
+  useEffect(() => {
+    if (isLoaded && user) {
+      fetchProperties();
+    }
+  }, [isLoaded, user]);
+
+  const fetchProperties = async () => {
+    try {
+      setLoadingProperties(true);
+      const response = await fetch('/api/properties?limit=50');
+      if (response.ok) {
+        const data = await response.json();
+        setProperties(data.properties || []);
+        // Auto-select first property if available
+        if (data.properties && data.properties.length > 0 && !selectedPropertyId) {
+          setSelectedPropertyId(data.properties[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      toast.error('Failed to load properties');
+    } finally {
+      setLoadingProperties(false);
+    }
+  };
+
+  // Fetch saved analyses for selected property
+  useEffect(() => {
+    if (selectedPropertyId) {
+      fetchAnalyses();
+    }
+  }, [selectedPropertyId]);
+
+  const fetchAnalyses = async () => {
+    if (!selectedPropertyId) return;
+
+    try {
+      const response = await fetch(`/api/deal-analysis/${selectedPropertyId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSavedAnalyses(data.analyses || []);
+      }
+    } catch (error) {
+      console.error('Error fetching analyses:', error);
+    }
+  };
+
+  // Save analysis to database
+  const handleSaveAnalysis = async () => {
+    if (!selectedPropertyId) {
+      toast.error('Please select a property first');
+      return;
+    }
+
+    try {
+      setSavingAnalysis(true);
+
+      const analysisData = {
+        propertyId: selectedPropertyId,
+        arv: adjustedARV,
+        arvMethod: arvMethod,
+        compsUsed: selectedComps.map(compId =>
+          currentComps.find(c => c.id === compId)
+        ).filter(Boolean),
+        repairTotal: adjustedRepairs,
+        repairItems: repairItems,
+        maxOffer: mao,
+        offerAmount: suggestedOffer,
+        rule: '70%', // Could be dynamic based on UI
+        notes: '', // Could add notes field in UI
+      };
+
+      const response = await fetch('/api/deal-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(analysisData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success('Analysis saved successfully!');
+        // Reload analyses
+        await fetchAnalyses();
+      } else {
+        throw new Error('Failed to save analysis');
+      }
+    } catch (error) {
+      console.error('Error saving analysis:', error);
+      toast.error('Failed to save analysis');
+    } finally {
+      setSavingAnalysis(false);
+    }
+  };
+
+  // Load a previous analysis
+  const loadAnalysis = (analysis: SavedAnalysis) => {
+    // This would populate the form with saved values
+    // For now, just show a toast
+    toast.success(`Loaded analysis from ${new Date(analysis.createdAt).toLocaleDateString()}`);
+    // TODO: Populate ARV, repairs, etc. from saved analysis
+  };
+
+  // Get current deal data (keep for backward compatibility with seed data)
   const currentDeal = underwritingSeedData.deals.find(d => d.id === selectedDealId);
   const currentSession = underwritingSeedData.sessions.find(s => s.leadId === selectedDealId);
   const currentComps = underwritingSeedData.comps.filter(c => c.leadId === selectedDealId);
@@ -238,51 +381,70 @@ export default function UnderwritingPage() {
         
         {!leftPanelCollapsed && (
           <div className="flex-1 overflow-y-auto">
-            <div className="p-3 space-y-2">
-              {underwritingSeedData.deals
-                .filter(deal => 
-                  deal.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  deal.id.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .map((deal) => (
-                <Card
-                  key={deal.id}
-                  className={cn(
-                    "cursor-pointer transition-all border-gray-200 dark:border-gray-800",
-                    selectedDealId === deal.id 
-                      ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30" 
-                      : "hover:shadow-sm hover:border-gray-300 dark:hover:border-gray-700"
-                  )}
-                  onClick={() => setSelectedDealId(deal.id)}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
-                          {deal.address}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {deal.owner} • {deal.id}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge variant={deal.status === "hot" ? "destructive" : "secondary"} className="text-xs">
-                            {deal.status}
-                          </Badge>
-                          {deal.signals.slice(0, 2).map((signal, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              {signal}
-                            </Badge>
-                          ))}
+            {loadingProperties ? (
+              <div className="flex items-center justify-center h-32">
+                <p className="text-sm text-gray-500">Loading properties...</p>
+              </div>
+            ) : properties.length === 0 ? (
+              <div className="flex items-center justify-center h-32 p-4">
+                <p className="text-sm text-gray-500 text-center">
+                  No properties found. Properties will appear here once discovered by ATTOM.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 space-y-2">
+                {properties
+                  .filter(property =>
+                    property.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (property.ownerName && property.ownerName.toLowerCase().includes(searchQuery.toLowerCase()))
+                  )
+                  .map((property) => (
+                  <Card
+                    key={property.id}
+                    className={cn(
+                      "cursor-pointer transition-all border-gray-200 dark:border-gray-800",
+                      selectedPropertyId === property.id
+                        ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30"
+                        : "hover:shadow-sm hover:border-gray-300 dark:hover:border-gray-700"
+                    )}
+                    onClick={() => setSelectedPropertyId(property.id)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                            {property.address}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {property.city}, {property.state}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            {property.score && property.score >= 85 && (
+                              <Badge variant="destructive" className="text-xs">
+                                Hot
+                              </Badge>
+                            )}
+                            {property.enriched && (
+                              <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                Skip Traced
+                              </Badge>
+                            )}
+                            {property.score && (
+                              <Badge variant="secondary" className="text-xs">
+                                Score: {property.score}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
+                        {property.score && property.score >= 85 && (
+                          <Star className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                        )}
                       </div>
-                      {deal.status === "hot" && (
-                        <Star className="h-4 w-4 text-yellow-500 flex-shrink-0" />
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -311,9 +473,14 @@ export default function UnderwritingPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => toast.success("Snapshot saved!")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSaveAnalysis}
+                disabled={savingAnalysis || !selectedPropertyId}
+              >
                 <Save className="h-4 w-4 mr-2" />
-                Save Snapshot
+                {savingAnalysis ? 'Saving...' : 'Save Analysis'}
               </Button>
               <Button 
                 variant="default" 

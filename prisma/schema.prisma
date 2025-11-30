@@ -53,6 +53,7 @@ model User {
   policies        Policy[]
   vendors         Vendor[]
   tasks           Task[]
+  dealAnalyses    DealAnalysis[]
 
   @@index([email])
   @@index([clerkId])
@@ -355,8 +356,9 @@ model Property {
   updatedAt        DateTime @updatedAt
 
   // Relations
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   tasks            Task[]
+  dealAnalyses     DealAnalysis[]
 
   @@unique([userId, address, city, state, zip])
   @@index([userId])
@@ -393,6 +395,51 @@ model Task {
   @@index([userId, completed])
   @@index([propertyId])
   @@index([dealId])
+}
+
+// Deal analysis and underwriting
+model DealAnalysis {
+  id            String   @id @default(cuid())
+  userId        String   // Multi-tenant: which investor owns this analysis
+  propertyId    String   // Link to property being analyzed
+
+  // ARV (After Repair Value) calculation
+  arv           Float
+  arvMethod     String   // "median", "weighted", "knn", "manual"
+  compsUsed     String?  // JSON array of comparable property data
+
+  // Repair costs
+  repairTotal   Float
+  repairItems   String?  // JSON array of {category, description, cost}
+
+  // Offer calculation
+  maxOffer      Float    // Maximum offer based on rule
+  rule          String   @default("70%") // "70%", "75%", "custom"
+  offerAmount   Float?   // Actual offer if different from max
+
+  // Purchase and holding costs
+  purchasePrice Float?   // Actual purchase price if known
+  closingCosts  Float?   // Estimated closing costs
+  holdingCosts  Float?   // Monthly holding costs
+  holdingMonths Int?     // Expected holding period
+
+  // Profit analysis
+  sellingCosts  Float?   // Estimated selling costs (realtor, etc.)
+  projectedProfit Float? // Expected profit
+  roi           Float?   // Return on investment percentage
+
+  // Metadata
+  name          String?  // Optional name for this analysis (e.g., "Conservative", "Aggressive")
+  notes         String?  // User notes about this analysis
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([propertyId])
 }
 
 // Notification and event tracking

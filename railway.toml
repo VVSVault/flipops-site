@@ -9,9 +9,9 @@
 [deploy]
   # Start the Next.js production server
   startCommand = "npm run start"
-  # Health check endpoint
-  healthcheckPath = "/api/health"
-  healthcheckTimeout = 100
+  # Health check endpoint (disabled temporarily to debug deployment)
+  # healthcheckPath = "/api/health"
+  # healthcheckTimeout = 100
   # Restart policy
   restartPolicyType = "on_failure"
   restartPolicyMaxRetries = 10

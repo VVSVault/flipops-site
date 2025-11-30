@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
@@ -34,19 +34,25 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/app/components/theme-toggle";
 import { ClientActivityMonitor } from "@/app/components/client-activity-monitor";
+import {
+  filterNavigationByInvestorType,
+  NAVIGATION_RULES,
+  type InvestorType,
+  type NavigationItem
+} from "@/lib/navigation-config";
 
 const PANELS_ENABLED = process.env.NEXT_PUBLIC_ENABLE_DATASOURCE_PANELS === "1";
 
-const baseNavigation = [
+const baseNavigation: NavigationItem[] = [
   { name: "Overview", href: "/app", icon: Home },
   { name: "Leads", href: "/app/leads", icon: Users },
   { name: "Inbox", href: "/app/inbox", icon: MessageSquare },
   { name: "Campaigns", href: "/app/campaigns", icon: Megaphone },
   { name: "Underwriting", href: "/app/underwriting", icon: Calculator },
   { name: "Contracts", href: "/app/contracts", icon: FileSignature },
-  { name: "Buyers", href: "/app/buyers", icon: UserCheck },
-  { name: "Renovations", href: "/app/renovations", icon: Hammer },
-  { name: "Rentals", href: "/app/rentals", icon: Building2 },
+  { name: "Buyers", href: "/app/buyers", icon: UserCheck, visibleTo: NAVIGATION_RULES['Buyers'] },
+  { name: "Renovations", href: "/app/renovations", icon: Hammer, visibleTo: NAVIGATION_RULES['Renovations'] },
+  { name: "Rentals", href: "/app/rentals", icon: Building2, visibleTo: NAVIGATION_RULES['Rentals'] },
   { name: "Tasks", href: "/app/tasks", icon: CheckSquare },
   { name: "Vendors", href: "/app/vendors", icon: Briefcase },
   { name: "Documents", href: "/app/documents", icon: FileText },
@@ -66,8 +72,6 @@ if (PANELS_ENABLED) {
 
 baseNavigation.push({ name: "Settings", href: "/app/settings", icon: Settings });
 
-const navigation = baseNavigation;
-
 export default function AppLayout({
   children,
 }: {
@@ -76,6 +80,32 @@ export default function AppLayout({
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickAddLeadOpen, setQuickAddLeadOpen] = useState(false);
+  const [investorType, setInvestorType] = useState<InvestorType>(null);
+  const [navigation, setNavigation] = useState<NavigationItem[]>(baseNavigation);
+
+  // Fetch user profile to get investor type
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch('/api/user/profile');
+        if (response.ok) {
+          const data = await response.json();
+          const userInvestorType = data.user?.investorType as InvestorType;
+          setInvestorType(userInvestorType);
+
+          // Filter navigation based on investor type
+          const filteredNav = filterNavigationByInvestorType(baseNavigation, userInvestorType);
+          setNavigation(filteredNav);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        // On error, show all navigation items
+        setNavigation(baseNavigation);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   return (
     <OnboardingGuard>

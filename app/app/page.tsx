@@ -13,7 +13,13 @@ import {
   ArrowRight,
   Phone,
   Mail,
-  Home
+  Home,
+  UserCheck,
+  Hammer,
+  Building2,
+  BarChart3,
+  PiggyBank,
+  Percent
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
+import { getInvestorTypeDisplayName, type InvestorType } from "@/lib/navigation-config";
 
 interface DashboardStats {
   newLeads24h: number;
@@ -65,6 +72,32 @@ interface OverdueTask {
   overdueDays: number;
 }
 
+interface InvestorStats {
+  wholesaler?: {
+    totalBuyers: number;
+    activeAssignments: number;
+    completedAssignments: number;
+    totalRevenue: number;
+    avgAssignmentFee: number;
+  };
+  flipper?: {
+    totalRenovations: number;
+    activeRenovations: number;
+    completedRenovations: number;
+    totalBudget: number;
+    avgROI: number;
+  };
+  buyAndHold?: {
+    totalRentals: number;
+    leasedRentals: number;
+    vacantRentals: number;
+    totalMonthlyRent: number;
+    totalMonthlyCashFlow: number;
+    avgCapRate: number;
+    occupancyRate: number;
+  };
+}
+
 export default function DashboardPage() {
   const { isLoaded, user } = useUser();
   const [loading, setLoading] = useState(true);
@@ -72,6 +105,8 @@ export default function DashboardPage() {
   const [hotLeads, setHotLeads] = useState<HotLead[]>([]);
   const [actionItems, setActionItems] = useState<ActionItem[]>([]);
   const [overdueTasks, setOverdueTasks] = useState<OverdueTask[]>([]);
+  const [investorStats, setInvestorStats] = useState<InvestorStats | null>(null);
+  const [investorType, setInvestorType] = useState<InvestorType>(null);
 
   // Fetch dashboard data
   useEffect(() => {
@@ -83,11 +118,12 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [statsRes, hotLeadsRes, actionItemsRes, overdueTasksRes] = await Promise.all([
+      const [statsRes, hotLeadsRes, actionItemsRes, overdueTasksRes, investorStatsRes] = await Promise.all([
         fetch('/api/dashboard/stats'),
         fetch('/api/dashboard/hot-leads'),
         fetch('/api/dashboard/action-items'),
         fetch('/api/dashboard/overdue-tasks'),
+        fetch('/api/dashboard/investor-stats'),
       ]);
 
       if (statsRes.ok) {
@@ -108,6 +144,12 @@ export default function DashboardPage() {
       if (overdueTasksRes.ok) {
         const data = await overdueTasksRes.json();
         setOverdueTasks(data.overdueTasks || []);
+      }
+
+      if (investorStatsRes.ok) {
+        const data = await investorStatsRes.json();
+        setInvestorStats(data.stats || null);
+        setInvestorType(data.investorType || null);
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -176,12 +218,28 @@ export default function DashboardPage() {
     );
   }
 
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   return (
     <div className="space-y-6">
       {/* Page header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Welcome back! Here's what's happening with your deals.</p>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Welcome back! Here's what's happening with your deals.
+          {investorType && (
+            <span className="ml-2 text-sm">
+              ({getInvestorTypeDisplayName(investorType)} mode)
+            </span>
+          )}
+        </p>
       </div>
 
       {/* KPIs */}
@@ -211,6 +269,254 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* Investor-Specific Widgets */}
+      {investorStats && (
+        <>
+          {/* Wholesaler Stats */}
+          {investorStats.wholesaler && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Wholesaling Performance</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <UserCheck className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.wholesaler.totalBuyers}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Buyers</p>
+                    <Link href="/app/buyers">
+                      <Button variant="link" size="sm" className="mt-2 p-0 h-auto text-blue-500">
+                        View Buyers <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Clock className="h-5 w-5 text-yellow-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.wholesaler.activeAssignments}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Active Assignments</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.wholesaler.completedAssignments}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Completed</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <DollarSign className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(investorStats.wholesaler.totalRevenue)}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Revenue</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <BarChart3 className="h-5 w-5 text-purple-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(investorStats.wholesaler.avgAssignmentFee)}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Avg Assignment Fee</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* Flipper Stats */}
+          {investorStats.flipper && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Renovation Projects</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Hammer className="h-5 w-5 text-orange-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.flipper.totalRenovations}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Projects</p>
+                    <Link href="/app/renovations">
+                      <Button variant="link" size="sm" className="mt-2 p-0 h-auto text-blue-500">
+                        View Projects <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Clock className="h-5 w-5 text-yellow-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.flipper.activeRenovations}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Active Projects</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.flipper.completedRenovations}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Completed</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <DollarSign className="h-5 w-5 text-red-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(investorStats.flipper.totalBudget)}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Active Budget</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Percent className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.flipper.avgROI.toFixed(1)}%
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Avg ROI</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* Buy-and-Hold Stats */}
+          {investorStats.buyAndHold && (
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Rental Portfolio</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Building2 className="h-5 w-5 text-blue-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.buyAndHold.totalRentals}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Properties</p>
+                    <Link href="/app/rentals">
+                      <Button variant="link" size="sm" className="mt-2 p-0 h-auto text-blue-500">
+                        View Rentals <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.buyAndHold.leasedRentals}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Leased</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Home className="h-5 w-5 text-gray-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.buyAndHold.vacantRentals}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Vacant</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <DollarSign className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(investorStats.buyAndHold.totalMonthlyRent)}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Monthly Rent</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <PiggyBank className={`h-5 w-5 ${investorStats.buyAndHold.totalMonthlyCashFlow >= 0 ? 'text-green-500' : 'text-red-500'}`} />
+                    </div>
+                    <div className={`text-2xl font-bold ${investorStats.buyAndHold.totalMonthlyCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatCurrency(investorStats.buyAndHold.totalMonthlyCashFlow)}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Monthly Cash Flow</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Percent className="h-5 w-5 text-purple-500" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.buyAndHold.avgCapRate.toFixed(1)}%
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Avg Cap Rate</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <BarChart3 className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {investorStats.buyAndHold.occupancyRate.toFixed(0)}%
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Occupancy Rate</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* Quick Actions & Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

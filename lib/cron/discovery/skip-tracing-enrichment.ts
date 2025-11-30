@@ -323,13 +323,25 @@ async function updatePropertyWithSkipTrace(
   emails: string[],
   metadata?: any
 ): Promise<void> {
-  // Get existing property to merge metadata
+  // Get existing property to merge metadata and create task
   const existing = await prisma.property.findUnique({
     where: { id: propertyId },
-    select: { metadata: true },
+    select: {
+      metadata: true,
+      userId: true,
+      address: true,
+      city: true,
+      state: true,
+      ownerName: true,
+    },
   });
 
-  const existingMetadata = existing?.metadata
+  if (!existing) {
+    logger.error(`Property ${propertyId} not found`);
+    return;
+  }
+
+  const existingMetadata = existing.metadata
     ? JSON.parse(existing.metadata as string)
     : {};
 
@@ -367,6 +379,35 @@ async function updatePropertyWithSkipTrace(
   logger.debug(
     `Updated property ${propertyId} with ${phoneNumbers.length} phones, ${emails.length} emails`
   );
+
+  // Auto-create "Make first contact" task if contact info was found
+  if (phoneNumbers.length > 0 || emails.length > 0) {
+    try {
+      const propertyAddress = `${existing.address}, ${existing.city}, ${existing.state}`;
+      const ownerName = existing.ownerName || 'owner';
+
+      // Create task due in 24 hours
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 1); // Tomorrow
+
+      await prisma.task.create({
+        data: {
+          userId: existing.userId,
+          propertyId: propertyId,
+          type: 'call',
+          title: `Make first contact with ${ownerName} - ${propertyAddress}`,
+          description: `Property just got skip traced. Contact info: ${phoneNumbers.length} phone(s), ${emails.length} email(s)`,
+          dueDate: dueDate,
+          priority: 'high', // High priority for fresh leads
+        },
+      });
+
+      logger.info(`Auto-created first contact task for property ${propertyId}`);
+    } catch (taskError) {
+      logger.error(`Failed to auto-create task for property ${propertyId}:`, taskError);
+      // Don't fail the whole skip trace if task creation fails
+    }
+  }
 }
 
 /**

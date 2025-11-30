@@ -90,10 +90,35 @@ export async function POST(
       data: updateData,
     });
 
+    // Auto-create follow-up task if nextFollowUpDate is set
+    let createdTask = null;
+    if (body.nextFollowUpDate) {
+      try {
+        const propertyAddress = `${property.address}, ${property.city}, ${property.state}`;
+        const ownerName = property.ownerName || 'owner';
+
+        createdTask = await prisma.task.create({
+          data: {
+            userId,
+            propertyId: id,
+            type: 'follow_up',
+            title: `Follow up with ${ownerName} - ${propertyAddress}`,
+            description: body.note ? `Previous contact: ${body.note}` : undefined,
+            dueDate: new Date(body.nextFollowUpDate),
+            priority: body.sentiment === 'positive' ? 'high' : 'medium',
+          },
+        });
+      } catch (taskError) {
+        console.error('Failed to auto-create follow-up task:', taskError);
+        // Don't fail the whole request if task creation fails
+      }
+    }
+
     return NextResponse.json({
       success: true,
       property: updated,
       note: newNote,
+      task: createdTask,
     });
   } catch (error) {
     console.error('Error adding contact note:', error);

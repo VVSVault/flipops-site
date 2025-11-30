@@ -52,6 +52,7 @@ model User {
   deals           DealSpec[]
   policies        Policy[]
   vendors         Vendor[]
+  tasks           Task[]
 
   @@index([email])
   @@index([clerkId])
@@ -82,6 +83,7 @@ model DealSpec {
   changeOrders    ChangeOrder[]
   events          Event[]
   budgetLedger    BudgetLedger?
+  tasks           Task[]
 
   @@index([userId])
   @@index([address])
@@ -354,6 +356,7 @@ model Property {
 
   // Relations
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks            Task[]
 
   @@unique([userId, address, city, state, zip])
   @@index([userId])
@@ -361,6 +364,35 @@ model Property {
   @@index([city, state])
   @@index([createdAt])
   @@index([dataSource])
+}
+
+// Task management for investor workflow
+model Task {
+  id          String   @id @default(cuid())
+  userId      String   // Multi-tenant: which investor owns this task
+  propertyId  String?  // Optional link to property
+  dealId      String?  // Optional link to deal/renovation
+
+  type        String   // "call", "email", "text", "showing", "offer", "follow_up", "custom"
+  title       String
+  description String?
+  dueDate     DateTime
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  priority    String   @default("medium") // "low", "medium", "high"
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property    Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  deal        DealSpec? @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([userId, dueDate])
+  @@index([userId, completed])
+  @@index([propertyId])
+  @@index([dealId])
 }
 
 // Notification and event tracking

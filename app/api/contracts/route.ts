@@ -80,6 +80,69 @@ export async function POST(request: Request) {
       },
     });
 
+    // Auto-create closing tasks
+    const closingTasksData = [
+      {
+        title: 'Schedule home inspection',
+        description: `Schedule and complete home inspection for ${offer.property.address}`,
+        category: 'closing',
+        priority: 'high',
+        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 21 * 24 * 60 * 60 * 1000) : null, // 21 days before closing
+      },
+      {
+        title: 'Order appraisal',
+        description: `Order property appraisal for ${offer.property.address}`,
+        category: 'closing',
+        priority: 'high',
+        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 21 * 24 * 60 * 60 * 1000) : null, // 21 days before closing
+      },
+      {
+        title: 'Apply for financing',
+        description: `Submit financing application for ${offer.property.address}`,
+        category: 'closing',
+        priority: 'high',
+        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 30 * 24 * 60 * 60 * 1000) : null, // 30 days before closing
+      },
+      {
+        title: 'Review title report',
+        description: `Review title report and resolve any title issues for ${offer.property.address}`,
+        category: 'closing',
+        priority: 'medium',
+        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 14 * 24 * 60 * 60 * 1000) : null, // 14 days before closing
+      },
+      {
+        title: 'Schedule final walkthrough',
+        description: `Schedule and complete final walkthrough of ${offer.property.address}`,
+        category: 'closing',
+        priority: 'medium',
+        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 2 * 24 * 60 * 60 * 1000) : null, // 2 days before closing
+      },
+      {
+        title: 'Prepare closing documents',
+        description: `Review and prepare all closing documents for ${offer.property.address}`,
+        category: 'closing',
+        priority: 'high',
+        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 3 * 24 * 60 * 60 * 1000) : null, // 3 days before closing
+      },
+      {
+        title: 'Wire closing funds',
+        description: `Wire funds for closing on ${offer.property.address}`,
+        category: 'closing',
+        priority: 'high',
+        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 1 * 24 * 60 * 60 * 1000) : null, // 1 day before closing
+      },
+    ];
+
+    // Create tasks for this contract
+    await prisma.task.createMany({
+      data: closingTasksData.map((task) => ({
+        userId: user.id,
+        propertyId: offer.propertyId,
+        ...task,
+        status: 'pending',
+      })),
+    });
+
     return NextResponse.json({
       success: true,
       contract: {

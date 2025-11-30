@@ -18,6 +18,8 @@ import {
   Trash2,
   TrendingUp,
   AlertCircle,
+  FileSignature,
+  Plus,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,6 +50,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
@@ -75,6 +78,10 @@ interface Offer {
     zip: string | null;
     ownerName: string | null;
   };
+  contract?: {
+    id: string;
+    status: string;
+  };
 }
 
 export default function OffersPage() {
@@ -90,6 +97,13 @@ export default function OffersPage() {
   const [newStatus, setNewStatus] = useState("");
   const [responseNotes, setResponseNotes] = useState("");
   const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  // Contract creation state
+  const [createContractDialogOpen, setCreateContractDialogOpen] = useState(false);
+  const [selectedOfferForContract, setSelectedOfferForContract] = useState<Offer | null>(null);
+  const [contractClosingDate, setContractClosingDate] = useState("");
+  const [contractNotes, setContractNotes] = useState("");
+  const [creatingContract, setCreatingContract] = useState(false);
 
   // Fetch offers
   useEffect(() => {
@@ -194,6 +208,48 @@ export default function OffersPage() {
     } catch (error) {
       console.error('Error deleting offer:', error);
       toast.error('Failed to delete offer');
+    }
+  };
+
+  const openCreateContractDialog = (offer: Offer) => {
+    setSelectedOfferForContract(offer);
+    setContractClosingDate(offer.closingDate || "");
+    setContractNotes("");
+    setCreateContractDialogOpen(true);
+  };
+
+  const handleCreateContract = async () => {
+    if (!selectedOfferForContract) return;
+
+    try {
+      setCreatingContract(true);
+
+      const response = await fetch('/api/contracts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          offerId: selectedOfferForContract.id,
+          closingDate: contractClosingDate || null,
+          notes: contractNotes || null,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success('Contract created successfully');
+        setCreateContractDialogOpen(false);
+        await fetchOffers();
+        // Optionally redirect to contract details
+        // window.location.href = `/app/contracts`;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create contract');
+      }
+    } catch (error) {
+      console.error('Error creating contract:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to create contract');
+    } finally {
+      setCreatingContract(false);
     }
   };
 
@@ -365,6 +421,7 @@ export default function OffersPage() {
                     <TableHead>Amount</TableHead>
                     <TableHead>Terms</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Contract</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Expires</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -393,6 +450,21 @@ export default function OffersPage() {
                         {offer.terms || '-'}
                       </TableCell>
                       <TableCell>{getStatusBadge(offer.status)}</TableCell>
+                      <TableCell>
+                        {offer.contract ? (
+                          <Badge variant="outline" className="capitalize">
+                            <FileSignature className="h-3 w-3 mr-1" />
+                            {offer.contract.status}
+                          </Badge>
+                        ) : offer.status === "accepted" ? (
+                          <Badge variant="secondary" className="text-yellow-700 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            No Contract
+                          </Badge>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-gray-600 dark:text-gray-400">
                         {new Date(offer.createdAt).toLocaleDateString()}
                       </TableCell>
@@ -417,6 +489,26 @@ export default function OffersPage() {
                               <Edit className="h-4 w-4 mr-2" />
                               Update Status
                             </DropdownMenuItem>
+                            {offer.status === "accepted" && !offer.contract && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => openCreateContractDialog(offer)}>
+                                  <FileSignature className="h-4 w-4 mr-2" />
+                                  Create Contract
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {offer.contract && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/app/contracts`}>
+                                    <FileSignature className="h-4 w-4 mr-2" />
+                                    View Contract
+                                  </Link>
+                                </DropdownMenuItem>
+                              </>
+                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteOffer(offer.id)}
@@ -602,6 +694,78 @@ export default function OffersPage() {
             </Button>
             <Button onClick={handleUpdateStatus} disabled={updatingStatus}>
               {updatingStatus ? 'Updating...' : 'Update Status'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Contract Dialog */}
+      <Dialog open={createContractDialogOpen} onOpenChange={setCreateContractDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Contract</DialogTitle>
+            <DialogDescription>
+              Convert this accepted offer into a contract
+            </DialogDescription>
+          </DialogHeader>
+          {selectedOfferForContract && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label className="text-gray-600">Property</Label>
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {selectedOfferForContract.property.address}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {selectedOfferForContract.property.city}, {selectedOfferForContract.property.state}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-gray-600">Purchase Price</Label>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  ${selectedOfferForContract.amount.toLocaleString()}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="closing-date">Expected Closing Date</Label>
+                <Input
+                  id="closing-date"
+                  type="date"
+                  value={contractClosingDate}
+                  onChange={(e) => setContractClosingDate(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contract-notes">Contract Notes (Optional)</Label>
+                <Textarea
+                  id="contract-notes"
+                  value={contractNotes}
+                  onChange={(e) => setContractNotes(e.target.value)}
+                  placeholder="Add any notes about this contract..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>Note:</strong> This will create a new contract with status "pending" and automatically
+                  generate closing tasks to help you track the process.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreateContractDialogOpen(false)}
+              disabled={creatingContract}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreateContract} disabled={creatingContract}>
+              {creatingContract ? 'Creating Contract...' : 'Create Contract'}
             </Button>
           </DialogFooter>
         </DialogContent>

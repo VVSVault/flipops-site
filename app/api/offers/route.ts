@@ -138,6 +138,12 @@ export async function GET(request: NextRequest) {
             ownerName: true,
           },
         },
+        contract: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',

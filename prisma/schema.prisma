@@ -60,6 +60,7 @@ model User {
   dealAnalyses    DealAnalysis[]
   offers          Offer[]
   contracts       Contract[]
+  buyers          Buyer[]
 
   @@index([email])
   @@index([clerkId])
@@ -522,12 +523,84 @@ model Contract {
   updatedAt       DateTime  @updatedAt
 
   // Relations
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  property        Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  offer           Offer     @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property        Property            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  offer           Offer               @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  assignment      ContractAssignment?
 
   @@index([userId, status])
   @@index([propertyId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Buyer database for wholesalers
+model Buyer {
+  id              String   @id @default(cuid())
+  userId          String   // Multi-tenant: which investor (wholesaler) owns this buyer
+
+  // Buyer details
+  name            String
+  email           String?
+  phone           String?
+  company         String?
+
+  // Buyer preferences
+  propertyTypes   String?  // JSON array: ["single_family", "multi_family"]
+  minPrice        Float?
+  maxPrice        Float?
+  targetMarkets   String?  // JSON array: ["Miami-Dade, FL", "Maricopa, AZ"]
+  cashBuyer       Boolean  @default(false)
+
+  // Relationship tracking
+  dealsClosed     Int      @default(0)  // Number of deals closed with this buyer
+  totalRevenue    Float    @default(0)  // Total assignment fees from this buyer
+  reliability     String   @default("unknown") // "unknown", "reliable", "unreliable"
+
+  // Notes
+  notes           String?  // Internal notes about this buyer
+
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignments     ContractAssignment[]
+
+  @@index([userId])
+  @@index([email])
+  @@index([name])
+}
+
+// Contract assignment for wholesaling
+model ContractAssignment {
+  id              String    @id @default(cuid())
+  contractId      String    @unique // One-to-one with contract
+  buyerId         String    // Which buyer is taking the contract
+
+  // Assignment details
+  assignmentFee   Float     // Fee charged for assigning the contract
+  assignmentDate  DateTime? // When assignment was signed
+  status          String    @default("pending") // "pending", "signed", "closed", "cancelled"
+
+  // Payment tracking
+  feeReceived     Boolean   @default(false)
+  feeReceivedDate DateTime?
+
+  // Documentation
+  documentUrls    String?   // JSON array of assignment agreement documents
+  notes           String?   // Internal notes
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  contract        Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  buyer           Buyer     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+
+  @@index([buyerId])
   @@index([status])
   @@index([createdAt])
 }

@@ -191,6 +191,11 @@ export async function GET() {
       include: {
         property: true,
         offer: true,
+        assignment: {
+          include: {
+            buyer: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',

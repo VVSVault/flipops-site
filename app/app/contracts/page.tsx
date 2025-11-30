@@ -16,6 +16,7 @@ import {
   Edit,
   FileText,
   AlertCircle,
+  UserCheck,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,25 @@ interface Contract {
     amount: number;
     status: string;
   };
+  assignment?: {
+    id: string;
+    buyerId: string;
+    assignmentFee: number;
+    status: string;
+    buyer: {
+      id: string;
+      name: string;
+      email: string | null;
+    };
+  };
+}
+
+interface Buyer {
+  id: string;
+  name: string;
+  email: string | null;
+  company: string | null;
+  cashBuyer: boolean;
 }
 
 const STATUS_CONFIG = {
@@ -103,10 +123,20 @@ export default function ContractsPage() {
   const [notes, setNotes] = useState("");
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  // Fetch contracts
+  // Assignment state
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [buyers, setBuyers] = useState<Buyer[]>([]);
+  const [selectedBuyerId, setSelectedBuyerId] = useState("");
+  const [assignmentFee, setAssignmentFee] = useState("");
+  const [assignmentDate, setAssignmentDate] = useState("");
+  const [assignmentNotes, setAssignmentNotes] = useState("");
+  const [assigningContract, setAssigningContract] = useState(false);
+
+  // Fetch contracts and buyers
   useEffect(() => {
     if (isLoaded && user) {
       fetchContracts();
+      fetchBuyers();
     }
   }, [isLoaded, user]);
 
@@ -127,6 +157,17 @@ export default function ContractsPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBuyers = async () => {
+    try {
+      const response = await fetch("/api/buyers");
+      if (!response.ok) throw new Error("Failed to fetch buyers");
+      const data = await response.json();
+      setBuyers(data.buyers || []);
+    } catch (error) {
+      console.error("Error fetching buyers:", error);
     }
   };
 
@@ -241,6 +282,63 @@ export default function ContractsPage() {
       });
     } finally {
       setUpdatingStatus(false);
+    }
+  };
+
+  const handleAssignContract = (contract: Contract) => {
+    setSelectedContract(contract);
+    setSelectedBuyerId("");
+    setAssignmentFee("");
+    setAssignmentDate(contract.closingDate || "");
+    setAssignmentNotes("");
+    setAssignDialogOpen(true);
+  };
+
+  const submitAssignment = async () => {
+    if (!selectedContract || !selectedBuyerId || !assignmentFee) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a buyer and enter an assignment fee.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setAssigningContract(true);
+      const response = await fetch(`/api/contracts/${selectedContract.id}/assign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          buyerId: selectedBuyerId,
+          assignmentFee: parseFloat(assignmentFee),
+          assignmentDate: assignmentDate || null,
+          notes: assignmentNotes || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to assign contract");
+      }
+
+      toast({
+        title: "Contract Assigned",
+        description: "Contract successfully assigned to buyer.",
+      });
+
+      fetchContracts();
+      setAssignDialogOpen(false);
+      setSelectedContract(null);
+    } catch (error) {
+      console.error("Error assigning contract:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to assign contract. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setAssigningContract(false);
     }
   };
 
@@ -407,6 +505,15 @@ export default function ContractsPage() {
                             <Edit className="mr-2 h-4 w-4" />
                             Update Status
                           </DropdownMenuItem>
+                          {!contract.assignment && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleAssignContract(contract)}>
+                                <UserCheck className="mr-2 h-4 w-4" />
+                                Assign Contract
+                              </DropdownMenuItem>
+                            </>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
                             <Link href={`/app/properties/${contract.propertyId}`}>
@@ -543,6 +650,93 @@ export default function ContractsPage() {
             </Button>
             <Button onClick={submitStatusUpdate} disabled={updatingStatus}>
               {updatingStatus ? "Updating..." : "Update Contract"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Contract Dialog */}
+      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Contract to Buyer</DialogTitle>
+            <DialogDescription>
+              Select a buyer and set the assignment fee for this wholesale deal
+            </DialogDescription>
+          </DialogHeader>
+          {selectedContract && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Contract Details</h3>
+                <p className="text-sm text-muted-foreground">
+                  {selectedContract.property.address}, {selectedContract.property.city}, {selectedContract.property.state}
+                </p>
+                <p className="text-lg font-bold mt-1">{formatCurrency(selectedContract.purchasePrice)}</p>
+              </div>
+
+              <div>
+                <Label htmlFor="buyer">Select Buyer *</Label>
+                <Select value={selectedBuyerId} onValueChange={setSelectedBuyerId}>
+                  <SelectTrigger id="buyer">
+                    <SelectValue placeholder="Choose a buyer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {buyers.length === 0 ? (
+                      <div className="p-4 text-sm text-muted-foreground text-center">
+                        No buyers found. <Link href="/app/buyers" className="text-blue-600 hover:underline">Add buyers</Link> first.
+                      </div>
+                    ) : (
+                      buyers.map((buyer) => (
+                        <SelectItem key={buyer.id} value={buyer.id}>
+                          {buyer.name} {buyer.cashBuyer && "(Cash)"} {buyer.company && `- ${buyer.company}`}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="assignmentFee">Assignment Fee *</Label>
+                <Input
+                  id="assignmentFee"
+                  type="number"
+                  min="0"
+                  step="100"
+                  placeholder="10000"
+                  value={assignmentFee}
+                  onChange={(e) => setAssignmentFee(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="assignmentDate">Assignment Date</Label>
+                <Input
+                  id="assignmentDate"
+                  type="date"
+                  value={assignmentDate}
+                  onChange={(e) => setAssignmentDate(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="assignmentNotes">Notes</Label>
+                <Textarea
+                  id="assignmentNotes"
+                  value={assignmentNotes}
+                  onChange={(e) => setAssignmentNotes(e.target.value)}
+                  placeholder="Add notes about this assignment..."
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignDialogOpen(false)} disabled={assigningContract}>
+              Cancel
+            </Button>
+            <Button onClick={submitAssignment} disabled={assigningContract || !selectedBuyerId || !assignmentFee}>
+              {assigningContract ? "Assigning..." : "Assign Contract"}
             </Button>
           </DialogFooter>
         </DialogContent>

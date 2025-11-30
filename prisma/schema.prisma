@@ -27,6 +27,10 @@ model User {
   // Detailed investor profile for personalized lead generation
   investorProfile String?   // JSON: { strategies, priceRanges, distressWeights, dealBreakers, etc. }
 
+  // Investor type and multi-strategy support
+  investorType       String?   // "wholesaler", "flipper", "buy_and_hold", "hybrid"
+  onboardingComplete Boolean   @default(false)
+
   // Notification preferences
   slackWebhook    String?   // User-specific Slack webhook
   emailAlerts     Boolean   @default(true)

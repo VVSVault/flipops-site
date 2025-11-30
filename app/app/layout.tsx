@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { QuickAddLead } from "@/app/components/quick-add-lead";
+import { OnboardingGuard } from "@/app/components/onboarding-guard";
 import {
   Home,
   Users,
@@ -71,8 +72,9 @@ export default function AppLayout({
   const [quickAddLeadOpen, setQuickAddLeadOpen] = useState(false);
 
   return (
-    <ClientActivityMonitor>
-      <div className="min-h-dvh bg-gray-50 dark:bg-gray-900">
+    <OnboardingGuard>
+      <ClientActivityMonitor>
+        <div className="min-h-dvh bg-gray-50 dark:bg-gray-900">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -190,12 +192,13 @@ export default function AppLayout({
         </main>
       </div>
       
-      {/* Quick Add Lead Modal */}
-      <QuickAddLead 
-        open={quickAddLeadOpen} 
-        onOpenChange={setQuickAddLeadOpen} 
-      />
-    </div>
-    </ClientActivityMonitor>
+        {/* Quick Add Lead Modal */}
+        <QuickAddLead
+          open={quickAddLeadOpen}
+          onOpenChange={setQuickAddLeadOpen}
+        />
+      </div>
+      </ClientActivityMonitor>
+    </OnboardingGuard>
   );
 }

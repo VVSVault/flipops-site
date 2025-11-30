@@ -1,0 +1,217 @@
+import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma';
+
+// GET /api/contracts/[id]
+// Get contract details
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    // Find the user
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Get the contract
+    const contract = await prisma.contract.findUnique({
+      where: { id },
+      include: {
+        property: true,
+        offer: true,
+      },
+    });
+
+    if (!contract) {
+      return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
+    }
+
+    // Verify ownership
+    if (contract.userId !== user.id) {
+      return NextResponse.json({ error: 'Unauthorized to access this contract' }, { status: 403 });
+    }
+
+    return NextResponse.json({
+      contract: {
+        id: contract.id,
+        propertyId: contract.propertyId,
+        offerId: contract.offerId,
+        purchasePrice: contract.purchasePrice,
+        status: contract.status,
+        closingDate: contract.closingDate,
+        signedAt: contract.signedAt,
+        escrowOpenedAt: contract.escrowOpenedAt,
+        closedAt: contract.closedAt,
+        notes: contract.notes,
+        documentUrls: contract.documentUrls ? JSON.parse(contract.documentUrls) : [],
+        createdAt: contract.createdAt,
+        updatedAt: contract.updatedAt,
+        property: contract.property,
+        offer: contract.offer,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching contract:', error);
+    return NextResponse.json({ error: 'Failed to fetch contract' }, { status: 500 });
+  }
+}
+
+// PATCH /api/contracts/[id]
+// Update contract status and details
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+    const { status, closingDate, signedAt, escrowOpenedAt, closedAt, notes, documentUrls } = body;
+
+    // Find the user
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Get the contract
+    const contract = await prisma.contract.findUnique({
+      where: { id },
+    });
+
+    if (!contract) {
+      return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
+    }
+
+    // Verify ownership
+    if (contract.userId !== user.id) {
+      return NextResponse.json({ error: 'Unauthorized to update this contract' }, { status: 403 });
+    }
+
+    // Validate status if provided
+    const validStatuses = ['pending', 'signed', 'escrow', 'closed', 'cancelled'];
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Build update data
+    const updateData: any = {};
+
+    if (status !== undefined) updateData.status = status;
+    if (closingDate !== undefined) updateData.closingDate = closingDate ? new Date(closingDate) : null;
+    if (signedAt !== undefined) updateData.signedAt = signedAt ? new Date(signedAt) : null;
+    if (escrowOpenedAt !== undefined) updateData.escrowOpenedAt = escrowOpenedAt ? new Date(escrowOpenedAt) : null;
+    if (closedAt !== undefined) updateData.closedAt = closedAt ? new Date(closedAt) : null;
+    if (notes !== undefined) updateData.notes = notes;
+    if (documentUrls !== undefined) updateData.documentUrls = JSON.stringify(documentUrls);
+
+    // Update the contract
+    const updatedContract = await prisma.contract.update({
+      where: { id },
+      data: updateData,
+      include: {
+        property: true,
+        offer: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      contract: {
+        id: updatedContract.id,
+        propertyId: updatedContract.propertyId,
+        offerId: updatedContract.offerId,
+        purchasePrice: updatedContract.purchasePrice,
+        status: updatedContract.status,
+        closingDate: updatedContract.closingDate,
+        signedAt: updatedContract.signedAt,
+        escrowOpenedAt: updatedContract.escrowOpenedAt,
+        closedAt: updatedContract.closedAt,
+        notes: updatedContract.notes,
+        documentUrls: updatedContract.documentUrls ? JSON.parse(updatedContract.documentUrls) : [],
+        createdAt: updatedContract.createdAt,
+        updatedAt: updatedContract.updatedAt,
+        property: updatedContract.property,
+        offer: updatedContract.offer,
+      },
+    });
+  } catch (error) {
+    console.error('Error updating contract:', error);
+    return NextResponse.json({ error: 'Failed to update contract' }, { status: 500 });
+  }
+}
+
+// DELETE /api/contracts/[id]
+// Cancel/delete a contract
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    // Find the user
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Get the contract
+    const contract = await prisma.contract.findUnique({
+      where: { id },
+    });
+
+    if (!contract) {
+      return NextResponse.json({ error: 'Contract not found' }, { status: 404 });
+    }
+
+    // Verify ownership
+    if (contract.userId !== user.id) {
+      return NextResponse.json({ error: 'Unauthorized to delete this contract' }, { status: 403 });
+    }
+
+    // Instead of hard delete, mark as cancelled
+    await prisma.contract.update({
+      where: { id },
+      data: { status: 'cancelled' },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Contract cancelled successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting contract:', error);
+    return NextResponse.json({ error: 'Failed to delete contract' }, { status: 500 });
+  }
+}

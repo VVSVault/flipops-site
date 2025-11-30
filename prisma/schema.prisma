@@ -59,6 +59,7 @@ model User {
   tasks           Task[]
   dealAnalyses    DealAnalysis[]
   offers          Offer[]
+  contracts       Contract[]
 
   @@index([email])
   @@index([clerkId])
@@ -365,6 +366,7 @@ model Property {
   tasks            Task[]
   dealAnalyses     DealAnalysis[]
   offers           Offer[]
+  contracts        Contract[]
 
   @@unique([userId, address, city, state, zip])
   @@index([userId])
@@ -486,6 +488,43 @@ model Offer {
   // Relations
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   property      Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  contract      Contract?
+
+  @@index([userId, status])
+  @@index([propertyId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Contract management and closing tracking
+model Contract {
+  id              String    @id @default(cuid())
+  userId          String    // Multi-tenant: which investor owns this contract
+  propertyId      String    // Property under contract
+  offerId         String    @unique // Link to accepted offer
+
+  // Contract details
+  purchasePrice   Float     // Final purchase price
+  status          String    @default("pending") // "pending", "signed", "escrow", "closed", "cancelled"
+
+  // Closing timeline
+  signedAt        DateTime?
+  escrowOpenedAt  DateTime?
+  closingDate     DateTime? // Expected closing date
+  closedAt        DateTime? // Actual closing date
+
+  // Documentation
+  documentUrls    String?   // JSON array of document links
+  notes           String?   // Internal notes
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property        Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  offer           Offer     @relation(fields: [offerId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@index([propertyId])

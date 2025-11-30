@@ -18,6 +18,7 @@ import {
   AlertCircle,
   UserCheck,
   Hammer,
+  Building2,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -103,6 +104,18 @@ interface Contract {
       tasks: number;
     };
   };
+  rental?: {
+    id: string;
+    status: string;
+    monthlyRent: number;
+    totalIncome: number;
+    totalExpenses: number;
+    _count?: {
+      tenants: number;
+      income: number;
+      expenses: number;
+    };
+  };
 }
 
 interface Buyer {
@@ -153,6 +166,15 @@ export default function ContractsPage() {
   const [renovationArv, setRenovationArv] = useState("");
   const [renovationStartDate, setRenovationStartDate] = useState("");
   const [startingRenovation, setStartingRenovation] = useState(false);
+
+  // Rental state
+  const [rentalDialogOpen, setRentalDialogOpen] = useState(false);
+  const [rentalMonthlyRent, setRentalMonthlyRent] = useState("");
+  const [rentalDeposit, setRentalDeposit] = useState("");
+  const [rentalMortgagePayment, setRentalMortgagePayment] = useState("");
+  const [rentalPropertyTax, setRentalPropertyTax] = useState("");
+  const [rentalInsurance, setRentalInsurance] = useState("");
+  const [startingRental, setStartingRental] = useState(false);
 
   // Fetch contracts and buyers
   useEffect(() => {
@@ -423,6 +445,69 @@ export default function ContractsPage() {
     }
   };
 
+  const handleStartRental = (contract: Contract) => {
+    setSelectedContract(contract);
+    setRentalMonthlyRent("");
+    setRentalDeposit("");
+    setRentalMortgagePayment("");
+    setRentalPropertyTax("");
+    setRentalInsurance("");
+    setRentalDialogOpen(true);
+  };
+
+  const submitRental = async () => {
+    if (!selectedContract || !rentalMonthlyRent) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter monthly rent.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setStartingRental(true);
+      const response = await fetch("/api/rentals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contractId: selectedContract.id,
+          propertyId: selectedContract.propertyId,
+          monthlyRent: parseFloat(rentalMonthlyRent),
+          deposit: rentalDeposit ? parseFloat(rentalDeposit) : null,
+          purchasePrice: selectedContract.purchasePrice,
+          mortgagePayment: rentalMortgagePayment ? parseFloat(rentalMortgagePayment) : null,
+          propertyTax: rentalPropertyTax ? parseFloat(rentalPropertyTax) : null,
+          insurance: rentalInsurance ? parseFloat(rentalInsurance) : null,
+          status: "vacant",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to start rental");
+      }
+
+      toast({
+        title: "Rental Started",
+        description: "Rental property successfully created.",
+      });
+
+      fetchContracts();
+      setRentalDialogOpen(false);
+      setSelectedContract(null);
+    } catch (error) {
+      console.error("Error starting rental:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to start rental. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setStartingRental(false);
+    }
+  };
+
   // Calculate stats
   const stats = {
     total: contracts.length,
@@ -601,6 +686,15 @@ export default function ContractsPage() {
                               <DropdownMenuItem onClick={() => handleStartRenovation(contract)}>
                                 <Hammer className="mr-2 h-4 w-4" />
                                 Start Renovation
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          {!contract.rental && contract.status === "closed" && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleStartRental(contract)}>
+                                <Building2 className="mr-2 h-4 w-4" />
+                                Start Rental
                               </DropdownMenuItem>
                             </>
                           )}
@@ -917,6 +1011,114 @@ export default function ContractsPage() {
             </Button>
             <Button onClick={submitRenovation} disabled={startingRenovation || !renovationBudget || !renovationTargetRoi}>
               {startingRenovation ? "Creating..." : "Start Renovation"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Start Rental Dialog */}
+      <Dialog open={rentalDialogOpen} onOpenChange={setRentalDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Start Rental Property</DialogTitle>
+            <DialogDescription>
+              Add this property to your rental portfolio
+            </DialogDescription>
+          </DialogHeader>
+          {selectedContract && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Property</h3>
+                <p className="text-sm text-muted-foreground">
+                  {selectedContract.property.address}, {selectedContract.property.city}, {selectedContract.property.state}
+                </p>
+                <p className="text-lg font-bold mt-1">
+                  Purchase Price: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(selectedContract.purchasePrice)}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="rentalMonthlyRent">Monthly Rent *</Label>
+                  <Input
+                    id="rentalMonthlyRent"
+                    type="number"
+                    min="0"
+                    step="100"
+                    placeholder="2000"
+                    value={rentalMonthlyRent}
+                    onChange={(e) => setRentalMonthlyRent(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="rentalDeposit">Security Deposit</Label>
+                  <Input
+                    id="rentalDeposit"
+                    type="number"
+                    min="0"
+                    step="100"
+                    placeholder="2000"
+                    value={rentalDeposit}
+                    onChange={(e) => setRentalDeposit(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="rentalMortgagePayment">Monthly Mortgage</Label>
+                  <Input
+                    id="rentalMortgagePayment"
+                    type="number"
+                    min="0"
+                    step="100"
+                    placeholder="1200"
+                    value={rentalMortgagePayment}
+                    onChange={(e) => setRentalMortgagePayment(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="rentalPropertyTax">Monthly Tax</Label>
+                  <Input
+                    id="rentalPropertyTax"
+                    type="number"
+                    min="0"
+                    step="50"
+                    placeholder="200"
+                    value={rentalPropertyTax}
+                    onChange={(e) => setRentalPropertyTax(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="rentalInsurance">Monthly Insurance</Label>
+                <Input
+                  id="rentalInsurance"
+                  type="number"
+                  min="0"
+                  step="50"
+                  placeholder="150"
+                  value={rentalInsurance}
+                  onChange={(e) => setRentalInsurance(e.target.value)}
+                />
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>Tip:</strong> After creating the rental, you can add tenants, record rent payments, and track cash flow.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRentalDialogOpen(false)} disabled={startingRental}>
+              Cancel
+            </Button>
+            <Button onClick={submitRental} disabled={startingRental || !rentalMonthlyRent}>
+              {startingRental ? "Creating..." : "Start Rental"}
             </Button>
           </DialogFooter>
         </DialogContent>

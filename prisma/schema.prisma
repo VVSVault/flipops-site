@@ -61,6 +61,7 @@ model User {
   offers          Offer[]
   contracts       Contract[]
   buyers          Buyer[]
+  rentals         Rental[]
 
   @@index([email])
   @@index([clerkId])
@@ -378,6 +379,7 @@ model Property {
   offers           Offer[]
   contracts        Contract[]
   renovations      DealSpec[]     // Renovation projects for this property
+  rentals          Rental[]       // Rental properties
 
   @@unique([userId, address, city, state, zip])
   @@index([userId])
@@ -538,6 +540,7 @@ model Contract {
   offer           Offer               @relation(fields: [offerId], references: [id], onDelete: Cascade)
   assignment      ContractAssignment?
   renovation      DealSpec?           // Renovation project for this contract (flippers)
+  rental          Rental?             // Rental property for this contract (buy-and-hold)
 
   @@index([userId, status])
   @@index([propertyId])
@@ -614,6 +617,161 @@ model ContractAssignment {
   @@index([buyerId])
   @@index([status])
   @@index([createdAt])
+}
+
+// Rental property management for buy-and-hold investors
+model Rental {
+  id              String    @id @default(cuid())
+  userId          String    // Multi-tenant: which investor owns this rental
+  propertyId      String    // Link to property
+  contractId      String?   @unique // Link to contract (optional, one-to-one)
+
+  // Rental details
+  address         String
+  monthlyRent     Float     // Monthly rent amount
+  deposit         Float?    // Security deposit amount
+  leaseStart      DateTime? // Lease start date
+  leaseEnd        DateTime? // Lease end date
+  status          String    @default("vacant") // "vacant", "leased", "maintenance", "listed"
+
+  // Financial tracking
+  purchasePrice   Float?    // Original purchase price
+  mortgagePayment Float?    // Monthly mortgage payment
+  propertyTax     Float?    // Monthly property tax
+  insurance       Float?    // Monthly insurance
+  hoa             Float?    // Monthly HOA fees
+  utilities       Float?    // Monthly utilities (if paid by landlord)
+  maintenance     Float?    // Estimated monthly maintenance reserve
+
+  // Performance metrics
+  totalIncome     Float     @default(0) // Total rental income collected
+  totalExpenses   Float     @default(0) // Total expenses paid
+  occupancyRate   Float     @default(0) // Percentage of time occupied
+
+  // Notes
+  notes           String?   // Internal notes
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property        Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  contract        Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+  tenants         Tenant[]
+  income          RentalIncome[]
+  expenses        RentalExpense[]
+
+  @@index([userId])
+  @@index([propertyId])
+  @@index([contractId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Tenant management
+model Tenant {
+  id              String    @id @default(cuid())
+  rentalId        String    // Link to rental property
+
+  // Tenant details
+  name            String
+  email           String?
+  phone           String?
+  emergencyContact String?  // JSON: {name, phone, relationship}
+
+  // Lease details
+  leaseStart      DateTime
+  leaseEnd        DateTime
+  monthlyRent     Float
+  deposit         Float?
+  status          String    @default("active") // "active", "notice_given", "moved_out", "evicted"
+
+  // Move-in/out tracking
+  moveInDate      DateTime?
+  moveOutDate     DateTime?
+  moveOutReason   String?   // "lease_ended", "evicted", "early_termination", "purchased"
+
+  // Payment tracking
+  paymentMethod   String?   // "check", "ach", "cash", "online"
+  autoPay         Boolean   @default(false)
+  latePayments    Int       @default(0) // Count of late payments
+
+  // Notes
+  notes           String?   // Internal notes about tenant
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  rental          Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@index([rentalId])
+  @@index([status])
+  @@index([leaseEnd])
+}
+
+// Rental income tracking
+model RentalIncome {
+  id              String    @id @default(cuid())
+  rentalId        String    // Link to rental property
+
+  // Income details
+  amount          Float
+  type            String    @default("rent") // "rent", "late_fee", "pet_fee", "parking", "other"
+  description     String?
+  receivedDate    DateTime
+  dueDate         DateTime? // When payment was due (for late tracking)
+
+  // Payment method
+  paymentMethod   String?   // "check", "ach", "cash", "online"
+  referenceNumber String?   // Check number, transaction ID, etc.
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  rental          Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@index([rentalId])
+  @@index([receivedDate])
+  @@index([type])
+}
+
+// Rental expense tracking
+model RentalExpense {
+  id              String    @id @default(cuid())
+  rentalId        String    // Link to rental property
+
+  // Expense details
+  amount          Float
+  category        String    // "mortgage", "tax", "insurance", "hoa", "maintenance", "utilities", "other"
+  description     String?
+  expenseDate     DateTime
+
+  // Payment tracking
+  paid            Boolean   @default(false)
+  paidDate        DateTime?
+  paymentMethod   String?   // "check", "ach", "credit_card", "cash"
+  referenceNumber String?   // Check number, transaction ID, etc.
+
+  // Documentation
+  receiptUrl      String?   // Link to receipt/invoice
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  rental          Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@index([rentalId])
+  @@index([expenseDate])
+  @@index([category])
+  @@index([paid])
 }
 
 // Notification and event tracking

@@ -208,6 +208,17 @@ export async function GET() {
             },
           },
         },
+        rental: {
+          include: {
+            _count: {
+              select: {
+                tenants: true,
+                income: true,
+                expenses: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -243,6 +254,7 @@ export async function GET() {
         },
         assignment: contract.assignment,
         renovation: contract.renovation,
+        rental: contract.rental,
       })),
     });
   } catch (error) {

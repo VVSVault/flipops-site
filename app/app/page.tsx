@@ -1,84 +1,181 @@
 "use client";
 
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
-  MessageSquare, 
-  FileText, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  MessageSquare,
+  FileText,
   DollarSign,
   AlertCircle,
   CheckCircle,
   Clock,
-  ArrowRight
+  ArrowRight,
+  Phone,
+  Mail,
+  Home
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 
-const kpis = [
-  {
-    label: "New Leads (24h)",
-    value: "12",
-    change: "+20%",
-    trend: "up",
-    icon: Users,
-  },
-  {
-    label: "New Leads (7d)",
-    value: "84",
-    change: "+15%",
-    trend: "up",
-    icon: Users,
-  },
-  {
-    label: "Engaged",
-    value: "23",
-    change: "+8%",
-    trend: "up",
-    icon: MessageSquare,
-  },
-  {
-    label: "Offers Out",
-    value: "7",
-    change: "-2",
-    trend: "down",
-    icon: FileText,
-  },
-  {
-    label: "Under Contract",
-    value: "3",
-    change: "0",
-    trend: "neutral",
-    icon: CheckCircle,
-  },
-  {
-    label: "Closed Won",
-    value: "$1.2M",
-    change: "+$200K",
-    trend: "up",
-    icon: DollarSign,
-  },
-];
+interface DashboardStats {
+  newLeads24h: number;
+  newLeads7d: number;
+  newLeadsPrevious24h: number;
+  newLeadsPrevious7d: number;
+  propertiesContacted: number;
+  propertiesContactedPrevious: number;
+  propertiesSkipTraced: number;
+  propertiesSkipTracedPrevious: number;
+  tasksOverdue: number;
+  tasksCompleted: number;
+}
 
-const hotLeads = [
-  { id: "L-1234", property: "123 Main St", score: 92, source: "PPC", status: "Hot" },
-  { id: "L-1235", property: "456 Oak Ave", score: 88, source: "Direct Mail", status: "Warm" },
-  { id: "L-1236", property: "789 Pine Rd", score: 85, source: "Cold Call", status: "Warm" },
-];
+interface HotLead {
+  id: string;
+  address: string;
+  city: string;
+  state: string;
+  score: number;
+  dataSource: string;
+  skipTraced: boolean;
+  contacted: boolean;
+}
 
-const needsUnderwriting = [
-  { id: "P-5678", address: "321 Elm St", arv: "$250K", repairs: "TBD" },
-  { id: "P-5679", address: "654 Maple Dr", arv: "$180K", repairs: "TBD" },
-];
+interface ActionItem {
+  id: string;
+  type: 'first_contact' | 'follow_up' | 'overdue_task';
+  title: string;
+  description: string;
+  propertyAddress?: string;
+  dueDate?: string;
+  priority?: string;
+}
 
-const slaBreaches = [
-  { lead: "L-1237", task: "Follow up call", overdue: "2 days" },
-  { lead: "L-1238", task: "Send offer", overdue: "1 day" },
-];
+interface OverdueTask {
+  id: string;
+  title: string;
+  dueDate: string;
+  priority: string;
+  propertyAddress?: string;
+  overdueDays: number;
+}
 
 export default function DashboardPage() {
+  const { isLoaded, user } = useUser();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [hotLeads, setHotLeads] = useState<HotLead[]>([]);
+  const [actionItems, setActionItems] = useState<ActionItem[]>([]);
+  const [overdueTasks, setOverdueTasks] = useState<OverdueTask[]>([]);
+
+  // Fetch dashboard data
+  useEffect(() => {
+    if (isLoaded && user) {
+      fetchDashboardData();
+    }
+  }, [isLoaded, user]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [statsRes, hotLeadsRes, actionItemsRes, overdueTasksRes] = await Promise.all([
+        fetch('/api/dashboard/stats'),
+        fetch('/api/dashboard/hot-leads'),
+        fetch('/api/dashboard/action-items'),
+        fetch('/api/dashboard/overdue-tasks'),
+      ]);
+
+      if (statsRes.ok) {
+        const data = await statsRes.json();
+        setStats(data.stats);
+      }
+
+      if (hotLeadsRes.ok) {
+        const data = await hotLeadsRes.json();
+        setHotLeads(data.hotLeads || []);
+      }
+
+      if (actionItemsRes.ok) {
+        const data = await actionItemsRes.json();
+        setActionItems(data.actionItems || []);
+      }
+
+      if (overdueTasksRes.ok) {
+        const data = await overdueTasksRes.json();
+        setOverdueTasks(data.overdueTasks || []);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Calculate KPI trends
+  const calculateTrend = (current: number, previous: number): { change: string; trend: 'up' | 'down' | 'neutral' } => {
+    const diff = current - previous;
+    if (diff === 0) return { change: '0', trend: 'neutral' };
+    const percentChange = previous > 0 ? ((diff / previous) * 100).toFixed(0) : '100';
+    return {
+      change: diff > 0 ? `+${percentChange}%` : `${percentChange}%`,
+      trend: diff > 0 ? 'up' : 'down',
+    };
+  };
+
+  const kpis = stats ? [
+    {
+      label: "New Leads (24h)",
+      value: stats.newLeads24h.toString(),
+      ...calculateTrend(stats.newLeads24h, stats.newLeadsPrevious24h),
+      icon: Users,
+    },
+    {
+      label: "New Leads (7d)",
+      value: stats.newLeads7d.toString(),
+      ...calculateTrend(stats.newLeads7d, stats.newLeadsPrevious7d),
+      icon: Users,
+    },
+    {
+      label: "Contacted",
+      value: stats.propertiesContacted.toString(),
+      ...calculateTrend(stats.propertiesContacted, stats.propertiesContactedPrevious),
+      icon: MessageSquare,
+    },
+    {
+      label: "Skip Traced",
+      value: stats.propertiesSkipTraced.toString(),
+      ...calculateTrend(stats.propertiesSkipTraced, stats.propertiesSkipTracedPrevious),
+      icon: FileText,
+    },
+    {
+      label: "Overdue Tasks",
+      value: stats.tasksOverdue.toString(),
+      change: stats.tasksOverdue > 0 ? `${stats.tasksOverdue} need attention` : 'All clear',
+      trend: stats.tasksOverdue > 0 ? 'down' : 'neutral',
+      icon: AlertCircle,
+    },
+    {
+      label: "Completed Tasks",
+      value: stats.tasksCompleted.toString(),
+      change: `${stats.tasksCompleted} today`,
+      trend: stats.tasksCompleted > 0 ? 'up' : 'neutral',
+      icon: CheckCircle,
+    },
+  ] : [];
+
+  if (!isLoaded || loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-600 dark:text-gray-400">Loading dashboard...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -105,10 +202,10 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{kpi.label}</p>
               <p className={cn(
                 "text-xs mt-2",
-                kpi.trend === "up" ? "text-green-500" : 
+                kpi.trend === "up" ? "text-green-500" :
                 kpi.trend === "down" ? "text-red-500" : "text-gray-500"
               )}>
-                {kpi.change} from last period
+                {kpi.change}
               </p>
             </CardContent>
           </Card>
@@ -129,153 +226,145 @@ export default function DashboardPage() {
             <AlertCircle className="h-5 w-5 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {hotLeads.map((lead) => (
-                <div key={lead.id} className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{lead.property}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" className="text-xs">
-                        {lead.source}
-                      </Badge>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">Score: {lead.score}</span>
+            {hotLeads.length > 0 ? (
+              <>
+                <div className="space-y-3">
+                  {hotLeads.map((lead) => (
+                    <div key={lead.id} className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {lead.address}, {lead.city}, {lead.state}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {lead.dataSource}
+                          </Badge>
+                          <span className="text-xs text-gray-600 dark:text-gray-400">Score: {lead.score}</span>
+                          {lead.skipTraced && (
+                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                              Skip Traced
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <Link href={`/app/leads`}>
+                        <Button size="sm" variant="ghost">
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
                     </div>
-                  </div>
-                  <Link href={`/app/leads?lead=${lead.id}`}>
-                    <Button size="sm" variant="ghost">
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <Link href="/app/leads?filter=hot">
-              <Button className="w-full mt-4" variant="outline">
-                View All Hot Leads
-              </Button>
-            </Link>
+                <Link href="/app/leads">
+                  <Button className="w-full mt-4" variant="outline">
+                    View All Hot Leads
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <div className="text-center py-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400">No hot leads at the moment</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Needs Underwriting */}
+        {/* Today's Action Items */}
         <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-gray-900 dark:text-white">Needs Underwriting</CardTitle>
+              <CardTitle className="text-gray-900 dark:text-white">Today's Action Items</CardTitle>
               <CardDescription className="text-gray-600 dark:text-gray-400">
-                Properties pending analysis
+                Tasks and follow-ups due today
               </CardDescription>
             </div>
             <Clock className="h-5 w-5 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {needsUnderwriting.map((property) => (
-                <div key={property.id} className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{property.address}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">ARV: {property.arv} | Repairs: {property.repairs}</p>
-                  </div>
-                  <Link href={`/app/underwriting/${property.id}`}>
-                    <Button size="sm" variant="ghost">
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
+            {actionItems.length > 0 ? (
+              <>
+                <div className="space-y-3">
+                  {actionItems.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900 rounded-lg">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{item.title}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{item.description}</p>
+                        {item.propertyAddress && (
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{item.propertyAddress}</p>
+                        )}
+                      </div>
+                      <Link href="/app/tasks">
+                        <Button size="sm" variant="ghost">
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <Link href="/app/underwriting">
-              <Button className="w-full mt-4" variant="outline">
-                Go to Underwriting
-              </Button>
-            </Link>
+                <Link href="/app/tasks">
+                  <Button className="w-full mt-4" variant="outline">
+                    View All Tasks
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <div className="text-center py-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400">No action items for today</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* SLA Breaches */}
+        {/* Overdue Tasks */}
         <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-gray-900 dark:text-white">SLA Breaches</CardTitle>
+              <CardTitle className="text-gray-900 dark:text-white">Overdue Tasks</CardTitle>
               <CardDescription className="text-gray-600 dark:text-gray-400">
-                Overdue tasks requiring attention
+                Tasks requiring immediate attention
               </CardDescription>
             </div>
             <AlertCircle className="h-5 w-5 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {slaBreaches.map((breach, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{breach.task}</p>
-                    <p className="text-xs text-red-400 mt-1">Lead {breach.lead} • Overdue {breach.overdue}</p>
-                  </div>
-                  <Link href={`/app/tasks?lead=${breach.lead}`}>
-                    <Button size="sm" variant="ghost">
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
+            {overdueTasks.length > 0 ? (
+              <>
+                <div className="space-y-3">
+                  {overdueTasks.map((task) => (
+                    <div key={task.id} className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-900 rounded-lg">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{task.title}</p>
+                        <p className="text-xs text-red-400 mt-1">
+                          Overdue {task.overdueDays} {task.overdueDays === 1 ? 'day' : 'days'}
+                          {task.priority === 'high' && ' • High Priority'}
+                        </p>
+                        {task.propertyAddress && (
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{task.propertyAddress}</p>
+                        )}
+                      </div>
+                      <Link href="/app/tasks?filter=overdue">
+                        <Button size="sm" variant="ghost">
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <Link href="/app/tasks?filter=overdue">
-              <Button className="w-full mt-4" variant="outline">
-                View All Overdue Tasks
-              </Button>
-            </Link>
+                <Link href="/app/tasks?filter=overdue">
+                  <Button className="w-full mt-4" variant="outline">
+                    View All Overdue Tasks
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <div className="text-center py-6">
+                <p className="text-sm text-green-600 dark:text-green-400">All tasks are up to date!</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Automation Health */}
-      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-gray-900 dark:text-white">Automation Health</CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-400">
-            System status and recent job performance
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">Data Scrapers</span>
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Last run: 5 min ago</p>
-              <p className="text-xs text-green-500">All systems operational</p>
-            </div>
-            
-            <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">SMS Gateway</span>
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Sent today: 47</p>
-              <p className="text-xs text-green-500">99.8% delivery rate</p>
-            </div>
-            
-            <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-2 w-2 bg-yellow-500 rounded-full" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">Email Service</span>
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Queue: 12 pending</p>
-              <p className="text-xs text-yellow-500">Minor delays (less than 5 min)</p>
-            </div>
-            
-            <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">AI Scoring</span>
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Processed: 84 leads</p>
-              <p className="text-xs text-green-500">Avg response: 1.2s</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

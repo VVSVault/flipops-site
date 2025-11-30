@@ -6,13 +6,62 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// User/Investor - Multi-tenant support
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  clerkId         String?   @unique // Clerk auth ID
+  name            String?
+  companyName     String?
+
+  // Investment preferences
+  targetMarkets   String    // JSON array: ["Miami-Dade, FL", "Maricopa, AZ"]
+  propertyTypes   String?   // JSON array: ["single_family", "multi_family"]
+  minScore        Int       @default(70) // Minimum property score to alert
+  maxBudget       Float?    // Maximum deal budget
+
+  // Detailed investor profile for personalized lead generation
+  investorProfile String?   // JSON: { strategies, priceRanges, distressWeights, dealBreakers, etc. }
+
+  // Notification preferences
+  slackWebhook    String?   // User-specific Slack webhook
+  emailAlerts     Boolean   @default(true)
+  dailyDigest     Boolean   @default(true)
+  digestTime      String?   // Time for daily digest (e.g., "08:00")
+  timezone        String    @default("America/New_York")
+
+  // Subscription & billing
+  tier            String    @default("pro") // free, pro, enterprise
+  monthlyDeals    Int       @default(0) // Track usage for tiered pricing
+  subscriptionStatus String @default("active") // active, paused, cancelled
+
+  // Platform settings
+  onboarded       Boolean   @default(false)
+  onboardedAt     DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastLoginAt     DateTime?
+
+  // Relations
+  properties      Property[]
+  deals           DealSpec[]
+  policies        Policy[]
+  vendors         Vendor[]
+
+  @@index([email])
+  @@index([clerkId])
+  @@index([tier])
 }
 
 // Core deal specification
 model DealSpec {
   id              String    @id @default(cuid())
+  userId          String    // Multi-tenant: which investor owns this deal
   address         String
   type            String    // SFH, multi-family, commercial
   maxExposureUsd  Float
@@ -27,12 +76,14 @@ model DealSpec {
   updatedAt       DateTime  @updatedAt
 
   // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   scopeNodes      ScopeTreeNode[]
   bids            Bid[]
   changeOrders    ChangeOrder[]
   events          Event[]
   budgetLedger    BudgetLedger?
 
+  @@index([userId])
   @@index([address])
   @@index([createdAt])
 }
@@ -162,6 +213,7 @@ model Event {
 // Vendor management
 model Vendor {
   id              String    @id @default(cuid())
+  userId          String?   // Multi-tenant: user-specific vendor, null = shared/platform vendor
   name            String
   email           String?
   phone           String?
@@ -174,9 +226,11 @@ model Vendor {
   updatedAt       DateTime  @updatedAt
 
   // Relations
+  user            User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   bids            Bid[]
   invoices        Invoice[]
 
+  @@index([userId])
   @@index([trade])
   @@index([region])
 }
@@ -205,6 +259,7 @@ model Invoice {
 // Policy configuration by region and grade
 model Policy {
   id                   String    @id @default(cuid())
+  userId               String?   // Multi-tenant: user-specific policy, null = global default
   region               String
   grade                String    // Standard, Premium, Luxury
   maxExposureUsd       Float
@@ -218,13 +273,18 @@ model Policy {
   updatedAt            DateTime  @updatedAt
   createdAt            DateTime  @default(now())
 
-  @@unique([region, grade])
+  // Relations
+  user                 User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, region, grade])
+  @@index([userId])
   @@index([region, grade])
 }
 
 // Property discovery and scoring
 model Property {
   id               String   @id @default(cuid())
+  userId           String   // Multi-tenant: which investor owns this property lead
   address          String
   city             String
   state            String
@@ -266,6 +326,22 @@ model Property {
   phoneNumbers     String?  // JSON array
   emails           String?  // JSON array
 
+  // Outreach tracking (sales workflow)
+  outreachStatus      String?   @default("not_contacted")
+  // Status values: "not_contacted", "attempted", "contacted", "offer_made",
+  //                "negotiating", "under_contract", "dead", "closed"
+  lastContactDate     DateTime?
+  lastContactMethod   String?   // "phone", "email", "sms", "in_person"
+  contactNotes        String?   // JSON array: [{date, note, method, sentiment}]
+  ownerResponse       String?   // "interested", "not_interested", "callback", "no_answer"
+  nextFollowUpDate    DateTime?
+  sentiment           String?   // "positive", "neutral", "negative"
+
+  // Offer tracking
+  offerAmount         Float?
+  offerDate           DateTime?
+  offerStatus         String?   // "draft", "sent", "countered", "accepted", "rejected"
+
   // Source tracking
   dataSource       String
   sourceId         String?
@@ -276,7 +352,11 @@ model Property {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  @@unique([address, city, state, zip])
+  // Relations
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, address, city, state, zip])
+  @@index([userId])
   @@index([score])
   @@index([city, state])
   @@index([createdAt])

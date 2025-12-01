@@ -65,3 +65,8 @@ next-env.d.ts
 
 # Environment files with secrets
 .env
+
+# Remove accidentally committed files
+.env
+.env.production
+.env.production.local

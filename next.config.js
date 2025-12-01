@@ -17,6 +17,9 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@clerk/nextjs'],
   },
+  // Skip pre-rendering during build to avoid Clerk SSR errors
+  // This forces all routes to be generated on-demand at runtime
+  skipTrailingSlashRedirect: true,
 }
 
 module.exports = nextConfig

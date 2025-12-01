@@ -42,6 +42,12 @@ export const metadata: Metadata = {
   }
 };
 
+const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+if (!publishableKey) {
+  throw new Error('Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY environment variable');
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -49,7 +55,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      publishableKey={publishableKey}
       appearance={{
         baseTheme: undefined,
       }}

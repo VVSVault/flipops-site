@@ -1,0 +1,15 @@
+# Nixpacks configuration for FlipOps Site
+# This ensures Railway runs Next.js in server mode, not static export mode
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+# Use next start for server-side rendering (not static export)
+cmd = "npm run start"

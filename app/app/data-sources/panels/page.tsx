@@ -1,5 +1,7 @@
 
 "use client";
+
+// Force dynamic rendering to prevent static pre-rendering with Clerk
 export const dynamic = 'force-dynamic';
 
 import { useState } from "react";

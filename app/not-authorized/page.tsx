@@ -2,6 +2,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ShieldX } from "lucide-react";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default function NotAuthorizedPage() {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">

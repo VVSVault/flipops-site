@@ -11,6 +11,12 @@ const nextConfig = {
     // Skip ESLint during build (for faster deployment)
     ignoreDuringBuilds: true,
   },
+  // Ensure Clerk packages are not bundled incorrectly
+  transpilePackages: ['@clerk/nextjs', '@clerk/clerk-react'],
+  // Optimize for server components
+  experimental: {
+    optimizePackageImports: ['@clerk/nextjs'],
+  },
 }
 
 module.exports = nextConfig

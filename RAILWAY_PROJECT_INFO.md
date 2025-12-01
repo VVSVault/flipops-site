@@ -15,5 +15,13 @@
 ## Status Update
 - ✅ Railway CLI linked to correct project (beautiful-enjoyment)
 - ✅ All 6 Clerk environment variables configured correctly
-- ⏳ Deployment in progress to test environment variable injection
-- 🔍 Next: Verify `/debug-clerk` shows populated `allEnvVars` array
+- ✅ GitHub auto-deployment triggered (commit d3cf523)
+- ⏳ Waiting for GitHub-based build to complete
+- 🔍 Next: Verify environment variables are injected during build
+
+## Critical Learning
+**`railway up` does NOT inject Railway environment variables during build!**
+- `railway up` builds locally and uploads the artifact
+- Environment variables are only available during **GitHub-triggered deployments**
+- Always use GitHub push to trigger deployments, not `railway up`
+- Use `/api/debug/env` endpoint to verify environment variable injection

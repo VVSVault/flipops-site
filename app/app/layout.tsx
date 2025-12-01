@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserButton, useAuth } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import { QuickAddLead } from "@/app/components/quick-add-lead";
-import { OnboardingGuard } from "@/app/components/onboarding-guard";
 import {
   Home,
   Users,
@@ -33,7 +32,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/app/components/theme-toggle";
-import { ClientActivityMonitor } from "@/app/components/client-activity-monitor";
 import { ErrorBoundary } from "@/app/components/error-boundary";
 import {
   filterNavigationByInvestorType,
@@ -79,7 +77,6 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const auth = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickAddLeadOpen, setQuickAddLeadOpen] = useState(false);
   const [investorType, setInvestorType] = useState<InvestorType>(null);
@@ -88,11 +85,6 @@ export default function AppLayout({
   // Fetch user profile to get investor type
   useEffect(() => {
     const fetchUserProfile = async () => {
-      // Wait for Clerk to load
-      if (!auth.isLoaded || !auth.isSignedIn) {
-        return;
-      }
-
       try {
         const response = await fetch('/api/user/profile');
         if (response.ok) {
@@ -112,12 +104,10 @@ export default function AppLayout({
     };
 
     fetchUserProfile();
-  }, [auth.isLoaded, auth.isSignedIn]);
+  }, []);
 
   return (
-    <OnboardingGuard>
-      <ClientActivityMonitor>
-        <div className="min-h-dvh bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-dvh bg-gray-50 dark:bg-gray-900">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -255,14 +245,12 @@ export default function AppLayout({
           </p>
         </footer>
       </div>
-      
-        {/* Quick Add Lead Modal */}
-        <QuickAddLead
-          open={quickAddLeadOpen}
-          onOpenChange={setQuickAddLeadOpen}
-        />
-      </div>
-      </ClientActivityMonitor>
-    </OnboardingGuard>
+
+      {/* Quick Add Lead Modal */}
+      <QuickAddLead
+        open={quickAddLeadOpen}
+        onOpenChange={setQuickAddLeadOpen}
+      />
+    </div>
   );
 }

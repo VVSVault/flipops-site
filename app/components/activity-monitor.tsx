@@ -10,16 +10,21 @@ const WARNING_TIME = 60 * 1000; // Show warning 1 minute before logout
 
 export function ActivityMonitor({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
-  const { isSignedIn } = useAuth();
-  const { signOut } = useClerk();
+  const [isClerkLoaded, setIsClerkLoaded] = useState(false);
+  const auth = useAuth();
+  const clerk = useClerk();
   const router = useRouter();
   const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(60);
 
-  // Only run on client side
+  // Only run on client side and wait for Clerk to load
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    // Wait for Clerk to be loaded
+    if (auth.isLoaded) {
+      setIsClerkLoaded(true);
+    }
+  }, [auth.isLoaded]);
 
   const resetTimer = useCallback(() => {
     setShowWarning(false);
@@ -27,13 +32,13 @@ export function ActivityMonitor({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    await signOut();
+    await clerk.signOut();
     router.push("/sign-in");
     toast.error("You have been logged out due to inactivity");
-  }, [signOut, router]);
+  }, [clerk, router]);
 
   useEffect(() => {
-    if (!isMounted || !isSignedIn) return;
+    if (!isMounted || !isClerkLoaded || !auth.isSignedIn) return;
 
     let inactivityTimer: NodeJS.Timeout;
     let warningTimer: NodeJS.Timeout;
@@ -106,15 +111,15 @@ export function ActivityMonitor({ children }: { children: React.ReactNode }) {
         document.removeEventListener(event, resetTimers);
       });
     };
-  }, [isMounted, isSignedIn, handleLogout, showWarning]);
+  }, [isMounted, isClerkLoaded, auth.isSignedIn, handleLogout, showWarning]);
 
-  // Don't render anything until mounted (prevents SSR issues)
-  if (!isMounted) {
+  // Don't render anything until mounted and Clerk is loaded (prevents SSR issues)
+  if (!isMounted || !isClerkLoaded) {
     return <>{children}</>;
   }
 
   // Warning modal
-  if (showWarning && isSignedIn) {
+  if (showWarning && auth.isSignedIn) {
     return (
       <>
         {children}

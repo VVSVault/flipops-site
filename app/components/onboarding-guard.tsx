@@ -2,15 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 
 export function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const auth = useAuth();
   const [isChecking, setIsChecking] = useState(true);
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
+      // Wait for Clerk to load
+      if (!auth.isLoaded) {
+        return;
+      }
+
+      // If not signed in, don't check onboarding (Clerk middleware will handle redirect)
+      if (!auth.isSignedIn) {
+        setShouldRender(true);
+        setIsChecking(false);
+        return;
+      }
+
       // Skip check if already on onboarding page
       if (pathname === '/app/onboarding') {
         setShouldRender(true);
@@ -29,6 +43,11 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
             router.push('/app/onboarding');
             return;
           }
+        } else if (response.status === 401) {
+          // Unauthorized, let Clerk middleware handle it
+          setShouldRender(true);
+          setIsChecking(false);
+          return;
         }
 
         // User is onboarded or there was an error, show content
@@ -43,7 +62,7 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
     };
 
     checkOnboardingStatus();
-  }, [pathname, router]);
+  }, [pathname, router, auth.isLoaded, auth.isSignedIn]);
 
   // Show loading state while checking
   if (isChecking) {

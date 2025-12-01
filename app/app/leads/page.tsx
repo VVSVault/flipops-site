@@ -4,16 +4,14 @@ import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
   Search,
-  Filter,
-  Download,
-  MoreVertical,
   Phone,
   Mail,
-  MessageSquare,
-  FileText,
   ChevronRight,
   Plus,
-  Calendar
+  Calendar,
+  AlertCircle,
+  RefreshCw,
+  MessageSquare
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -134,16 +132,28 @@ export default function LeadsPage() {
     setFilteredProperties(filtered);
   }, [properties, searchTerm, statusFilter, sourceFilter]);
 
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   const fetchProperties = async () => {
     try {
       setLoading(true);
+      setFetchError(null);
+
       const response = await fetch('/api/properties');
-      if (response.ok) {
-        const data = await response.json();
-        setProperties(data.properties || []);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch properties: ${response.statusText}`);
       }
+
+      const data = await response.json();
+      setProperties(data.properties || []);
     } catch (error) {
       console.error('Failed to fetch properties:', error);
+      setFetchError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to load properties. Please check your connection and try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -303,6 +313,29 @@ export default function LeadsPage() {
     );
   }
 
+  // Error state
+  if (fetchError) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Card className="max-w-md w-full bg-white dark:bg-gray-800 border-red-200 dark:border-red-800">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Failed to Load Properties
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              {fetchError}
+            </p>
+            <Button onClick={fetchProperties} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -381,8 +414,25 @@ export default function LeadsPage() {
             <TableBody>
               {filteredProperties.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-12 text-gray-500 dark:text-gray-400">
-                    No properties found. Properties from ATTOM discovery and skip tracing will appear here.
+                  <TableCell colSpan={9} className="text-center py-12">
+                    <div className="flex flex-col items-center gap-3">
+                      <Plus className="h-12 w-12 text-gray-400 dark:text-gray-600" />
+                      <div>
+                        <p className="text-gray-900 dark:text-white font-medium mb-1">
+                          No leads yet
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {properties.length === 0
+                            ? "Click 'Quick Add Lead' to get started, or connect a data source to import properties automatically."
+                            : "No properties match your current filters. Try adjusting your search criteria."}
+                        </p>
+                      </div>
+                      {properties.length === 0 && (
+                        <Button onClick={() => window.location.href = '/app/data-sources'} variant="outline" className="mt-2">
+                          Connect Data Source
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -510,9 +560,17 @@ export default function LeadsPage() {
                   <Label>Contact Information</Label>
                   <div className="mt-2 space-y-2">
                     {formatPhoneNumbers(selectedProperty.phoneNumbers).map((phone, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm">
+                      <div key={idx} className="flex items-center gap-3 text-sm">
                         <Phone className="h-4 w-4 text-gray-400" />
                         <a href={`tel:${phone}`} className="text-blue-500 hover:underline">{phone}</a>
+                        <a
+                          href={`sms:${phone}`}
+                          className="text-green-500 hover:text-green-600 flex items-center gap-1"
+                          title="Send SMS"
+                        >
+                          <MessageSquare className="h-3 w-3" />
+                          Text
+                        </a>
                       </div>
                     ))}
                     {formatEmails(selectedProperty.emails).map((email, idx) => (

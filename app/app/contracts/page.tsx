@@ -19,6 +19,7 @@ import {
   UserCheck,
   Hammer,
   Building2,
+  Download,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { exportToCSV, generateFilename, formatCurrencyForCSV, formatDateForCSV } from "@/lib/csv-export";
 
 interface Contract {
   id: string;
@@ -508,6 +510,28 @@ export default function ContractsPage() {
     }
   };
 
+  // CSV Export handler
+  const handleExportCSV = () => {
+    const exportData = filteredContracts.map((contract) => ({
+      "Property Address": `${contract.property.address}, ${contract.property.city}, ${contract.property.state} ${contract.property.zip}`,
+      "Purchase Price": formatCurrencyForCSV(contract.purchasePrice),
+      "Status": contract.status.charAt(0).toUpperCase() + contract.status.slice(1),
+      "Closing Date": formatDateForCSV(contract.closingDate),
+      "Signed Date": formatDateForCSV(contract.signedAt),
+      "Escrow Opened": formatDateForCSV(contract.escrowOpenedAt),
+      "Closed Date": formatDateForCSV(contract.closedAt),
+      "Created Date": formatDateForCSV(contract.createdAt),
+      "Notes": contract.notes || "",
+    }));
+
+    exportToCSV(exportData, generateFilename("flipops-contracts"));
+
+    toast({
+      title: "Export Successful",
+      description: `Exported ${exportData.length} contract${exportData.length !== 1 ? "s" : ""} to CSV`,
+    });
+  };
+
   // Calculate stats
   const stats = {
     total: contracts.length,
@@ -531,9 +555,20 @@ export default function ContractsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Contracts</h1>
-        <p className="text-muted-foreground mt-1">Manage your property contracts and track closing progress</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Contracts</h1>
+          <p className="text-muted-foreground mt-1">Manage your property contracts and track closing progress</p>
+        </div>
+        <Button
+          onClick={handleExportCSV}
+          variant="outline"
+          className="gap-2"
+          disabled={filteredContracts.length === 0}
+        >
+          <Download className="h-4 w-4" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Stats Cards */}

@@ -1,4 +1,6 @@
+
 "use client";
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useRef } from "react";
 import { GenerateOfferModal, OfferData } from "@/app/components/generate-offer-modal";

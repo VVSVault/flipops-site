@@ -84,6 +84,12 @@ export default function AppLayout({
   const [quickAddLeadOpen, setQuickAddLeadOpen] = useState(false);
   const [investorType, setInvestorType] = useState<InvestorType>(null);
   const [navigation, setNavigation] = useState<NavigationItem[]>(baseNavigation);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Set mounted state to prevent SSR of Clerk components
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Fetch user profile to get investor type
   useEffect(() => {
@@ -170,7 +176,7 @@ export default function AppLayout({
           {/* User section */}
           <div className="border-t border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-3">
-              <UserButton afterSignOutUrl="/" />
+              {isMounted && <UserButton afterSignOutUrl="/" />}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 dark:text-white truncate">Account</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Manage your account</p>

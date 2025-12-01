@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import { Header } from './components/header';
 import { Hero } from './components/hero';
 import { KPICards } from './components/kpi-cards';

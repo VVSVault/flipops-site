@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Force dynamic rendering to ensure Clerk is properly initialized
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "FlipOps - Automation for Real Estate Investors & House Flippers",
   description: "Find more deals, analyze faster, and keep projects on budget with AI-powered automation built by an active real estate investor.",
@@ -45,7 +48,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      appearance={{
+        baseTheme: undefined,
+      }}
+    >
       <html lang="en" suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}

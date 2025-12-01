@@ -1,0 +1,70 @@
+# Dockerfile ignore patterns for FlipOps Site
+# Reduces build context size and speeds up Docker builds
+
+# Git
+.git
+.gitignore
+
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Next.js build output
+.next/
+out/
+
+# Testing
+coverage
+.vitest
+
+# Environment files
+.env
+.env*.local
+.env.local
+.env.development
+.env.production
+.env.production.local
+.dev.vars
+
+# Credentials
+google-service-account.json
+oauth-token.json
+*-service-account.json
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Clerk
+.clerk/
+
+# Database
+/prisma/dev.db
+/prisma/dev.db-journal
+*.db
+*.db-journal
+/lib/generated/prisma
+
+# Wrangler
+.wrangler/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+!README.md
+
+# Build tools
+nixpacks.toml

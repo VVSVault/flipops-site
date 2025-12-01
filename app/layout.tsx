@@ -15,9 +15,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Force dynamic rendering to ensure Clerk is properly initialized
-export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
   title: "FlipOps - Automation for Real Estate Investors & House Flippers",
   description: "Find more deals, analyze faster, and keep projects on budget with AI-powered automation built by an active real estate investor.",

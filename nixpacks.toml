@@ -8,8 +8,12 @@ nixPkgs = ["nodejs_22"]
 cmds = ["npm ci --include=dev"]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = [
+  "npm run build",
+  "cp -r .next/static .next/standalone/flipops-site/.next/",
+  "cp -r public .next/standalone/flipops-site/"
+]
 
 [start]
-# Use next start for server-side rendering (not static export)
-cmd = "npm run start"
+# Use standalone server for better static asset handling
+cmd = "node .next/standalone/flipops-site/server.js"

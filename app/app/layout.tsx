@@ -115,6 +115,11 @@ export default function AppLayout({
     fetchUserProfile();
   }, []);
 
+  // Don't render layout until mounted to prevent Clerk SSR errors
+  if (!isMounted) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
   return (
     <div className="min-h-dvh bg-gray-50 dark:bg-gray-900">
       {/* Mobile sidebar overlay */}

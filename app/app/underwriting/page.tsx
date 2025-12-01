@@ -1,14 +1,21 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 
 export const dynamic = 'force-dynamic';
 
-const PageContent = dynamic(() => import("./page-content"), {
-  ssr: false,
-  loading: () => <div className="flex items-center justify-center min-h-screen">Loading...</div>
-});
+export default function UnderwritingPage() {
+  const [PageContent, setPageContent] = useState<React.ComponentType | null>(null);
 
-export default function Page() {
+  useEffect(() => {
+    import("./page-content").then((mod) => {
+      setPageContent(() => mod.default);
+    });
+  }, []);
+
+  if (!PageContent) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
   return <PageContent />;
 }

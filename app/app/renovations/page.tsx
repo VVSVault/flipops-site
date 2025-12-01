@@ -95,10 +95,15 @@ const STATUS_CONFIG = {
 };
 
 export default function RenovationsPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const { isLoaded, user } = useUser();
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [renovations, setRenovations] = useState<Renovation[]>([]);
   const [filteredRenovations, setFilteredRenovations] = useState<Renovation[]>([]);
 
@@ -232,6 +237,10 @@ export default function RenovationsPage() {
       year: "numeric",
     });
   };
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
 
   if (!isLoaded || loading) {
     return (

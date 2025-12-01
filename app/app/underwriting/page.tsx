@@ -83,7 +83,12 @@ interface SavedAnalysis {
 }
 
 export default function UnderwritingPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const { isLoaded, user } = useUser();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // State management
   const [properties, setProperties] = useState<Property[]>([]);
@@ -424,6 +429,10 @@ export default function UnderwritingPage() {
   const removeRepairItem = (itemId: string) => {
     setRepairItems(prev => prev.filter(item => item.id !== itemId));
   };
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex h-[calc(100vh-6.5rem)] bg-gray-50 dark:bg-gray-950 p-2 gap-3 overflow-hidden">

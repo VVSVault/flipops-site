@@ -87,8 +87,13 @@ interface Offer {
 }
 
 export default function OffersPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const { isLoaded, user } = useUser();
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [filteredOffers, setFilteredOffers] = useState<Offer[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -276,6 +281,10 @@ export default function OffersPage() {
     accepted: offers.filter((o) => o.status === "accepted").length,
     totalValue: offers.reduce((sum, o) => sum + o.amount, 0),
   };
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
 
   if (!isLoaded || loading) {
     return (

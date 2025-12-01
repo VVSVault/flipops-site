@@ -139,9 +139,14 @@ const STATUS_CONFIG = {
 };
 
 export default function ContractsPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const { isLoaded, user } = useUser();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [filteredContracts, setFilteredContracts] = useState<Contract[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -542,6 +547,10 @@ export default function ContractsPage() {
     closed: contracts.filter((c) => c.status === "closed").length,
     totalValue: contracts.reduce((sum, c) => sum + c.purchasePrice, 0),
   };
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
 
   if (!isLoaded || loading) {
     return (

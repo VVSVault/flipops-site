@@ -101,8 +101,13 @@ interface InvestorStats {
 }
 
 export default function DashboardPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const { isLoaded, user } = useUser();
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [hotLeads, setHotLeads] = useState<HotLead[]>([]);
   const [actionItems, setActionItems] = useState<ActionItem[]>([]);
@@ -211,6 +216,10 @@ export default function DashboardPage() {
       icon: CheckCircle,
     },
   ] : [];
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
 
   if (!isLoaded || loading) {
     return (

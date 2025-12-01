@@ -93,9 +93,14 @@ interface Task {
 }
 
 export default function TasksPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const { user, isLoaded } = useUser();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [completedFilter, setCompletedFilter] = useState("false");
@@ -308,6 +313,10 @@ export default function TasksPage() {
     if (days > 0) return `${days}d ${hours % 24}h`;
     return `${hours}h`;
   };
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
 
   if (!mounted || !isLoaded) {
     return (

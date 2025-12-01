@@ -113,10 +113,15 @@ const STATUS_CONFIG = {
 };
 
 export default function RentalsPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const { isLoaded, user } = useUser();
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [filteredRentals, setFilteredRentals] = useState<Rental[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
@@ -264,6 +269,10 @@ export default function RentalsPage() {
       (rental.maintenance || 0);
     return rental.monthlyRent - expenses;
   };
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
 
   if (!isLoaded || loading) {
     return (

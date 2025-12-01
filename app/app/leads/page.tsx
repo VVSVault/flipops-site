@@ -85,8 +85,13 @@ interface ContactNote {
 }
 
 export default function LeadsPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const { user } = useUser();
   const [properties, setProperties] = useState<Property[]>([]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -303,6 +308,10 @@ export default function LeadsPage() {
         return 'bg-gray-500/20 text-gray-500';
     }
   };
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
 
   if (loading) {
     return (

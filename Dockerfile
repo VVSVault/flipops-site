@@ -53,6 +53,13 @@ RUN echo "Checking .next/static structure..." && \
 RUN echo "Checking for CSS files..." && \
     find .next/static -name "*.css" -type f || echo "WARNING: No CSS files found!"
 
+# Check what Next.js standalone actually generated
+RUN echo "Checking standalone directory structure..." && \
+    ls -lah .next/standalone/ && \
+    echo "Checking if server.js exists..." && \
+    ls -lah .next/standalone/server.js || echo "server.js NOT in standalone root" && \
+    ls -lah .next/standalone/flipops-site/server.js || echo "server.js NOT in standalone/flipops-site"
+
 # Create necessary directories and copy static files to standalone directory
 RUN mkdir -p .next/standalone/flipops-site/.next && \
     cp -r .next/static .next/standalone/flipops-site/.next/static && \

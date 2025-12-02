@@ -1,5 +1,5 @@
 # Nixpacks configuration for FlipOps Site
-# Tells Railway how to build and run Next.js with proper static asset serving
+# Configures standalone mode with proper static asset handling
 
 [phases.setup]
 nixPkgs = ["nodejs_22"]
@@ -8,7 +8,11 @@ nixPkgs = ["nodejs_22"]
 cmds = ["npm ci --include=dev"]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = [
+  "npm run build",
+  "cp -r .next/static .next/standalone/.next/",
+  "cp -r public .next/standalone/"
+]
 
 [start]
-cmd = "npm run start"
+cmd = "node .next/standalone/server.js"

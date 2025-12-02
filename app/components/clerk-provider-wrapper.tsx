@@ -11,8 +11,11 @@ export function ClerkProviderWrapper({ children }: { children: ReactNode }) {
     setIsMounted(true);
   }, []);
 
-  // Always wrap in ClerkProvider, but it won't be active until mounted
-  // This ensures children always have access to Clerk context
+  // Only wrap in ClerkProvider if the key exists (allows landing page to work without Clerk)
+  if (!publishableKey) {
+    return <>{children}</>;
+  }
+
   return (
     <ClerkProvider
       publishableKey={publishableKey}

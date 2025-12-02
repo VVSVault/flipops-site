@@ -3,6 +3,6 @@ builder = "nixpacks"
 nixpacksConfigPath = "nixpacks.toml"
 
 [deploy]
-startCommand = "node .next/standalone/server.js"
+startCommand = "node start-server.js"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10

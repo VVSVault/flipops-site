@@ -15,4 +15,4 @@ cmds = [
 ]
 
 [start]
-cmd = "node .next/standalone/server.js"
+cmd = "node start-server.js"

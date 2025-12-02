@@ -22,6 +22,13 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy all source files
 COPY . .
 
+# Debug: Verify critical files exist before build
+RUN echo "Verifying Tailwind configuration..." && \
+    ls -la app/globals.css && \
+    ls -la postcss.config.mjs && \
+    echo "Checking if source files were copied..." && \
+    ls -la app/components/ | head -10
+
 # Set environment variable to skip telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -32,11 +39,11 @@ RUN npm run build
 RUN echo "Checking .next/static structure..." && \
     ls -lah .next/static/ && \
     echo "All files in .next/static/:" && \
-    find .next/static -type f -ls
+    find .next/static -type f
 
 # Verify CSS files were generated
 RUN echo "Checking for CSS files..." && \
-    find .next/static/css -type f -name "*.css" -ls || echo "WARNING: No CSS files found!"
+    find .next/static -name "*.css" -type f || echo "WARNING: No CSS files found!"
 
 # Create necessary directories and copy static files to standalone directory
 RUN mkdir -p .next/standalone/flipops-site/.next && \
@@ -47,7 +54,7 @@ RUN mkdir -p .next/standalone/flipops-site/.next && \
 RUN echo "Verifying static files in standalone..." && \
     ls -lah .next/standalone/flipops-site/.next/static/ && \
     echo "Looking for CSS files..." && \
-    find .next/standalone/flipops-site/.next/static -name "*.css" -ls || echo "No CSS files in standalone" && \
+    find .next/standalone/flipops-site/.next/static -name "*.css" -type f || echo "No CSS files in standalone" && \
     ls -lah .next/standalone/flipops-site/public/
 
 # Stage 3: Runner
@@ -75,7 +82,7 @@ RUN echo "Final verification in runner stage..." && \
     echo "Checking static files..." && \
     ls -lah .next/static/ && \
     echo "Checking for CSS files in runner..." && \
-    find .next/static -name "*.css" -ls || echo "WARNING: No CSS files found!" && \
+    find .next/static -name "*.css" -type f || echo "WARNING: No CSS files found!" && \
     ls -lah public/ || echo "WARNING: public directory missing!"
 
 USER nextjs

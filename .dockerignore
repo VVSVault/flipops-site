@@ -68,3 +68,4 @@ Thumbs.db
 
 # Build tools
 nixpacks.toml
+# Railway Docker deployment trigger

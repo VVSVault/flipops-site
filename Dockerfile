@@ -11,7 +11,8 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install dependencies including build-time packages
-RUN npm ci --include=dev
+# Using --legacy-peer-deps for Clerk + Next.js 14 compatibility
+RUN npm ci --include=dev --legacy-peer-deps
 
 # Stage 2: Builder
 FROM node:22-alpine AS builder

@@ -33,13 +33,24 @@ RUN echo "Verifying Tailwind v3 configuration..." && \
     ls -la postcss.config.js && \
     ls -la tailwind.config.js && \
     echo "PostCSS config:" && \
-    cat postcss.config.js
+    cat postcss.config.js && \
+    echo "Tailwind config:" && \
+    cat tailwind.config.js && \
+    echo "First 20 lines of globals.css:" && \
+    head -20 app/globals.css
 
 # Set environment variable to skip telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build the Next.js application
-RUN npm run build
+# CRITICAL FIX: Do NOT set NODE_ENV during build
+# Next.js build command automatically sets NODE_ENV=production
+# Setting it prematurely can cause CSS generation issues
+RUN echo "Current NODE_ENV before build: ${NODE_ENV:-not set}"
+
+# Build the Next.js application with verbose output
+RUN echo "Starting Next.js build..." && \
+    npm run build && \
+    echo "Build completed!"
 
 # Debug: Check what was built
 RUN echo "Checking .next/static structure..." && \
@@ -47,9 +58,15 @@ RUN echo "Checking .next/static structure..." && \
     echo "All files in .next/static/:" && \
     find .next/static -type f
 
-# Verify CSS files were generated
-RUN echo "Checking for CSS files..." && \
-    find .next/static -name "*.css" -type f || echo "WARNING: No CSS files found!"
+# CRITICAL DIAGNOSTIC: Check for CSS files BEFORE copy
+RUN echo "===== CSS GENERATION CHECK =====" && \
+    echo "Searching for CSS files in .next/static..." && \
+    find .next/static -name "*.css" -type f -exec ls -lh {} \; || echo "WARNING: No CSS files found!" && \
+    echo "Counting total files in .next/static:" && \
+    find .next/static -type f | wc -l && \
+    echo "Sample of files in .next/static:" && \
+    find .next/static -type f | head -20 && \
+    echo "================================="
 
 # Check what Next.js standalone actually generated
 RUN echo "Checking standalone directory structure..." && \

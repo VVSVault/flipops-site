@@ -28,6 +28,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Build the Next.js application
 RUN npm run build
 
+# Debug: Check what was built
+RUN echo "Checking .next/static structure..." && \
+    ls -lah .next/static/ && \
+    echo "All files in .next/static/:" && \
+    find .next/static -type f -ls
+
 # Verify CSS files were generated
 RUN echo "Checking for CSS files..." && \
     find .next/static/css -type f -name "*.css" -ls || echo "WARNING: No CSS files found!"

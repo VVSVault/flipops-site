@@ -1,84 +1,7 @@
-/* Tailwind v4.1.13 - Next.js 15.5 Production Configuration */
-/* Using automatic content detection for better production compatibility */
-/* Browser support: Safari 16.4+, Chrome 111+, Firefox 128+ */
-@import "tailwindcss";
-
-/* Tailwind v4 should auto-detect content in Next.js 15.2+ */
-/* If classes are missing, they'll be added via @source inline below */
-/* Future @source paths to consider:
- * @source "./lib"; - for utility functions with Tailwind classes
- * @source "./hooks"; - for hooks that might contain Tailwind classes
- * @source "./providers"; - for context providers with Tailwind classes
- */
-
-/* Safelist for dynamic utilities detected in codebase */
-/* These classes are used dynamically or might not be detected by static analysis */
-@source inline("min-w-0 overflow-x-auto overflow-hidden w-full h-dvh min-h-dvh");
-@source inline("{sm:,md:,lg:,xl:,2xl:}{grid-cols-{1..12} col-span-{1..12} row-span-{1..6}}");
-@source inline("z-{0,10,20,30,40,50} gap-{0..12} p-{0..12} m-{0..12}");
-@source inline("rounded-{none,sm,md,lg,xl,2xl,3xl,full}");
-@source inline("w-{1/2,1/3,2/3,1/4,3/4,1/5,2/5,3/5,4/5,1/6,5/6}");
-@source inline("h-{4,5,6,8,10,12,14,16,20,24,32,40,48,56,64,72,80,96}");
-@source inline("top-{0,1,2,3,4,5,6,8,10,12,16,20,24} left-{0,1,2,3,4,5,6,8,10,12,16,20,24}");
-@source inline("right-{0,1,2,3,4,5,6,8,10,12,16,20,24} bottom-{0,1,2,3,4,5,6,8,10,12,16,20,24}");
-@source inline("inset-{0,1,2,3,4,auto} inset-x-{0,1,2,3,4,auto} inset-y-{0,1,2,3,4,auto}");
-/* Specific colors used in documents folders */
-@source inline("text-blue-500 text-gray-500 text-red-500 text-green-500 text-yellow-500 text-purple-500");
-/* Status-related colors from dashboard and components */
-@source inline("bg-primary bg-accent bg-muted-foreground bg-background/80 bg-transparent");
-/* Critical layout utilities that might be missed in production */
-@source inline("flex flex-col flex-row flex-1 items-center justify-center justify-between justify-start justify-end");
-@source inline("grid grid-cols-1 grid-cols-2 grid-cols-3 grid-cols-4 grid-cols-5 grid-cols-6");
-@source inline("space-x-2 space-x-4 space-y-2 space-y-4 space-y-6 space-y-8");
-@source inline("mx-auto container max-w-7xl max-w-6xl max-w-5xl max-w-4xl max-w-3xl max-w-2xl");
-@source inline("hidden block inline-block inline-flex md:block md:flex lg:block lg:flex");
-@source inline("relative absolute fixed sticky top-0 left-0 right-0 bottom-0");
-@source inline("min-h-screen h-screen h-full w-full min-w-full max-w-full");
-
-/* tw-animate-css for animations */
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-}
+/* Tailwind v3 - Next.js 15.5 Production Configuration */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --radius: 0.75rem;
@@ -151,12 +74,15 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: oklch(var(--border));
+    outline-color: oklch(var(--ring) / 0.5);
   }
   html {
-    @apply overflow-x-hidden;
+    overflow-x: hidden;
   }
   body {
-    @apply bg-background text-foreground overflow-x-hidden;
+    background-color: oklch(var(--background));
+    color: oklch(var(--foreground));
+    overflow-x: hidden;
   }
 }

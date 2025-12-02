@@ -56,21 +56,21 @@ RUN echo "Checking for CSS files..." && \
 # Check what Next.js standalone actually generated
 RUN echo "Checking standalone directory structure..." && \
     ls -lah .next/standalone/ && \
-    echo "Checking if server.js exists..." && \
-    ls -lah .next/standalone/server.js || echo "server.js NOT in standalone root" && \
-    ls -lah .next/standalone/flipops-site/server.js || echo "server.js NOT in standalone/flipops-site"
+    echo "Verifying server.js exists..." && \
+    ls -lah .next/standalone/server.js
 
-# Create necessary directories and copy static files to standalone directory
-RUN mkdir -p .next/standalone/flipops-site/.next && \
-    cp -r .next/static .next/standalone/flipops-site/.next/static && \
-    cp -r public .next/standalone/flipops-site/public
+# Copy static files and public folder to standalone directory
+# Note: Next.js standalone already has the correct structure at .next/standalone/
+RUN cp -r .next/static .next/standalone/.next/static && \
+    cp -r public .next/standalone/public
 
 # Verify copy was successful
-RUN echo "Verifying static files in standalone..." && \
-    ls -lah .next/standalone/flipops-site/.next/static/ && \
-    echo "Looking for CSS files..." && \
-    find .next/standalone/flipops-site/.next/static -name "*.css" -type f || echo "No CSS files in standalone" && \
-    ls -lah .next/standalone/flipops-site/public/
+RUN echo "Verifying standalone structure after copy..." && \
+    ls -lah .next/standalone/ && \
+    echo "Static files:" && \
+    ls -lah .next/standalone/.next/static/ && \
+    echo "Public files:" && \
+    ls -lah .next/standalone/public/
 
 # Stage 3: Runner
 FROM node:22-alpine AS runner
@@ -83,22 +83,19 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built application from builder
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/flipops-site ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/flipops-site/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/flipops-site/public ./public
+# Copy built application from builder (correct standalone structure)
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
 # Verify files exist in runner stage
 RUN echo "Final verification in runner stage..." && \
     echo "Contents of /app/:" && \
     ls -lah /app/ && \
-    echo "Checking for server.js..." && \
+    echo "Verifying server.js..." && \
     ls -lah /app/server.js && \
-    echo "Checking static files..." && \
-    ls -lah .next/static/ && \
-    echo "Checking for CSS files in runner..." && \
-    find .next/static -name "*.css" -type f || echo "WARNING: No CSS files found!" && \
-    ls -lah public/ || echo "WARNING: public directory missing!"
+    echo "Verifying static files..." && \
+    ls -lah .next/static/ | head -20 && \
+    echo "Verifying public files..." && \
+    ls -lah public/
 
 USER nextjs
 

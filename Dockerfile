@@ -1,5 +1,6 @@
 # FlipOps Site - Production Dockerfile
 # Multi-stage build for Next.js 15 with Tailwind v4
+# Updated: Fixed Tailwind v4 CSS generation by including .gitignore
 
 # Stage 1: Dependencies
 FROM node:22-alpine AS deps

@@ -62,6 +62,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/flipops-site/pub
 
 # Verify files exist in runner stage
 RUN echo "Final verification in runner stage..." && \
+    echo "Contents of /app/:" && \
+    ls -lah /app/ && \
+    echo "Checking for server.js..." && \
+    ls -lah /app/server.js && \
+    echo "Checking static files..." && \
     ls -lah .next/static/ && \
     echo "Checking for CSS files in runner..." && \
     find .next/static -name "*.css" -ls || echo "WARNING: No CSS files found!" && \

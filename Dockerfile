@@ -36,9 +36,12 @@ RUN echo "Verifying Tailwind configuration..." && \
 # Set environment variable to skip telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# CRITICAL: Do NOT set NODE_ENV=production during build
-# Tailwind v4 needs to generate CSS during build, which may be affected by NODE_ENV
-RUN echo "Building with NODE_ENV: $NODE_ENV"
+# CRITICAL: Verify .gitignore is present (required for Tailwind v4 content discovery)
+RUN echo "Verifying .gitignore exists..." && \
+    ls -la .gitignore && \
+    echo "Verifying PostCSS configuration..." && \
+    cat postcss.config.mjs && \
+    echo "Build prerequisites verified"
 
 # Build the Next.js application
 RUN npm run build

@@ -3,7 +3,8 @@
 
 # Git
 .git
-.gitignore
+# IMPORTANT: DO NOT ignore .gitignore - Tailwind v4 needs it for content discovery
+# .gitignore  ← Commented out to fix Tailwind CSS generation in Docker
 
 # Dependencies
 node_modules

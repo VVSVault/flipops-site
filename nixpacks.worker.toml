@@ -2,13 +2,14 @@
 # This file tells Railway how to build and run the worker
 
 [phases.setup]
-nixPkgs = ["nodejs_20", "npm-9_x"]
+nixPkgs = ["nodejs_22"]
 
 [phases.install]
-cmds = ["npm ci"]
+cmds = ["npm ci --include=dev"]
 
 [phases.build]
-cmds = ["npm run build"]
+# Worker doesn't need Next.js build - skip it
+cmds = ["echo 'Worker service - skipping Next.js build'"]
 
 [start]
 cmd = "npm run worker"

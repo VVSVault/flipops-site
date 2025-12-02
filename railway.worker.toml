@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+nixpacksConfigPath = "nixpacks.worker.toml"
+
+[deploy]
+startCommand = "npm run worker"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10

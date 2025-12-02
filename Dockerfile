@@ -1,6 +1,6 @@
 # FlipOps Site - Production Dockerfile
-# Multi-stage build for Next.js 15 with Tailwind v4
-# Updated: Fixed Tailwind v4 CSS generation by including .gitignore
+# Multi-stage build for Next.js 15 with Tailwind v3
+# Updated: Migrated to Tailwind v3.4 for Next.js 15 compatibility
 
 # Stage 1: Dependencies
 FROM node:22-alpine AS deps
@@ -22,27 +22,21 @@ COPY --from=deps /app/node_modules ./node_modules
 
 # Verify Tailwind packages are installed correctly
 RUN echo "Checking Tailwind package versions..." && \
-    npm list tailwindcss @tailwindcss/postcss postcss || true
+    npm list tailwindcss postcss autoprefixer || true
 
 # Copy all source files
 COPY . .
 
 # Debug: Verify critical files exist before build
-RUN echo "Verifying Tailwind configuration..." && \
+RUN echo "Verifying Tailwind v3 configuration..." && \
     ls -la app/globals.css && \
-    ls -la postcss.config.mjs && \
-    echo "Checking if source files were copied..." && \
-    ls -la app/components/ | head -10
+    ls -la postcss.config.js && \
+    ls -la tailwind.config.js && \
+    echo "PostCSS config:" && \
+    cat postcss.config.js
 
 # Set environment variable to skip telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# CRITICAL: Verify .gitignore is present (required for Tailwind v4 content discovery)
-RUN echo "Verifying .gitignore exists..." && \
-    ls -la .gitignore && \
-    echo "Verifying PostCSS configuration..." && \
-    cat postcss.config.mjs && \
-    echo "Build prerequisites verified"
 
 # Build the Next.js application
 RUN npm run build

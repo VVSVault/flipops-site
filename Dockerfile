@@ -68,25 +68,6 @@ RUN echo "===== CSS GENERATION CHECK =====" && \
     find .next/static -type f | head -20 && \
     echo "================================="
 
-# Check what Next.js standalone actually generated
-RUN echo "Checking standalone directory structure..." && \
-    ls -lah .next/standalone/ && \
-    echo "Verifying server.js exists..." && \
-    ls -lah .next/standalone/server.js
-
-# Copy static files and public folder to standalone directory
-# Note: Next.js standalone already has the correct structure at .next/standalone/
-RUN cp -r .next/static .next/standalone/.next/static && \
-    cp -r public .next/standalone/public
-
-# Verify copy was successful
-RUN echo "Verifying standalone structure after copy..." && \
-    ls -lah .next/standalone/ && \
-    echo "Static files:" && \
-    ls -lah .next/standalone/.next/static/ && \
-    echo "Public files:" && \
-    ls -lah .next/standalone/public/
-
 # Stage 3: Runner
 FROM node:22-alpine AS runner
 WORKDIR /app
@@ -98,19 +79,24 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built application from builder (correct standalone structure)
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+# Copy necessary files for standard Next.js build (not standalone)
+COPY --from=builder --chown=nextjs:nodejs /app/next.config.js ./
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 # Verify files exist in runner stage
 RUN echo "Final verification in runner stage..." && \
     echo "Contents of /app/:" && \
     ls -lah /app/ && \
-    echo "Verifying server.js..." && \
-    ls -lah /app/server.js && \
-    echo "Verifying static files..." && \
-    ls -lah .next/static/ | head -20 && \
-    echo "Verifying public files..." && \
-    ls -lah public/
+    echo "Verifying .next directory..." && \
+    ls -lah .next/ && \
+    echo "Checking for CSS files..." && \
+    find .next/static -name "*.css" -type f | head -10 && \
+    echo "Static files count:" && \
+    find .next/static -type f | wc -l
 
 USER nextjs
 
@@ -120,5 +106,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Start the standalone server
-CMD ["node", "server.js"]
+# Start Next.js production server
+CMD ["npm", "run", "start"]

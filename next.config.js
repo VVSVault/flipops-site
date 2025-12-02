@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // REMOVED: output: 'standalone' - causing CSS extraction issues in Next.js 15
+  // Railway works fine with standard Next.js builds
   images: {
     unoptimized: true,
   },

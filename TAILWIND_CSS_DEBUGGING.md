@@ -173,5 +173,35 @@ CSS files: 0
 - Switching to another platform (Vercel, Render, Fly.io) will likely have the SAME issue
 - Need to investigate Next.js-specific solutions, not platform-specific ones
 
-## Time Spent: ~13 hours
-## Status: CONFIRMED - Next.js 15 standalone + App Router does not extract CSS to separate files
+## Phase 9: Downgrade to Next.js 14 + Fix React Hydration
+**Date**: Dec 2, 2024
+**Action**: Nuclear option - downgrade from Next.js 15 to Next.js 14.2.25
+**Changes**:
+1. ✅ Downgraded Next.js 15.5.2 → 14.2.25
+2. ✅ Downgraded React 19 → 18.3.1
+3. ✅ Updated eslint-config-next to match
+4. ✅ Added --legacy-peer-deps to Dockerfile for Clerk compatibility
+5. ✅ Removed standalone output mode
+6. ✅ Updated Dockerfile to copy full build instead of standalone
+
+**Result**: Build succeeded but page showed blank/white screen
+
+**Root Cause Found**: React hydration mismatch errors
+- Console showed React errors #418 and #423
+- "HierarchyRequestError: Only one element on document allowed"
+- Issue was in `ClerkProviderWrapper` component using `useState` and `useEffect`
+- The `isMounted` state caused server/client HTML mismatch
+
+**Fix Applied**:
+Removed unnecessary `useState` and `useEffect` from [clerk-provider-wrapper.tsx](app/components/clerk-provider-wrapper.tsx)
+- The component was trying to prevent SSR issues but actually caused them
+- Simplified to just check for publishableKey and conditionally wrap with ClerkProvider
+
+## Time Spent: ~14+ hours
+## Status: AWAITING DEPLOYMENT - Hydration fix applied, deploying to verify
+## Final Configuration:
+- Next.js 14.2.25 (stable)
+- React 18.3.1 (stable)
+- Tailwind CSS 3.4.18
+- No standalone output
+- Standard Next.js build with full node_modules copy

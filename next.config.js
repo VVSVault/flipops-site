@@ -17,6 +17,10 @@ const nextConfig = {
   // Optimize for server components
   experimental: {
     optimizePackageImports: ['@clerk/nextjs'],
+    // CRITICAL FIX: Force CSS extraction in standalone builds
+    // Next.js 15 inlines CSS into JS chunks by default in standalone mode
+    // This ensures separate CSS files are generated for proper styling
+    cssChunking: 'strict',
   },
   // Skip pre-rendering during build to avoid Clerk SSR errors
   // This forces all routes to be generated on-demand at runtime

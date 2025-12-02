@@ -19,6 +19,10 @@ WORKDIR /app
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
+# Verify Tailwind packages are installed correctly
+RUN echo "Checking Tailwind package versions..." && \
+    npm list tailwindcss @tailwindcss/postcss postcss || true
+
 # Copy all source files
 COPY . .
 
@@ -31,6 +35,10 @@ RUN echo "Verifying Tailwind configuration..." && \
 
 # Set environment variable to skip telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# CRITICAL: Do NOT set NODE_ENV=production during build
+# Tailwind v4 needs to generate CSS during build, which may be affected by NODE_ENV
+RUN echo "Building with NODE_ENV: $NODE_ENV"
 
 # Build the Next.js application
 RUN npm run build

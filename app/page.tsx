@@ -11,6 +11,9 @@ import { FinalCTA } from './components/final-cta';
 import { Footer } from './components/footer';
 import { Toaster } from 'sonner';
 
+// Force static generation to ensure CSS is extracted
+export const dynamic = 'force-static';
+
 export default function Home() {
   return (
     <>

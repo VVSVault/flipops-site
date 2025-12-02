@@ -32,8 +32,9 @@ RUN npm run build
 RUN echo "Checking for CSS files..." && \
     find .next/static/css -type f -name "*.css" -ls || echo "WARNING: No CSS files found!"
 
-# Copy static files to standalone directory
-RUN cp -r .next/static .next/standalone/flipops-site/.next/static && \
+# Create necessary directories and copy static files to standalone directory
+RUN mkdir -p .next/standalone/flipops-site/.next && \
+    cp -r .next/static .next/standalone/flipops-site/.next/static && \
     cp -r public .next/standalone/flipops-site/public
 
 # Verify copy was successful

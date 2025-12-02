@@ -39,7 +39,9 @@ RUN mkdir -p .next/standalone/flipops-site/.next && \
 
 # Verify copy was successful
 RUN echo "Verifying static files in standalone..." && \
-    ls -lah .next/standalone/flipops-site/.next/static/css/ && \
+    ls -lah .next/standalone/flipops-site/.next/static/ && \
+    echo "Looking for CSS files..." && \
+    find .next/standalone/flipops-site/.next/static -name "*.css" -ls || echo "No CSS files in standalone" && \
     ls -lah .next/standalone/flipops-site/public/
 
 # Stage 3: Runner
@@ -60,7 +62,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/flipops-site/pub
 
 # Verify files exist in runner stage
 RUN echo "Final verification in runner stage..." && \
-    ls -lah .next/static/css/ || echo "WARNING: CSS directory missing!" && \
+    ls -lah .next/static/ && \
+    echo "Checking for CSS files in runner..." && \
+    find .next/static -name "*.css" -ls || echo "WARNING: No CSS files found!" && \
     ls -lah public/ || echo "WARNING: public directory missing!"
 
 USER nextjs

@@ -1,6 +1,3 @@
-# Nixpacks configuration for FlipOps Site
-# Standard Next.js build (not standalone mode)
-
 [phases.setup]
 nixPkgs = ["nodejs_22"]
 
@@ -11,4 +8,4 @@ cmds = ["npm ci --include=dev"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "npm run start"
+cmd = "bash scripts/start.sh"

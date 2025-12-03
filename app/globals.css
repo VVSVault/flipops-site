@@ -1,4 +1,4 @@
-/* Tailwind v3 - Next.js 15.5 Production Configuration */
+/* Tailwind v3 - Next.js 16 Production Configuration with oklch support */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

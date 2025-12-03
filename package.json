@@ -7,7 +7,7 @@
     "dev:web": "next dev",
     "dev:api": "next dev",
     "dev:workers": "cd workers && npm run dev",
-    "build": "bash scripts/debug-build.sh",
+    "build": "next build",
     "build:full": "next build && cd workers && npm run build",
     "build:prod": "NODE_ENV=production next build",
     "start": "next start",

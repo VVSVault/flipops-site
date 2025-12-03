@@ -48,7 +48,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { underwritingSeedData, type RepairItem } from "./seed-data";
-import { useUser } from "@clerk/nextjs";
 
 interface Property {
   id: string;
@@ -84,7 +83,6 @@ interface SavedAnalysis {
 
 export default function UnderwritingPage() {
   const [isMounted, setIsMounted] = useState(false);
-  const { isLoaded, user } = useUser();
 
   useEffect(() => {
     setIsMounted(true);

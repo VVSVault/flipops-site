@@ -3,7 +3,6 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
 import {
   Calendar,
   Clock,
@@ -94,7 +93,6 @@ interface Task {
 
 export default function TasksPage() {
   const [isMounted, setIsMounted] = useState(false);
-  const { user, isLoaded } = useUser();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
 

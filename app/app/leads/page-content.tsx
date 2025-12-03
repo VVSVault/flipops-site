@@ -3,7 +3,6 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
 import {
   Search,
   Phone,
@@ -86,7 +85,6 @@ interface ContactNote {
 
 export default function LeadsPage() {
   const [isMounted, setIsMounted] = useState(false);
-  const { user } = useUser();
   const [properties, setProperties] = useState<Property[]>([]);
 
   useEffect(() => {
@@ -111,7 +109,7 @@ export default function LeadsPage() {
   // Fetch properties
   useEffect(() => {
     fetchProperties();
-  }, [user]);
+  }, []);
 
   // Filter properties
   useEffect(() => {

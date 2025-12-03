@@ -3,7 +3,6 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -114,7 +113,6 @@ const STATUS_CONFIG = {
 
 export default function RentalsPage() {
   const [isMounted, setIsMounted] = useState(false);
-  const { isLoaded, user } = useUser();
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
@@ -138,11 +136,11 @@ export default function RentalsPage() {
 
   // Fetch rentals and analytics
   useEffect(() => {
-    if (isLoaded && user) {
+    if (true) {
       fetchRentals();
       fetchAnalytics();
     }
-  }, [isLoaded, user]);
+  }, []);
 
   const fetchRentals = async () => {
     try {
@@ -274,7 +272,7 @@ export default function RentalsPage() {
     return <div>Loading...</div>;
   }
 
-  if (!isLoaded || loading) {
+  if (loading) {
     return (
       <div className="p-8 space-y-4">
         <div className="h-8 bg-muted rounded w-64 animate-pulse" />

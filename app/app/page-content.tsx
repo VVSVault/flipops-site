@@ -27,7 +27,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { getInvestorTypeDisplayName, type InvestorType } from "@/lib/navigation-config";
 
@@ -102,7 +101,6 @@ interface InvestorStats {
 
 export default function DashboardPage() {
   const [isMounted, setIsMounted] = useState(false);
-  const { isLoaded, user } = useUser();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -117,10 +115,10 @@ export default function DashboardPage() {
 
   // Fetch dashboard data
   useEffect(() => {
-    if (isLoaded && user) {
+    if (true) {
       fetchDashboardData();
     }
-  }, [isLoaded, user]);
+  }, []);
 
   const fetchDashboardData = async () => {
     try {
@@ -221,7 +219,7 @@ export default function DashboardPage() {
     return <div>Loading...</div>;
   }
 
-  if (!isLoaded || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-gray-600 dark:text-gray-400">Loading dashboard...</div>

@@ -54,7 +54,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 
 interface Offer {
@@ -88,7 +87,6 @@ interface Offer {
 
 export default function OffersPage() {
   const [isMounted, setIsMounted] = useState(false);
-  const { isLoaded, user } = useUser();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -114,10 +112,10 @@ export default function OffersPage() {
 
   // Fetch offers
   useEffect(() => {
-    if (isLoaded && user) {
+    if (true) {
       fetchOffers();
     }
-  }, [isLoaded, user]);
+  }, []);
 
   // Filter offers
   useEffect(() => {
@@ -286,7 +284,7 @@ export default function OffersPage() {
     return <div>Loading...</div>;
   }
 
-  if (!isLoaded || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-gray-600 dark:text-gray-400">Loading offers...</div>

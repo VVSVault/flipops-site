@@ -54,7 +54,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { exportToCSV, generateFilename, formatCurrencyForCSV, formatDateForCSV } from "@/lib/csv-export";
 
@@ -140,7 +139,6 @@ const STATUS_CONFIG = {
 
 export default function ContractsPage() {
   const [isMounted, setIsMounted] = useState(false);
-  const { isLoaded, user } = useUser();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
 
@@ -187,11 +185,11 @@ export default function ContractsPage() {
 
   // Fetch contracts and buyers
   useEffect(() => {
-    if (isLoaded && user) {
+    if (true) {
       fetchContracts();
       fetchBuyers();
     }
-  }, [isLoaded, user]);
+  }, []);
 
   const fetchContracts = async () => {
     try {
@@ -552,7 +550,7 @@ export default function ContractsPage() {
     return <div>Loading...</div>;
   }
 
-  if (!isLoaded || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

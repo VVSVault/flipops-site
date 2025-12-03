@@ -1,7 +1,3 @@
-// Force static rendering to trigger CSS extraction
-export const dynamic = 'force-static';
-export const revalidate = false;
-
 import { Header } from './components/header';
 import { Hero } from './components/hero';
 import { KPICards } from './components/kpi-cards';

@@ -13,7 +13,6 @@ import { Process } from './components/process';
 import { FAQs } from './components/faqs';
 import { FinalCTA } from './components/final-cta';
 import { Footer } from './components/footer';
-import { Toaster } from 'sonner';
 
 export default function Home() {
   return (
@@ -31,7 +30,6 @@ export default function Home() {
         <FinalCTA />
       </main>
       <Footer />
-      <Toaster position="bottom-right" />
     </>
   );
 }

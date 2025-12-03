@@ -10,10 +10,11 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  transpilePackages: ['@clerk/nextjs', '@clerk/clerk-react'],
-  experimental: {
-    optimizePackageImports: ['@clerk/nextjs'],
-  },
+  // Clerk temporarily removed for CSS debugging
+  // transpilePackages: ['@clerk/nextjs', '@clerk/clerk-react'],
+  // experimental: {
+  //   optimizePackageImports: ['@clerk/nextjs'],
+  // },
 }
 
 module.exports = nextConfig

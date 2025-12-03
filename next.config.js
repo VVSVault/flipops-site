@@ -10,6 +10,10 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Force CSS extraction - Next.js 15 embeds CSS in JS by default
+  experimental: {
+    optimizeCss: true, // Force separate CSS files (requires critters package)
+  },
   // Clerk temporarily removed for CSS debugging
   // transpilePackages: ['@clerk/nextjs', '@clerk/clerk-react'],
 }

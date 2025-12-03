@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Debug Monitor - FlipOps</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00ffff;
+            border-bottom: 2px solid #00ffff;
+            padding-bottom: 10px;
+        }
+        .section {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .section h2 {
+            color: #ffff00;
+            margin-top: 0;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid;
+            background: #333;
+        }
+        .test-result.success {
+            border-color: #00ff00;
+        }
+        .test-result.error {
+            border-color: #ff0000;
+            color: #ff6666;
+        }
+        .test-result.warning {
+            border-color: #ffaa00;
+            color: #ffcc66;
+        }
+        .code-block {
+            background: #000;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 15px;
+            overflow-x: auto;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        .loading {
+            color: #ffaa00;
+            font-style: italic;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #333;
+            color: #00ffff;
+        }
+        tr:hover {
+            background: #2a2a2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 CSS Debug Monitor - FlipOps Production</h1>
+
+        <div class="section">
+            <h2>📋 Test Configuration</h2>
+            <div id="config-info">
+                <p><strong>Production URL:</strong> https://flipops-site-production-5414.up.railway.app</p>
+                <p><strong>Test Time:</strong> <span id="test-time"></span></p>
+                <p><strong>Browser:</strong> <span id="browser-info"></span></p>
+            </div>
+            <button onclick="runAllTests()">🔄 Run All Tests</button>
+            <button onclick="clearResults()">🗑️ Clear Results</button>
+        </div>
+
+        <div class="section">
+            <h2>1️⃣ Page Load Analysis</h2>
+            <div id="page-load-results" class="loading">Click "Run All Tests" to start...</div>
+        </div>
+
+        <div class="section">
+            <h2>2️⃣ CSS File Detection</h2>
+            <div id="css-detection-results" class="loading">Waiting...</div>
+        </div>
+
+        <div class="section">
+            <h2>3️⃣ CSS File Fetch Tests</h2>
+            <div id="css-fetch-results" class="loading">Waiting...</div>
+        </div>
+
+        <div class="section">
+            <h2>4️⃣ Static Asset Path Analysis</h2>
+            <div id="path-analysis-results" class="loading">Waiting...</div>
+        </div>
+
+        <div class="section">
+            <h2>5️⃣ Network Waterfall</h2>
+            <div id="network-waterfall-results" class="loading">Waiting...</div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Summary & Recommendations</h2>
+            <div id="summary-results" class="loading">Waiting for test completion...</div>
+        </div>
+    </div>
+
+    <script>
+        const PROD_URL = 'https://flipops-site-production-5414.up.railway.app';
+        let cssFiles = [];
+        let testResults = {
+            pageLoad: null,
+            cssDetection: null,
+            cssFetch: null,
+            pathAnalysis: null,
+            network: null
+        };
+
+        // Initialize
+        document.getElementById('test-time').textContent = new Date().toLocaleString();
+        document.getElementById('browser-info').textContent = navigator.userAgent;
+
+        async function runAllTests() {
+            console.log('🔍 Starting CSS Debug Tests...');
+            clearResults();
+
+            await testPageLoad();
+            await testCSSDetection();
+            await testCSSFetch();
+            await testPathAnalysis();
+            await testNetworkWaterfall();
+            generateSummary();
+        }
+
+        function clearResults() {
+            testResults = {
+                pageLoad: null,
+                cssDetection: null,
+                cssFetch: null,
+                pathAnalysis: null,
+                network: null
+            };
+            document.querySelectorAll('.loading').forEach(el => {
+                el.innerHTML = '<span class="loading">Running tests...</span>';
+            });
+        }
+
+        async function testPageLoad() {
+            const container = document.getElementById('page-load-results');
+            container.innerHTML = '<span class="loading">Testing page load...</span>';
+
+            try {
+                const startTime = performance.now();
+                const response = await fetch(PROD_URL, { method: 'HEAD' });
+                const loadTime = performance.now() - startTime;
+
+                testResults.pageLoad = {
+                    success: response.ok,
+                    status: response.status,
+                    loadTime: loadTime.toFixed(2),
+                    headers: Object.fromEntries(response.headers.entries())
+                };
+
+                let html = `
+                    <div class="test-result ${response.ok ? 'success' : 'error'}">
+                        <strong>Status:</strong> ${response.status} ${response.statusText}<br>
+                        <strong>Load Time:</strong> ${loadTime.toFixed(2)}ms<br>
+                        <strong>Content-Type:</strong> ${response.headers.get('content-type')}
+                    </div>
+                    <details>
+                        <summary>📋 Response Headers</summary>
+                        <div class="code-block">${JSON.stringify(testResults.pageLoad.headers, null, 2)}</div>
+                    </details>
+                `;
+                container.innerHTML = html;
+            } catch (error) {
+                testResults.pageLoad = { success: false, error: error.message };
+                container.innerHTML = `<div class="test-result error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testCSSDetection() {
+            const container = document.getElementById('css-detection-results');
+            container.innerHTML = '<span class="loading">Scanning for CSS files...</span>';
+
+            try {
+                // Fetch the HTML page
+                const response = await fetch(PROD_URL);
+                const html = await response.text();
+
+                // Parse CSS references
+                const linkRegex = /<link[^>]+href=["']([^"']+\.css[^"']*)["'][^>]*>/gi;
+                const matches = [...html.matchAll(linkRegex)];
+
+                cssFiles = matches.map(match => {
+                    const fullMatch = match[0];
+                    const href = match[1];
+                    const isRelative = !href.startsWith('http');
+                    const fullUrl = isRelative ? new URL(href, PROD_URL).href : href;
+
+                    return {
+                        href: href,
+                        fullUrl: fullUrl,
+                        isRelative: isRelative,
+                        htmlSnippet: fullMatch
+                    };
+                });
+
+                testResults.cssDetection = {
+                    success: cssFiles.length > 0,
+                    count: cssFiles.length,
+                    files: cssFiles
+                };
+
+                let html = `
+                    <div class="test-result ${cssFiles.length > 0 ? 'success' : 'error'}">
+                        <strong>CSS Files Found:</strong> ${cssFiles.length}
+                    </div>
+                `;
+
+                if (cssFiles.length > 0) {
+                    html += '<table><thead><tr><th>Path</th><th>Type</th><th>Full URL</th></tr></thead><tbody>';
+                    cssFiles.forEach(file => {
+                        html += `
+                            <tr>
+                                <td><code>${file.href}</code></td>
+                                <td>${file.isRelative ? '🔗 Relative' : '🌐 Absolute'}</td>
+                                <td><a href="${file.fullUrl}" target="_blank" style="color: #00ffff;">${file.fullUrl}</a></td>
+                            </tr>
+                        `;
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html += '<div class="test-result error">❌ No CSS files detected in HTML</div>';
+                }
+
+                container.innerHTML = html;
+            } catch (error) {
+                testResults.cssDetection = { success: false, error: error.message };
+                container.innerHTML = `<div class="test-result error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testCSSFetch() {
+            const container = document.getElementById('css-fetch-results');
+            container.innerHTML = '<span class="loading">Testing CSS file accessibility...</span>';
+
+            if (cssFiles.length === 0) {
+                container.innerHTML = '<div class="test-result warning">⚠️ No CSS files to test</div>';
+                return;
+            }
+
+            const results = [];
+            for (const file of cssFiles) {
+                try {
+                    const startTime = performance.now();
+                    const response = await fetch(file.fullUrl, {
+                        method: 'GET',
+                        cache: 'no-cache'
+                    });
+                    const loadTime = performance.now() - startTime;
+                    const contentType = response.headers.get('content-type');
+                    const contentLength = response.headers.get('content-length');
+
+                    let content = '';
+                    let contentPreview = '';
+                    if (response.ok) {
+                        content = await response.text();
+                        contentPreview = content.substring(0, 200);
+                    }
+
+                    results.push({
+                        url: file.fullUrl,
+                        path: file.href,
+                        status: response.status,
+                        ok: response.ok,
+                        loadTime: loadTime.toFixed(2),
+                        contentType: contentType,
+                        contentLength: contentLength || content.length,
+                        contentPreview: contentPreview,
+                        size: content.length
+                    });
+                } catch (error) {
+                    results.push({
+                        url: file.fullUrl,
+                        path: file.href,
+                        status: 'ERROR',
+                        ok: false,
+                        error: error.message
+                    });
+                }
+            }
+
+            testResults.cssFetch = {
+                success: results.every(r => r.ok),
+                results: results
+            };
+
+            let html = '<table><thead><tr><th>Path</th><th>Status</th><th>Size</th><th>Load Time</th><th>Content Type</th></tr></thead><tbody>';
+            results.forEach(result => {
+                const statusClass = result.ok ? 'success' : 'error';
+                html += `
+                    <tr>
+                        <td><code>${result.path}</code></td>
+                        <td class="${statusClass}">${result.status}</td>
+                        <td>${result.contentLength ? (result.contentLength / 1024).toFixed(2) + ' KB' : 'Unknown'}</td>
+                        <td>${result.loadTime || 'N/A'}ms</td>
+                        <td>${result.contentType || 'N/A'}</td>
+                    </tr>
+                `;
+                if (result.contentPreview) {
+                    html += `
+                        <tr>
+                            <td colspan="5">
+                                <details>
+                                    <summary>📄 Content Preview (first 200 chars)</summary>
+                                    <div class="code-block">${result.contentPreview}...</div>
+                                </details>
+                            </td>
+                        </tr>
+                    `;
+                }
+                if (result.error) {
+                    html += `
+                        <tr>
+                            <td colspan="5" class="test-result error">❌ Error: ${result.error}</td>
+                        </tr>
+                    `;
+                }
+            });
+            html += '</tbody></table>';
+
+            container.innerHTML = html;
+        }
+
+        async function testPathAnalysis() {
+            const container = document.getElementById('path-analysis-results');
+            container.innerHTML = '<span class="loading">Analyzing path structure...</span>';
+
+            const analysis = {
+                baseUrl: PROD_URL,
+                cssFiles: cssFiles.map(f => f.href),
+                pathPatterns: [],
+                possibleIssues: []
+            };
+
+            // Analyze path patterns
+            cssFiles.forEach(file => {
+                const path = file.href;
+                if (path.startsWith('/_next/static/css/')) {
+                    analysis.pathPatterns.push('✅ Standard Next.js pattern: /_next/static/css/');
+                } else if (path.startsWith('/_next/')) {
+                    analysis.pathPatterns.push('⚠️ Non-standard _next path: ' + path);
+                } else if (path.startsWith('/static/')) {
+                    analysis.pathPatterns.push('⚠️ Custom static path: ' + path);
+                } else if (path.startsWith('http')) {
+                    analysis.pathPatterns.push('🌐 External CDN: ' + path);
+                } else {
+                    analysis.pathPatterns.push('❓ Unknown pattern: ' + path);
+                }
+            });
+
+            // Check for common issues
+            if (cssFiles.length === 0) {
+                analysis.possibleIssues.push('❌ No CSS files found in HTML');
+            }
+            if (cssFiles.some(f => !f.href.startsWith('/_next/'))) {
+                analysis.possibleIssues.push('⚠️ Non-standard CSS paths detected');
+            }
+            if (cssFiles.some(f => f.href.includes('undefined'))) {
+                analysis.possibleIssues.push('❌ Undefined in CSS paths - build issue');
+            }
+
+            testResults.pathAnalysis = analysis;
+
+            let html = `
+                <div class="test-result success">
+                    <strong>Base URL:</strong> ${analysis.baseUrl}
+                </div>
+                <h3>📁 Path Patterns Found:</h3>
+                <div class="code-block">${[...new Set(analysis.pathPatterns)].join('\n')}</div>
+            `;
+
+            if (analysis.possibleIssues.length > 0) {
+                html += '<h3>⚠️ Possible Issues:</h3><div class="code-block">';
+                html += analysis.possibleIssues.join('\n');
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        async function testNetworkWaterfall() {
+            const container = document.getElementById('network-waterfall-results');
+
+            const entries = performance.getEntriesByType('resource');
+            const cssEntries = entries.filter(e => e.name.includes('.css') || e.name.includes('/_next/static'));
+
+            testResults.network = {
+                total: entries.length,
+                css: cssEntries.length,
+                entries: cssEntries.map(e => ({
+                    name: e.name,
+                    duration: e.duration.toFixed(2),
+                    size: e.transferSize,
+                    type: e.initiatorType
+                }))
+            };
+
+            let html = `
+                <div class="test-result success">
+                    <strong>Total Resources:</strong> ${entries.length}<br>
+                    <strong>CSS Resources:</strong> ${cssEntries.length}
+                </div>
+            `;
+
+            if (cssEntries.length > 0) {
+                html += '<table><thead><tr><th>Resource</th><th>Duration</th><th>Size</th><th>Type</th></tr></thead><tbody>';
+                cssEntries.forEach(entry => {
+                    html += `
+                        <tr>
+                            <td><code>${entry.name}</code></td>
+                            <td>${entry.duration.toFixed(2)}ms</td>
+                            <td>${entry.transferSize ? (entry.transferSize / 1024).toFixed(2) + ' KB' : 'Unknown'}</td>
+                            <td>${entry.initiatorType}</td>
+                        </tr>
+                    `;
+                });
+                html += '</tbody></table>';
+            } else {
+                html += '<div class="test-result warning">⚠️ No CSS resources in performance timeline</div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function generateSummary() {
+            const container = document.getElementById('summary-results');
+
+            let criticalIssues = [];
+            let warnings = [];
+            let recommendations = [];
+
+            // Analyze results
+            if (!testResults.pageLoad?.success) {
+                criticalIssues.push('❌ Page failed to load');
+            }
+
+            if (!testResults.cssDetection?.success || testResults.cssDetection?.count === 0) {
+                criticalIssues.push('❌ No CSS files detected in HTML - Check build process');
+                recommendations.push('🔧 Verify Next.js build is generating CSS files');
+                recommendations.push('🔧 Check if CSS is being inlined instead of linked');
+            }
+
+            if (testResults.cssFetch?.results) {
+                const failedFetches = testResults.cssFetch.results.filter(r => !r.ok);
+                if (failedFetches.length > 0) {
+                    criticalIssues.push(`❌ ${failedFetches.length} CSS file(s) failed to load`);
+                    failedFetches.forEach(f => {
+                        criticalIssues.push(`  → ${f.path}: HTTP ${f.status}`);
+                    });
+                    recommendations.push('🔧 Check if static assets are being copied to standalone/.next/static');
+                    recommendations.push('🔧 Verify Railway is serving from correct directory');
+                }
+            }
+
+            if (testResults.network?.css === 0 && testResults.cssDetection?.count > 0) {
+                warnings.push('⚠️ CSS files in HTML but not loaded by browser');
+                recommendations.push('🔧 Check browser console for CORS or loading errors');
+            }
+
+            // Generate summary HTML
+            let html = '';
+
+            if (criticalIssues.length > 0) {
+                html += '<h3 style="color: #ff6666;">🚨 Critical Issues:</h3>';
+                html += '<div class="code-block">' + criticalIssues.join('\n') + '</div>';
+            }
+
+            if (warnings.length > 0) {
+                html += '<h3 style="color: #ffcc66;">⚠️ Warnings:</h3>';
+                html += '<div class="code-block">' + warnings.join('\n') + '</div>';
+            }
+
+            if (recommendations.length > 0) {
+                html += '<h3 style="color: #00ffff;">💡 Recommendations:</h3>';
+                html += '<div class="code-block">' + recommendations.join('\n') + '</div>';
+            }
+
+            if (criticalIssues.length === 0 && warnings.length === 0) {
+                html += '<div class="test-result success">✅ All tests passed! CSS appears to be loading correctly.</div>';
+            }
+
+            // Add full diagnostic export
+            html += `
+                <h3>📥 Export Full Diagnostic Report:</h3>
+                <button onclick="downloadReport()">⬇️ Download JSON Report</button>
+                <details>
+                    <summary>📋 View Raw Data</summary>
+                    <div class="code-block">${JSON.stringify(testResults, null, 2)}</div>
+                </details>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function downloadReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                productionUrl: PROD_URL,
+                testResults: testResults
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(report, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `flipops-css-debug-${Date.now()}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        // Auto-run on page load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>

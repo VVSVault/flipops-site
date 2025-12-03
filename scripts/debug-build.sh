@@ -72,10 +72,6 @@ echo "=== GENERATING PRISMA CLIENT ==="
 prisma generate
 
 echo ""
-echo "=== RUNNING DATABASE MIGRATIONS ==="
-prisma migrate deploy
-
-echo ""
 echo "=== BUILDING STANDALONE CSS FILE ==="
 npx tailwindcss -i ./app/globals.css -o ./public/styles.css --minify
 echo "CSS file generated:"

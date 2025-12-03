@@ -64,16 +64,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // Default error UI
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-          <Card className="max-w-lg w-full bg-white dark:bg-gray-800 border-red-200 dark:border-red-800">
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <Card className="max-w-lg w-full border-destructive">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <AlertCircle className="h-6 w-6 text-red-500" />
-                <CardTitle className="text-gray-900 dark:text-white">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+                <CardTitle className="text-foreground">
                   Something went wrong
                 </CardTitle>
               </div>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
+              <CardDescription className="text-muted-foreground">
                 We encountered an unexpected error. Don't worry, your data is safe.
               </CardDescription>
             </CardHeader>
@@ -95,10 +95,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               )}
 
               <div className="space-y-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   What you can do:
                 </p>
-                <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
                   <li>Try refreshing the page</li>
                   <li>Go back to the previous page</li>
                   <li>Clear your browser cache</li>

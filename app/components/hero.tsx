@@ -30,14 +30,14 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-5xl lg:text-7xl font-bold mb-6 text-gray-900 dark:text-white">
+            <h1 className="text-5xl lg:text-7xl font-bold mb-6 text-foreground">
               Automation for{' '}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Flippers & Investors
               </span>
             </h1>
-            
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+
+            <p className="text-xl text-muted-foreground mb-8">
               Find more deals, analyze faster, and keep projects on budget with a peer who actually flips houses.
             </p>
 

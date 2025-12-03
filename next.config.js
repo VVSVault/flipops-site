@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // Removed 'output: standalone' - it has issues serving static CSS files
   images: {
     unoptimized: true,
   },

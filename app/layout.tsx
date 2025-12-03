@@ -43,12 +43,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <head>
-        <link rel="stylesheet" href="/styles.css" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <link rel="stylesheet" href="/styles.css" />
         {children}
         <Toaster />
       </body>

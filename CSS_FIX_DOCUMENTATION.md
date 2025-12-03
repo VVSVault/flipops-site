@@ -233,8 +233,63 @@ git push --force
 
 ---
 
-**Status**: CSS issue **RESOLVED** ✅
+**Status**: CSS issue **RESOLVED** ✅ | Database migration issue **IN PROGRESS** 🔄
 **Date**: 2025-12-03
 **Environment**: Railway Production
 **Next.js Version**: 15.1.3
 **Approach**: Standalone CSS Build
+
+---
+
+## UPDATE: Database Migration Issue (Latest)
+
+### Problem
+Railway's Nixpacks is STILL detecting `scripts/start.sh` even after we:
+1. Created `nixpacks.toml` with explicit build/start commands
+2. Renamed `start.sh` to `railway-start.sh`
+
+Latest error:
+```
+║ build      │ bash scripts/start.sh ║  <-- WRONG! Should be scripts/debug-build.sh
+bash: scripts/start.sh: No such file or directory
+```
+
+### Root Cause
+Railway/Nixpacks is ignoring `nixpacks.toml` configuration and still trying to use the old `scripts/start.sh` file (which no longer exists after rename).
+
+### Solution Needed
+**Manual Railway Dashboard Configuration Required:**
+
+Go to Railway Dashboard → flipops-site service → Settings:
+
+1. **Custom Build Command**:
+   ```bash
+   bash scripts/debug-build.sh
+   ```
+   OR
+   ```bash
+   npm run build
+   ```
+
+2. **Custom Start Command**:
+   ```bash
+   bash scripts/railway-start.sh
+   ```
+
+This will override Nixpacks auto-detection.
+
+### Files Ready
+- ✅ `scripts/railway-start.sh` - Runs migrations then starts app
+- ✅ `nixpacks.toml` - Configuration (being ignored by Railway)
+- ✅ `scripts/debug-build.sh` - Build script with standalone CSS
+
+### Commits Made (Latest Session)
+| Commit | Description |
+|--------|-------------|
+| `3057714` | Add missing react-is dependency for recharts |
+| `e4569e0` | Add startup script with database migrations |
+| `1505471` | Add Nixpacks configuration to run migrations on startup |
+| `880e4a3` | Rename startup script to avoid Railway auto-detection (scripts/start.sh → railway-start.sh) |
+
+### Next Action
+User needs to manually set build/start commands in Railway Dashboard to override auto-detection.

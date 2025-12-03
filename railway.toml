@@ -3,6 +3,6 @@ builder = "nixpacks"
 nixpacksConfigPath = "nixpacks.toml"
 
 [deploy]
-startCommand = "npm run start"
+startCommand = "bash scripts/railway-start.sh"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 10

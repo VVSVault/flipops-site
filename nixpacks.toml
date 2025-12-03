@@ -1,3 +1,4 @@
+# Force Railway cache clear - use standard Next.js build
 [phases.setup]
 nixPkgs = ["nodejs_22"]
 

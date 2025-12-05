@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from "react";
+import { PreviewModeWrapper } from "@/app/components/preview-mode-wrapper";
 import {
   FileText,
   Plus,
@@ -369,6 +370,11 @@ export default function DocumentsPage() {
   const filteredDocuments = filterDocuments();
 
   return (
+    <PreviewModeWrapper
+      title="Document Management"
+      description="DocuSign integration, template library, and packet builder for contract management. This feature is under active development."
+      expectedRelease="Q1 2025"
+    >
     <div className="flex h-[calc(100vh-6.5rem)] bg-gray-50 dark:bg-gray-950 p-2 gap-3 overflow-hidden">
       {/* Left Sidebar - Folders */}
       <div className="w-64 flex flex-col border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg overflow-hidden">
@@ -1384,5 +1390,6 @@ export default function DocumentsPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PreviewModeWrapper>
   );
 }

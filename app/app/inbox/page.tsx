@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useRef } from "react";
+import { PreviewModeWrapper } from "@/app/components/preview-mode-wrapper";
 import { GenerateOfferModal, OfferData } from "@/app/components/generate-offer-modal";
 import { OfferWidget } from "@/app/components/offer-widget";
 import { 
@@ -738,6 +739,11 @@ export default function InboxPage() {
   };
 
   return (
+    <PreviewModeWrapper
+      title="Unified Inbox"
+      description="AI-powered messaging hub with sentiment analysis, templates, and multi-channel communication. This feature is under active development."
+      expectedRelease="Q1 2025"
+    >
     <div className="flex h-[calc(100vh-8rem)] gap-4">
       {/* Left Panel - Thread List */}
       <div className="w-96 flex flex-col bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -1509,5 +1515,6 @@ export default function InboxPage() {
         onOfferGenerated={handleOfferGenerated}
       />
     </div>
+    </PreviewModeWrapper>
   );
 }

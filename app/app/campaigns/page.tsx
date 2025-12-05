@@ -3,9 +3,10 @@
 export const dynamic = 'force-dynamic';
 
 import { useState } from "react";
-import { 
-  Search, 
-  Filter, 
+import { PreviewModeWrapper } from "@/app/components/preview-mode-wrapper";
+import {
+  Search,
+  Filter,
   Plus,
   MoreVertical,
   Play,
@@ -287,14 +288,25 @@ export default function CampaignsPage() {
 
   if (selectedCampaign) {
     return (
-      <CampaignDetail 
-        campaign={selectedCampaign}
-        onBack={() => setSelectedCampaign(null)}
-      />
+      <PreviewModeWrapper
+        title="Campaign Details"
+        description="Detailed campaign analytics and management will be available after beta launch."
+        expectedRelease="Q1 2025"
+      >
+        <CampaignDetail
+          campaign={selectedCampaign}
+          onBack={() => setSelectedCampaign(null)}
+        />
+      </PreviewModeWrapper>
     );
   }
 
   return (
+    <PreviewModeWrapper
+      title="Campaigns"
+      description="Multi-channel outreach campaigns with A/B testing and analytics. This feature is under active development."
+      expectedRelease="Q1 2025"
+    >
     <div className="flex flex-col h-[calc(100vh-6.5rem)]">
       {/* Page header */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
@@ -680,7 +692,7 @@ export default function CampaignsPage() {
       </Card>
 
       {/* Campaign Wizard Modal */}
-      <CampaignWizard 
+      <CampaignWizard
         open={showWizard}
         onOpenChange={setShowWizard}
         onComplete={(campaign) => {
@@ -689,5 +701,6 @@ export default function CampaignsPage() {
         }}
       />
     </div>
+    </PreviewModeWrapper>
   );
 }

@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
+import { PreviewModeWrapper } from "@/app/components/preview-mode-wrapper";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -346,6 +347,11 @@ export default function DataSourcesPage() {
   };
 
   return (
+    <PreviewModeWrapper
+      title="Data Sources"
+      description="Connect to MLS feeds, county records, skip trace providers, and more. Automate data syncing and field mapping."
+      expectedRelease="Q1 2025"
+    >
     <>
       <div className="h-[calc(100vh-6rem)] flex gap-4 p-6 overflow-hidden">
       {/* Left Rail - Connectors */}
@@ -1630,5 +1636,6 @@ export default function DataSourcesPage() {
         </DialogContent>
       </Dialog>
     </>
+    </PreviewModeWrapper>
   );
 }

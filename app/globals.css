@@ -1,26 +1,37 @@
 /* Tailwind v4 - Next.js 16 Production Configuration */
 @import "tailwindcss";
 
-/* Define base colors that Tailwind v4 will use for utility generation */
+/*
+ * Theme colors using oklch for better color perception.
+ * These are static values that Tailwind v4 uses to generate utilities.
+ * For dynamic light/dark mode, we override via CSS custom properties below.
+ */
 @theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  /* Primary teal color */
+  --color-primary: oklch(0.596 0.154 162.243);
+  --color-primary-foreground: oklch(0.985 0 0);
+
+  /* Accent blue color */
+  --color-accent: oklch(0.663 0.173 216.618);
+  --color-accent-foreground: oklch(0.985 0 0);
+
+  /* Destructive red */
+  --color-destructive: oklch(0.577 0.245 27.325);
+
+  /* These will be overridden by CSS vars for theme switching */
+  --color-background: oklch(var(--background));
+  --color-foreground: oklch(var(--foreground));
+  --color-card: oklch(var(--card));
+  --color-card-foreground: oklch(var(--card-foreground));
+  --color-popover: oklch(var(--popover));
+  --color-popover-foreground: oklch(var(--popover-foreground));
+  --color-secondary: oklch(var(--secondary));
+  --color-secondary-foreground: oklch(var(--secondary-foreground));
+  --color-muted: oklch(var(--muted));
+  --color-muted-foreground: oklch(var(--muted-foreground));
+  --color-border: oklch(var(--border));
+  --color-input: oklch(var(--input));
+  --color-ring: oklch(var(--ring));
 
   --radius: 0.75rem;
   --radius-lg: 0.75rem;
@@ -28,7 +39,7 @@
   --radius-sm: calc(0.75rem - 4px);
 }
 
-/* Light mode (default) */
+/* Light mode (default) - oklch channel values (L C H) */
 :root {
   --background: 1 0 0;
   --foreground: 0.145 0 0;
@@ -36,39 +47,29 @@
   --card-foreground: 0.145 0 0;
   --popover: 1 0 0;
   --popover-foreground: 0.145 0 0;
-  --primary: 0.596 0.154 162.243;
-  --primary-foreground: 0.985 0 0;
   --secondary: 0.97 0 0;
   --secondary-foreground: 0.205 0 0;
   --muted: 0.97 0 0;
   --muted-foreground: 0.556 0 0;
-  --accent: 0.663 0.173 216.618;
-  --accent-foreground: 0.985 0 0;
-  --destructive: 0.577 0.245 27.325;
   --border: 0.922 0 0;
   --input: 0.922 0 0;
   --ring: 0.596 0.154 162.243;
 }
 
-/* Dark mode */
+/* Dark mode - darker backgrounds for proper contrast */
 .dark {
-  --background: 0.145 0 0;
-  --foreground: 0.985 0 0;
-  --card: 0.18 0 0;
-  --card-foreground: 0.985 0 0;
-  --popover: 0.18 0 0;
-  --popover-foreground: 0.985 0 0;
-  --primary: 0.596 0.154 162.243;
-  --primary-foreground: 0.985 0 0;
-  --secondary: 0.22 0 0;
-  --secondary-foreground: 0.985 0 0;
-  --muted: 0.22 0 0;
-  --muted-foreground: 0.708 0 0;
-  --accent: 0.663 0.173 216.618;
-  --accent-foreground: 0.985 0 0;
-  --destructive: 0.704 0.191 22.216;
-  --border: 0.3 0 0;
-  --input: 0.25 0 0;
+  --background: 0.12 0 0;
+  --foreground: 0.95 0 0;
+  --card: 0.16 0 0;
+  --card-foreground: 0.95 0 0;
+  --popover: 0.16 0 0;
+  --popover-foreground: 0.95 0 0;
+  --secondary: 0.2 0 0;
+  --secondary-foreground: 0.95 0 0;
+  --muted: 0.2 0 0;
+  --muted-foreground: 0.65 0 0;
+  --border: 0.25 0 0;
+  --input: 0.2 0 0;
   --ring: 0.596 0.154 162.243;
 }
 

@@ -22,7 +22,7 @@ export function FounderStory() {
             <Quote className="absolute bottom-4 right-4 h-12 w-12 text-primary/10 rotate-180" />
             
             <div className="relative z-10">
-              <h2 className="text-2xl lg:text-3xl font-bold mb-6 text-center">
+              <h2 className="text-2xl lg:text-3xl font-bold mb-6 text-center text-foreground">
                 From One Investor to Another
               </h2>
               

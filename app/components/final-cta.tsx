@@ -20,7 +20,7 @@ export function FinalCTA() {
           viewport={{ once: true }}
           className="text-center max-w-3xl mx-auto"
         >
-          <h2 className="text-3xl lg:text-5xl font-bold mb-6">
+          <h2 className="text-3xl lg:text-5xl font-bold mb-6 text-foreground">
             Ready to stop leaving money on the table?
           </h2>
           <p className="text-xl text-muted-foreground mb-8">

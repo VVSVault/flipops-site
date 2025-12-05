@@ -48,7 +48,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
-import { underwritingSeedData, type RepairItem } from "./seed-data";
+import { type RepairItem } from "./seed-data";
 
 interface Property {
   id: string;
@@ -363,17 +363,10 @@ export default function UnderwritingPage() {
   // Get the selected property for API-based underwriting
   const selectedProperty = properties.find(p => p.id === selectedPropertyId);
 
-  // Get seed data (only used as fallback when no real properties)
-  const seedDeal = underwritingSeedData.deals.find(d => d.id === selectedDealId);
-  const currentSession = underwritingSeedData.sessions.find(s => s.leadId === selectedDealId);
-  const seedComps = underwritingSeedData.comps.filter(c => c.leadId === selectedDealId);
-  const currentRepairs = underwritingSeedData.repairItems.filter(r => r.sessionId === currentSession?.id);
-  const currentHistory = underwritingSeedData.history.filter(h => h.sessionId === currentSession?.id);
-
-  // Determine if we're using real API data or seed data
+  // Determine if we have a real property selected
   const hasRealProperty = selectedProperty !== undefined;
 
-  // Create a unified property object - use real data when available
+  // Create property object only from real data - NO seed data fallback
   const currentDeal = hasRealProperty ? {
     id: selectedProperty.id,
     address: selectedProperty.address,
@@ -389,40 +382,37 @@ export default function UnderwritingPage() {
     dom: undefined,
     status: 'review' as const,
     signals: [] as string[],
-  } : seedDeal;
+  } : null;
 
-  // Use API comps when available and property is selected, otherwise fall back to seed data
-  const currentComps = (useApiComps && apiComps.length > 0) ? apiComps : seedComps;
+  // Use API comps only - no seed data fallback
+  const currentComps = apiComps;
   
   // Reset state when switching properties
   useEffect(() => {
-    const compsForDeal = underwritingSeedData.comps.filter(c => c.leadId === selectedDealId);
-    setSelectedComps(compsForDeal.filter(c => c.selected).map(c => c.id));
-    
-    const repairsForSession = underwritingSeedData.repairItems.filter(
-      r => r.sessionId === underwritingSeedData.sessions.find(s => s.leadId === selectedDealId)?.id
-    );
-    setRepairItems(repairsForSession.length > 0 ? repairsForSession : [
-      { id: "NEW-1", sessionId: currentSession?.id || "", category: "Exterior", description: "Roof Replacement", qty: 1, uom: "sqft", unitCost: 7, totalCost: 10500, note: "", confidence: "high" as const },
-      { id: "NEW-2", sessionId: currentSession?.id || "", category: "Interior", description: "Kitchen Renovation", qty: 1, uom: "job", unitCost: 15000, totalCost: 15000, note: "", confidence: "high" as const },
-      { id: "NEW-3", sessionId: currentSession?.id || "", category: "Interior", description: "Bathroom Remodel", qty: 2, uom: "each", unitCost: 5000, totalCost: 10000, note: "", confidence: "medium" as const },
-      { id: "NEW-4", sessionId: currentSession?.id || "", category: "Flooring", description: "LVP Installation", qty: 1200, uom: "sqft", unitCost: 4.5, totalCost: 5400, note: "", confidence: "high" as const },
-      { id: "NEW-5", sessionId: currentSession?.id || "", category: "Interior", description: "Paint Interior", qty: 1, uom: "job", unitCost: 3500, totalCost: 3500, note: "", confidence: "medium" as const }
-    ]);
-    
+    // Reset comps selection when API comps change
+    if (apiComps.length > 0) {
+      setSelectedComps(apiComps.filter(c => c.selected).map(c => c.id));
+    } else {
+      setSelectedComps([]);
+    }
+
+    // Start with empty repair items - user will add their own
+    setRepairItems([]);
+
     // Reset sliders
     setArvAdjustment(0);
     setRepairsAdjustment(0);
     setDaysHeldAdjustment(0);
-  }, [selectedDealId, currentSession?.id]);
+  }, [selectedPropertyId, apiComps]);
   
   // Calculate ARV based on method
   const calculateARV = () => {
     const selected = currentComps.filter(c => selectedComps.includes(c.id));
     if (selected.length === 0) return 0;
 
-    // Use selected property's sqft if available (API mode), otherwise use seed deal
-    const subjectSqft = selectedProperty?.squareFeet || currentDeal?.sqft || 0;
+    // Use selected property's sqft - no fallback
+    const subjectSqft = selectedProperty?.squareFeet || 0;
+    if (subjectSqft === 0) return 0;
 
     switch (arvMethod) {
       case "median": {
@@ -459,13 +449,23 @@ export default function UnderwritingPage() {
   const baseRepairs = repairItems.reduce((sum, item) => sum + item.totalCost, 0);
   const adjustedRepairs = baseRepairs * (1 + repairsAdjustment / 100);
   
+  // Default assumptions for calculations (can be made user-configurable later)
+  const defaultAssumptions = {
+    realtorPct: 0.06,
+    closingPct: 0.03,
+    holdingPerDay: 50,
+    rehabDays: 90,
+    profitTargetPct: 0.15,
+  };
+
   // Calculate MAO
   const calculateMAO = () => {
-    const assumptions = underwritingSeedData.assumptions;
-    const realtorFees = adjustedARV * assumptions.realtorPct;
-    const closingCosts = adjustedARV * assumptions.closingPct;
-    const holdingCosts = assumptions.holdingPerDay * (assumptions.rehabDays + daysHeldAdjustment);
-    const desiredProfit = adjustedARV * assumptions.profitTargetPct;
+    if (adjustedARV === 0) return 0;
+
+    const realtorFees = adjustedARV * defaultAssumptions.realtorPct;
+    const closingCosts = adjustedARV * defaultAssumptions.closingPct;
+    const holdingCosts = defaultAssumptions.holdingPerDay * (defaultAssumptions.rehabDays + daysHeldAdjustment);
+    const desiredProfit = adjustedARV * defaultAssumptions.profitTargetPct;
     
     const calculatedMAO = adjustedARV - adjustedRepairs - realtorFees - closingCosts - holdingCosts - desiredProfit;
     return Math.max(0, calculatedMAO); // Never return negative MAO
@@ -833,46 +833,53 @@ export default function UnderwritingPage() {
                       <CardTitle>Property Details</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Address</span>
-                            <span className="text-sm font-medium">{currentDeal?.address}</span>
+                      {currentDeal ? (
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Address</span>
+                              <span className="text-sm font-medium">{currentDeal.address}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Beds / Baths</span>
+                              <span className="text-sm font-medium">{currentDeal.beds || '-'} / {currentDeal.baths || '-'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Square Feet</span>
+                              <span className="text-sm font-medium">{currentDeal.sqft ? currentDeal.sqft.toLocaleString() : '-'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Year Built</span>
+                              <span className="text-sm font-medium">{currentDeal.yearBuilt || '-'}</span>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Beds / Baths</span>
-                            <span className="text-sm font-medium">{currentDeal?.beds} / {currentDeal?.baths}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Square Feet</span>
-                            <span className="text-sm font-medium">{currentDeal?.sqft?.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Year Built</span>
-                            <span className="text-sm font-medium">{currentDeal?.yearBuilt}</span>
+                          <div className="space-y-3">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Owner</span>
+                              <span className="text-sm font-medium">{currentDeal.owner || '-'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">List Price</span>
+                              <span className="text-sm font-medium">
+                                {currentDeal.listPrice ? `$${Math.round(currentDeal.listPrice).toLocaleString()}` : '-'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Days on Market</span>
+                              <span className="text-sm font-medium">{currentDeal.dom || '-'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-gray-600">Property Type</span>
+                              <span className="text-sm font-medium">Single Family</span>
+                            </div>
                           </div>
                         </div>
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Owner</span>
-                            <span className="text-sm font-medium">{currentDeal?.owner}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">List Price</span>
-                            <span className="text-sm font-medium">
-                              {currentDeal?.listPrice ? `$${Math.round(currentDeal.listPrice).toLocaleString()}` : 'Not Listed'}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Days on Market</span>
-                            <span className="text-sm font-medium">{currentDeal?.dom || 'N/A'}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Property Type</span>
-                            <span className="text-sm font-medium">Single Family</span>
-                          </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                          <Home className="h-8 w-8 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500">Select a property to view details</p>
                         </div>
-                      </div>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -1396,7 +1403,7 @@ export default function UnderwritingPage() {
           </div>
         </div>
 
-        {!rightPanelCollapsed && currentDeal && (
+        {!rightPanelCollapsed && (
           <div className="flex-1 overflow-y-auto">
             <div className="p-3 space-y-3">
               {/* Lead Info */}
@@ -1405,25 +1412,26 @@ export default function UnderwritingPage() {
                   <CardTitle className="text-sm">Lead Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback>{currentDeal.owner.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-sm">{currentDeal.owner}</p>
-                      <p className="text-xs text-gray-500">Property Owner</p>
+                  {currentDeal ? (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback>{currentDeal.owner ? currentDeal.owner.split(' ').map(n => n[0]).join('') : '?'}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-sm">{currentDeal.owner || 'Unknown'}</p>
+                          <p className="text-xs text-gray-500">Property Owner</p>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-sm text-gray-500">
+                        <p className="text-xs italic">Contact info will appear once skip traced</p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-gray-500">Select a property to view lead info</p>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="h-4 w-4 text-gray-400" />
-                      <span>(555) 123-4567</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Mail className="h-4 w-4 text-gray-400" />
-                      <span>owner@email.com</span>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -1433,13 +1441,17 @@ export default function UnderwritingPage() {
                   <CardTitle className="text-sm">Property Signals</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {currentDeal.signals.map((signal, idx) => (
-                      <Badge key={idx} variant="outline">
-                        {signal}
-                      </Badge>
-                    ))}
-                  </div>
+                  {currentDeal && currentDeal.signals.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {currentDeal.signals.map((signal, idx) => (
+                        <Badge key={idx} variant="outline">
+                          {signal}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-2">No signals detected</p>
+                  )}
                 </CardContent>
               </Card>
 

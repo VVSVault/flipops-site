@@ -54,7 +54,7 @@ export function DashboardPreview() {
 
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary/5 to-accent/5 p-6">
-      <div className="bg-background/95 backdrop-blur rounded-xl p-6 space-y-6">
+      <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur rounded-xl p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold">FlipOps Dashboard</h3>

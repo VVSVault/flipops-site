@@ -43,7 +43,7 @@ export function CaseStudies() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-foreground">
+          <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
             Real Results from My Portfolio
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -180,7 +180,7 @@ export function CaseStudies() {
                 </Card>
               </div>
 
-              <Card className="mt-8 p-6 bg-muted/30">
+              <Card className="mt-8 p-6 bg-gray-100 dark:bg-zinc-800">
                 <p className="text-lg italic text-center">
                   &ldquo;{study.testimonial}&rdquo;
                 </p>

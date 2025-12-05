@@ -6,7 +6,7 @@ import { processSteps } from '@/app/data/features';
 
 export function Process() {
   return (
-    <section id="process" className="py-16 lg:py-24 bg-muted/30">
+    <section id="process" className="py-16 lg:py-24 bg-gray-100 dark:bg-zinc-800">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -15,7 +15,7 @@ export function Process() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-foreground">
+          <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
             Simple Process, Real Results
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

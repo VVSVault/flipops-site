@@ -30,7 +30,7 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-5xl lg:text-7xl font-bold mb-6 text-foreground">
+            <h1 className="text-5xl lg:text-7xl font-bold mb-6 text-gray-900 dark:text-white">
               Automation for{' '}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Flippers & Investors
@@ -82,15 +82,15 @@ export function Hero() {
             
             {/* Floating cards animation */}
             <motion.div
-              className="absolute -top-4 -right-4 bg-card rounded-lg shadow-lg p-4 border z-10"
+              className="absolute -top-4 -right-4 bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-4 border dark:border-zinc-700 z-10"
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
               <p className="text-sm font-semibold text-primary">+37% More Deals</p>
             </motion.div>
-            
+
             <motion.div
-              className="absolute -bottom-4 -left-4 bg-card rounded-lg shadow-lg p-4 border z-10"
+              className="absolute -bottom-4 -left-4 bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-4 border dark:border-zinc-700 z-10"
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
             >

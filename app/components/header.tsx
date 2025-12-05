@@ -41,7 +41,7 @@ export function Header() {
     <header
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${
         isScrolled
-          ? 'bg-background/80 backdrop-blur-md border-b'
+          ? 'bg-zinc-800/95 backdrop-blur-md border-b border-zinc-700'
           : 'bg-transparent'
       }`}
     >
@@ -60,14 +60,18 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 onClick={(e) => scrollToSection(e, item.href)}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className={`text-sm font-medium transition-colors ${
+                  isScrolled
+                    ? 'text-gray-300 hover:text-white'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
                 {item.label}
               </Link>
             ))}
             <ThemeToggle />
             <Link href="/sign-in">
-              <Button variant="outline" className="ml-4" size="sm">
+              <Button variant="outline" className={`ml-4 ${isScrolled ? 'border-zinc-600 text-white hover:bg-zinc-700' : ''}`} size="sm">
                 Login
               </Button>
             </Link>

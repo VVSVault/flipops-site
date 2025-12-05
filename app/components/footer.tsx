@@ -6,7 +6,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-card border-t">
+    <footer className="bg-zinc-900 border-t border-zinc-800">
       <div className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -14,19 +14,19 @@ export function Footer() {
             <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4">
               {brandName}
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-gray-400 mb-4">
               Automation for Flippers & Investors — more deals in, less cash burned during rehab.
             </p>
             <div className="flex gap-4">
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="#" className="text-gray-400 hover:text-primary transition-colors">
                 <Linkedin className="h-5 w-5" />
                 <span className="sr-only">LinkedIn</span>
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="#" className="text-gray-400 hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
                 <span className="sr-only">Twitter</span>
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="#" className="text-gray-400 hover:text-primary transition-colors">
                 <Youtube className="h-5 w-5" />
                 <span className="sr-only">YouTube</span>
               </Link>
@@ -35,25 +35,25 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
+            <h4 className="font-semibold mb-4 text-white">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="#deal-flow" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="#deal-flow" className="text-gray-400 hover:text-white transition-colors">
                   Deal Flow
                 </Link>
               </li>
               <li>
-                <Link href="#operations" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="#operations" className="text-gray-400 hover:text-white transition-colors">
                   Operations
                 </Link>
               </li>
               <li>
-                <Link href="#roi-calculator" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="#roi-calculator" className="text-gray-400 hover:text-white transition-colors">
                   ROI Calculator
                 </Link>
               </li>
               <li>
-                <Link href="#case-study" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="#case-study" className="text-gray-400 hover:text-white transition-colors">
                   Case Studies
                 </Link>
               </li>
@@ -62,21 +62,21 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-semibold mb-4">Contact</h4>
+            <h4 className="font-semibold mb-4 text-white">Contact</h4>
             <ul className="space-y-2">
               <li>
-                <a 
-                  href="mailto:hello@flipops.io" 
-                  className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+                <a
+                  href="mailto:hello@flipops.io"
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                 >
                   <Mail className="h-4 w-4" />
                   hello@flipops.io
                 </a>
               </li>
               <li>
-                <a 
-                  href="tel:+15555551234" 
-                  className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+                <a
+                  href="tel:+15555551234"
+                  className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                 >
                   <Phone className="h-4 w-4" />
                   (555) 555-1234
@@ -86,16 +86,16 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t">
+        <div className="mt-12 pt-8 border-t border-zinc-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-400">
               © {currentYear} {brandName}. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/privacy" className="text-sm text-gray-400 hover:text-white transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link href="/terms" className="text-sm text-gray-400 hover:text-white transition-colors">
                 Terms of Service
               </Link>
             </div>

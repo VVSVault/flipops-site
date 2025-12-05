@@ -17,7 +17,7 @@ export function FeatureGrid() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-foreground">
+            <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
               Deal-Flow Automations
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -40,7 +40,7 @@ export function FeatureGrid() {
                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 mb-4">
                       <Icon className="h-6 w-6 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-2 text-foreground">{feature.title}</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">{feature.title}</h3>
                     <p className="text-sm text-muted-foreground">
                       {feature.description}
                     </p>
@@ -53,7 +53,7 @@ export function FeatureGrid() {
       </section>
 
       {/* Operations Section */}
-      <section id="operations" className="py-16 lg:py-24 bg-muted/30">
+      <section id="operations" className="py-16 lg:py-24 bg-gray-100 dark:bg-zinc-800">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -62,7 +62,7 @@ export function FeatureGrid() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-foreground">
+            <h2 className="text-3xl lg:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
               Operations Automations
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -85,7 +85,7 @@ export function FeatureGrid() {
                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-accent/10 mb-4">
                       <Icon className="h-6 w-6 text-accent" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-2 text-foreground">{feature.title}</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">{feature.title}</h3>
                     <p className="text-sm text-muted-foreground">
                       {feature.description}
                     </p>

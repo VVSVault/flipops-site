@@ -5,7 +5,7 @@ import { metrics } from '@/app/data/features';
 
 export function KPICards() {
   return (
-    <section className="py-12 bg-muted/30 border-y">
+    <section className="py-12 bg-gray-100 dark:bg-zinc-800 border-y border-gray-200 dark:border-zinc-700">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <p className="text-sm font-medium text-muted-foreground">

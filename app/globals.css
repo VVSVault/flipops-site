@@ -2,36 +2,40 @@
 @import "tailwindcss";
 
 /*
- * Theme colors using oklch for better color perception.
- * These are static values that Tailwind v4 uses to generate utilities.
- * For dynamic light/dark mode, we override via CSS custom properties below.
+ * Define the dark variant for .dark class on html element
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Theme colors - static values for utility generation
  */
 @theme {
-  /* Primary teal color */
+  /* Primary teal */
   --color-primary: oklch(0.596 0.154 162.243);
   --color-primary-foreground: oklch(0.985 0 0);
 
-  /* Accent blue color */
+  /* Accent blue */
   --color-accent: oklch(0.663 0.173 216.618);
   --color-accent-foreground: oklch(0.985 0 0);
 
   /* Destructive red */
   --color-destructive: oklch(0.577 0.245 27.325);
+  --color-destructive-foreground: oklch(0.985 0 0);
 
-  /* These will be overridden by CSS vars for theme switching */
-  --color-background: oklch(var(--background));
-  --color-foreground: oklch(var(--foreground));
-  --color-card: oklch(var(--card));
-  --color-card-foreground: oklch(var(--card-foreground));
-  --color-popover: oklch(var(--popover));
-  --color-popover-foreground: oklch(var(--popover-foreground));
-  --color-secondary: oklch(var(--secondary));
-  --color-secondary-foreground: oklch(var(--secondary-foreground));
-  --color-muted: oklch(var(--muted));
-  --color-muted-foreground: oklch(var(--muted-foreground));
-  --color-border: oklch(var(--border));
-  --color-input: oklch(var(--input));
-  --color-ring: oklch(var(--ring));
+  /* Semantic colors - light mode defaults */
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.145 0 0);
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.145 0 0);
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.145 0 0);
+  --color-secondary: oklch(0.97 0 0);
+  --color-secondary-foreground: oklch(0.205 0 0);
+  --color-muted: oklch(0.97 0 0);
+  --color-muted-foreground: oklch(0.556 0 0);
+  --color-border: oklch(0.922 0 0);
+  --color-input: oklch(0.922 0 0);
+  --color-ring: oklch(0.596 0.154 162.243);
 
   --radius: 0.75rem;
   --radius-lg: 0.75rem;
@@ -39,7 +43,7 @@
   --radius-sm: calc(0.75rem - 4px);
 }
 
-/* Light mode (default) - oklch channel values (L C H) */
+/* Light mode CSS variables for use in components */
 :root {
   --background: 1 0 0;
   --foreground: 0.145 0 0;
@@ -56,20 +60,20 @@
   --ring: 0.596 0.154 162.243;
 }
 
-/* Dark mode - darker backgrounds for proper contrast */
+/* Dark mode overrides */
 .dark {
-  --background: 0.12 0 0;
+  --background: 0.1 0 0;
   --foreground: 0.95 0 0;
-  --card: 0.16 0 0;
+  --card: 0.15 0 0;
   --card-foreground: 0.95 0 0;
-  --popover: 0.16 0 0;
+  --popover: 0.15 0 0;
   --popover-foreground: 0.95 0 0;
-  --secondary: 0.2 0 0;
+  --secondary: 0.18 0 0;
   --secondary-foreground: 0.95 0 0;
-  --muted: 0.2 0 0;
+  --muted: 0.18 0 0;
   --muted-foreground: 0.65 0 0;
   --border: 0.25 0 0;
-  --input: 0.2 0 0;
+  --input: 0.18 0 0;
   --ring: 0.596 0.154 162.243;
 }
 
@@ -85,5 +89,13 @@
     background-color: oklch(var(--background));
     color: oklch(var(--foreground));
     overflow-x: hidden;
+  }
+}
+
+/* Override Card and other component backgrounds for dark mode */
+@layer components {
+  [data-slot="card"] {
+    background-color: oklch(var(--card));
+    color: oklch(var(--card-foreground));
   }
 }

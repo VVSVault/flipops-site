@@ -62,6 +62,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useUser } from "@clerk/nextjs";
 
 interface Task {
   id: string;
@@ -92,6 +93,7 @@ interface Task {
 }
 
 export default function TasksPage() {
+  const { isLoaded, user } = useUser();
   const [isMounted, setIsMounted] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -137,9 +139,11 @@ export default function TasksPage() {
         setTasks(data.tasks || []);
       } else {
         console.error("Failed to fetch tasks");
+        toast.error("Failed to load tasks");
       }
     } catch (error) {
       console.error("Error fetching tasks:", error);
+      toast.error("Failed to load tasks");
     } finally {
       setLoading(false);
     }

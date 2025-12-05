@@ -47,6 +47,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useUser } from "@clerk/nextjs";
 import { underwritingSeedData, type RepairItem } from "./seed-data";
 
 interface Property {
@@ -82,6 +83,7 @@ interface SavedAnalysis {
 }
 
 export default function UnderwritingPage() {
+  const { isLoaded, user } = useUser();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

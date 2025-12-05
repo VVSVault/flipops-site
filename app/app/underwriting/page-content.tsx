@@ -360,15 +360,36 @@ export default function UnderwritingPage() {
     // TODO: Populate ARV, repairs, etc. from saved analysis
   };
 
-  // Get current deal data (keep for backward compatibility with seed data)
-  const currentDeal = underwritingSeedData.deals.find(d => d.id === selectedDealId);
+  // Get the selected property for API-based underwriting
+  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+
+  // Get seed data (only used as fallback when no real properties)
+  const seedDeal = underwritingSeedData.deals.find(d => d.id === selectedDealId);
   const currentSession = underwritingSeedData.sessions.find(s => s.leadId === selectedDealId);
   const seedComps = underwritingSeedData.comps.filter(c => c.leadId === selectedDealId);
   const currentRepairs = underwritingSeedData.repairItems.filter(r => r.sessionId === currentSession?.id);
   const currentHistory = underwritingSeedData.history.filter(h => h.sessionId === currentSession?.id);
 
-  // Get the selected property for API-based underwriting
-  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+  // Determine if we're using real API data or seed data
+  const hasRealProperty = selectedProperty !== undefined;
+
+  // Create a unified property object - use real data when available
+  const currentDeal = hasRealProperty ? {
+    id: selectedProperty.id,
+    address: selectedProperty.address,
+    city: selectedProperty.city,
+    state: selectedProperty.state,
+    zip: selectedProperty.zip || '',
+    owner: selectedProperty.ownerName || 'Unknown Owner',
+    beds: selectedProperty.bedrooms || 0,
+    baths: selectedProperty.bathrooms || 0,
+    sqft: selectedProperty.squareFeet || 0,
+    yearBuilt: selectedProperty.yearBuilt || 0,
+    listPrice: selectedProperty.estimatedValue || undefined,
+    dom: undefined,
+    status: 'review' as const,
+    signals: [] as string[],
+  } : seedDeal;
 
   // Use API comps when available and property is selected, otherwise fall back to seed data
   const currentComps = (useApiComps && apiComps.length > 0) ? apiComps : seedComps;
@@ -619,6 +640,11 @@ export default function UnderwritingPage() {
         <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
+              <div className="flex items-center gap-2">
+                <Badge variant={hasRealProperty ? "default" : "secondary"} className="text-[10px]">
+                  {hasRealProperty ? "Live Data" : "Demo Data"}
+                </Badge>
+              </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">After Repair Value</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">${Math.round(adjustedARV).toLocaleString()}</p>

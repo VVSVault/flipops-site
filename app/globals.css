@@ -22,7 +22,7 @@
   --color-destructive: oklch(0.577 0.245 27.325);
   --color-destructive-foreground: oklch(0.985 0 0);
 
-  /* Semantic colors - light mode defaults */
+  /* These need to be set for Tailwind to generate the utility classes */
   --color-background: oklch(1 0 0);
   --color-foreground: oklch(0.145 0 0);
   --color-card: oklch(1 0 0);
@@ -43,59 +43,96 @@
   --radius-sm: calc(0.75rem - 4px);
 }
 
-/* Light mode CSS variables for use in components */
-:root {
-  --background: 1 0 0;
-  --foreground: 0.145 0 0;
-  --card: 1 0 0;
-  --card-foreground: 0.145 0 0;
-  --popover: 1 0 0;
-  --popover-foreground: 0.145 0 0;
-  --secondary: 0.97 0 0;
-  --secondary-foreground: 0.205 0 0;
-  --muted: 0.97 0 0;
-  --muted-foreground: 0.556 0 0;
-  --border: 0.922 0 0;
-  --input: 0.922 0 0;
-  --ring: 0.596 0.154 162.243;
-}
-
-/* Dark mode overrides */
-.dark {
-  --background: 0.1 0 0;
-  --foreground: 0.95 0 0;
-  --card: 0.15 0 0;
-  --card-foreground: 0.95 0 0;
-  --popover: 0.15 0 0;
-  --popover-foreground: 0.95 0 0;
-  --secondary: 0.18 0 0;
-  --secondary-foreground: 0.95 0 0;
-  --muted: 0.18 0 0;
-  --muted-foreground: 0.65 0 0;
-  --border: 0.25 0 0;
-  --input: 0.18 0 0;
-  --ring: 0.596 0.154 162.243;
-}
-
 @layer base {
   * {
-    border-color: oklch(var(--border));
-    outline-color: oklch(var(--ring) / 0.5);
+    border-color: oklch(0.922 0 0);
+  }
+  .dark * {
+    border-color: oklch(0.3 0 0);
   }
   html {
     overflow-x: hidden;
   }
   body {
-    background-color: oklch(var(--background));
-    color: oklch(var(--foreground));
+    background-color: oklch(1 0 0);
+    color: oklch(0.145 0 0);
     overflow-x: hidden;
+  }
+  .dark body {
+    background-color: oklch(0.08 0 0);
+    color: oklch(0.95 0 0);
   }
 }
 
-/* Override Card and other component backgrounds for dark mode */
+/*
+ * Explicit dark mode overrides for components
+ * Since Tailwind v4 @theme doesn't support dynamic CSS variables,
+ * we override components directly
+ */
 @layer components {
+  /* Cards */
   [data-slot="card"] {
-    background-color: oklch(var(--card));
-    color: oklch(var(--card-foreground));
+    background-color: oklch(1 0 0);
+    color: oklch(0.145 0 0);
+  }
+  .dark [data-slot="card"] {
+    background-color: oklch(0.14 0 0);
+    color: oklch(0.95 0 0);
+  }
+
+  /* Muted backgrounds (sections with bg-muted/30 etc) */
+  .bg-muted\/30 {
+    background-color: oklch(0.97 0 0 / 30%);
+  }
+  .dark .bg-muted\/30 {
+    background-color: oklch(0.18 0 0 / 30%);
+  }
+
+  /* Background utilities */
+  .bg-background {
+    background-color: oklch(1 0 0);
+  }
+  .dark .bg-background {
+    background-color: oklch(0.08 0 0);
+  }
+  .bg-background\/95 {
+    background-color: oklch(1 0 0 / 95%);
+  }
+  .dark .bg-background\/95 {
+    background-color: oklch(0.08 0 0 / 95%);
+  }
+  .bg-background\/80 {
+    background-color: oklch(1 0 0 / 80%);
+  }
+  .dark .bg-background\/80 {
+    background-color: oklch(0.08 0 0 / 80%);
+  }
+
+  /* Card background */
+  .bg-card {
+    background-color: oklch(1 0 0);
+  }
+  .dark .bg-card {
+    background-color: oklch(0.14 0 0);
+  }
+
+  /* Text colors */
+  .text-foreground {
+    color: oklch(0.145 0 0);
+  }
+  .dark .text-foreground {
+    color: oklch(0.95 0 0);
+  }
+  .text-muted-foreground {
+    color: oklch(0.556 0 0);
+  }
+  .dark .text-muted-foreground {
+    color: oklch(0.65 0 0);
+  }
+  .text-card-foreground {
+    color: oklch(0.145 0 0);
+  }
+  .dark .text-card-foreground {
+    color: oklch(0.95 0 0);
   }
 }

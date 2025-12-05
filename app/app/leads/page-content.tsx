@@ -12,7 +12,8 @@ import {
   Calendar,
   AlertCircle,
   RefreshCw,
-  MessageSquare
+  MessageSquare,
+  Download
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface Property {
   id: string;
@@ -307,6 +309,32 @@ export default function LeadsPage() {
     }
   };
 
+  const exportToCSV = () => {
+    if (filteredProperties.length === 0) {
+      toast.error("No properties to export");
+      return;
+    }
+
+    let csvContent = "Address,City,State,ZIP,Owner,Score,Status,Data Source,Last Contact,Sentiment,Signals\n";
+
+    filteredProperties.forEach(p => {
+      const signals = getDistressSignals(p).join("; ");
+      csvContent += `"${p.address}",${p.city},${p.state},${p.zip || ""},"${p.ownerName || ""}",${p.score || ""},${p.outreachStatus || "not_contacted"},${p.dataSource},${p.lastContactDate || ""},${p.sentiment || ""},"${signals}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `leads-export-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(`Exported ${filteredProperties.length} leads to CSV`);
+  };
+
   if (!isMounted) {
     return <div>Loading...</div>;
   }
@@ -355,6 +383,10 @@ export default function LeadsPage() {
             {filteredProperties.length} properties • {properties.filter(p => p.outreachStatus === 'not_contacted').length} not contacted
           </p>
         </div>
+        <Button variant="outline" onClick={exportToCSV} disabled={filteredProperties.length === 0}>
+          <Download className="h-4 w-4 mr-2" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Filters and Search */}

@@ -102,6 +102,12 @@ export default function UnderwritingPage() {
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
   const [savingAnalysis, setSavingAnalysis] = useState(false);
 
+  // API Comps state
+  const [apiComps, setApiComps] = useState<any[]>([]);
+  const [loadingComps, setLoadingComps] = useState(false);
+  const [compsStats, setCompsStats] = useState<{ avgPricePerSqft: number; medianPricePerSqft: number } | null>(null);
+  const [useApiComps, setUseApiComps] = useState(true);
+
   // Offer creation
   const [offerDialogOpen, setOfferDialogOpen] = useState(false);
   const [creatingOffer, setCreatingOffer] = useState(false);
@@ -156,6 +162,7 @@ export default function UnderwritingPage() {
   useEffect(() => {
     if (selectedPropertyId) {
       fetchAnalyses();
+      fetchComps();
     }
   }, [selectedPropertyId]);
 
@@ -170,6 +177,54 @@ export default function UnderwritingPage() {
       }
     } catch (error) {
       console.error('Error fetching analyses:', error);
+    }
+  };
+
+  // Fetch comparable properties from API
+  const fetchComps = async () => {
+    if (!selectedPropertyId) return;
+
+    // Get the selected property details
+    const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+    if (!selectedProperty) return;
+
+    try {
+      setLoadingComps(true);
+      const params = new URLSearchParams({
+        city: selectedProperty.city,
+        state: selectedProperty.state,
+        excludeId: selectedPropertyId,
+        limit: '10',
+      });
+
+      // Add optional filters
+      if (selectedProperty.propertyType) params.set('propertyType', selectedProperty.propertyType);
+      if (selectedProperty.bedrooms) params.set('beds', String(selectedProperty.bedrooms));
+      if (selectedProperty.bathrooms) params.set('baths', String(selectedProperty.bathrooms));
+      if (selectedProperty.squareFeet) params.set('sqft', String(selectedProperty.squareFeet));
+      if (selectedProperty.yearBuilt) params.set('yearBuilt', String(selectedProperty.yearBuilt));
+
+      const response = await fetch(`/api/comps?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.comps && data.comps.length > 0) {
+          setApiComps(data.comps);
+          setCompsStats(data.stats);
+          setUseApiComps(true);
+          // Auto-select comps that are already marked as selected from API
+          setSelectedComps(data.comps.filter((c: any) => c.selected).map((c: any) => c.id));
+        } else {
+          // Fall back to seed data if no API comps found
+          setUseApiComps(false);
+        }
+      } else {
+        setUseApiComps(false);
+      }
+    } catch (error) {
+      console.error('Error fetching comps:', error);
+      setUseApiComps(false);
+    } finally {
+      setLoadingComps(false);
     }
   };
 
@@ -308,9 +363,15 @@ export default function UnderwritingPage() {
   // Get current deal data (keep for backward compatibility with seed data)
   const currentDeal = underwritingSeedData.deals.find(d => d.id === selectedDealId);
   const currentSession = underwritingSeedData.sessions.find(s => s.leadId === selectedDealId);
-  const currentComps = underwritingSeedData.comps.filter(c => c.leadId === selectedDealId);
+  const seedComps = underwritingSeedData.comps.filter(c => c.leadId === selectedDealId);
   const currentRepairs = underwritingSeedData.repairItems.filter(r => r.sessionId === currentSession?.id);
   const currentHistory = underwritingSeedData.history.filter(h => h.sessionId === currentSession?.id);
+
+  // Get the selected property for API-based underwriting
+  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+
+  // Use API comps when available and property is selected, otherwise fall back to seed data
+  const currentComps = (useApiComps && apiComps.length > 0) ? apiComps : seedComps;
   
   // Reset state when switching properties
   useEffect(() => {
@@ -338,12 +399,15 @@ export default function UnderwritingPage() {
   const calculateARV = () => {
     const selected = currentComps.filter(c => selectedComps.includes(c.id));
     if (selected.length === 0) return 0;
-    
+
+    // Use selected property's sqft if available (API mode), otherwise use seed deal
+    const subjectSqft = selectedProperty?.squareFeet || currentDeal?.sqft || 0;
+
     switch (arvMethod) {
       case "median": {
         const prices = selected.map(c => c.pricePerSqft).sort((a, b) => a - b);
         const median = prices[Math.floor(prices.length / 2)];
-        return median * (currentDeal?.sqft || 0);
+        return median * subjectSqft;
       }
       case "weighted": {
         let totalWeight = 0;
@@ -355,13 +419,13 @@ export default function UnderwritingPage() {
           totalWeight += weight;
           weightedSum += comp.pricePerSqft * weight;
         });
-        return (weightedSum / totalWeight) * (currentDeal?.sqft || 0);
+        return (weightedSum / totalWeight) * subjectSqft;
       }
       case "knn": {
         // Simplified kNN - just use top 3 by similarity
-        const top3 = selected.sort((a, b) => b.similarity - a.similarity).slice(0, 3);
+        const top3 = [...selected].sort((a, b) => b.similarity - a.similarity).slice(0, 3);
         const avgPricePerSqft = top3.reduce((sum, c) => sum + c.pricePerSqft, 0) / top3.length;
-        return avgPricePerSqft * (currentDeal?.sqft || 0);
+        return avgPricePerSqft * subjectSqft;
       }
       default:
         return 0;
@@ -811,46 +875,75 @@ export default function UnderwritingPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-12">Select</TableHead>
-                            <TableHead>Address</TableHead>
-                            <TableHead>Sold Date</TableHead>
-                            <TableHead>Sold Price</TableHead>
-                            <TableHead>Beds/Baths</TableHead>
-                            <TableHead>Sqft</TableHead>
-                            <TableHead>$/Sqft</TableHead>
-                            <TableHead>Distance</TableHead>
-                            <TableHead>Similarity</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {currentComps.map((comp) => (
-                            <TableRow key={comp.id}>
-                              <TableCell>
-                                <Checkbox
-                                  checked={selectedComps.includes(comp.id)}
-                                  onCheckedChange={() => toggleCompSelection(comp.id)}
-                                />
-                              </TableCell>
-                              <TableCell className="font-medium">{comp.address}</TableCell>
-                              <TableCell>{new Date(comp.soldDate).toLocaleDateString()}</TableCell>
-                              <TableCell>${Math.round(comp.soldPrice).toLocaleString()}</TableCell>
-                              <TableCell>{comp.beds}/{comp.baths}</TableCell>
-                              <TableCell>{comp.sqft.toLocaleString()}</TableCell>
-                              <TableCell>${Math.round(comp.pricePerSqft)}</TableCell>
-                              <TableCell>{comp.distance} mi</TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Progress value={comp.similarity} className="w-16 h-2" />
-                                  <span className="text-xs">{comp.similarity}%</span>
-                                </div>
-                              </TableCell>
+                      {/* Show data source indicator */}
+                      {selectedPropertyId && (
+                        <div className="mb-4 flex items-center gap-2">
+                          <Badge variant={useApiComps && apiComps.length > 0 ? "default" : "secondary"}>
+                            {useApiComps && apiComps.length > 0 ? "Live Data" : "Demo Data"}
+                          </Badge>
+                          {compsStats && (
+                            <span className="text-xs text-gray-500">
+                              Avg: ${compsStats.avgPricePerSqft}/sqft | Median: ${compsStats.medianPricePerSqft}/sqft
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {loadingComps ? (
+                        <div className="flex items-center justify-center py-8">
+                          <p className="text-sm text-gray-500">Loading comparable properties...</p>
+                        </div>
+                      ) : currentComps.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 text-center">
+                          <MapPin className="h-8 w-8 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500">
+                            {selectedPropertyId
+                              ? "No comparable properties found. Try selecting a different property or adjusting filters."
+                              : "Select a property to find comparable properties."}
+                          </p>
+                        </div>
+                      ) : (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-12">Select</TableHead>
+                              <TableHead>Address</TableHead>
+                              <TableHead>Sold Date</TableHead>
+                              <TableHead>Sold Price</TableHead>
+                              <TableHead>Beds/Baths</TableHead>
+                              <TableHead>Sqft</TableHead>
+                              <TableHead>$/Sqft</TableHead>
+                              <TableHead>Distance</TableHead>
+                              <TableHead>Similarity</TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {currentComps.map((comp) => (
+                              <TableRow key={comp.id}>
+                                <TableCell>
+                                  <Checkbox
+                                    checked={selectedComps.includes(comp.id)}
+                                    onCheckedChange={() => toggleCompSelection(comp.id)}
+                                  />
+                                </TableCell>
+                                <TableCell className="font-medium">{comp.address}</TableCell>
+                                <TableCell>{comp.soldDate ? new Date(comp.soldDate).toLocaleDateString() : 'N/A'}</TableCell>
+                                <TableCell>${Math.round(comp.soldPrice).toLocaleString()}</TableCell>
+                                <TableCell>{comp.beds}/{comp.baths}</TableCell>
+                                <TableCell>{comp.sqft?.toLocaleString() || 'N/A'}</TableCell>
+                                <TableCell>${Math.round(comp.pricePerSqft)}</TableCell>
+                                <TableCell>{typeof comp.distance === 'number' ? comp.distance.toFixed(2) : comp.distance} mi</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Progress value={comp.similarity} className="w-16 h-2" />
+                                    <span className="text-xs">{comp.similarity}%</span>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      )}
                     </CardContent>
                   </Card>
 
@@ -1141,6 +1234,75 @@ export default function UnderwritingPage() {
               {/* History Tab */}
               <TabsContent value="history" className="mt-0">
                 <div className="space-y-4">
+                  {/* Show saved analyses from API if property is selected */}
+                  {selectedPropertyId && savedAnalyses.length > 0 && (
+                    <>
+                      <div className="mb-4">
+                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Saved Analyses</h4>
+                        {savedAnalyses.map((analysis) => (
+                          <Card key={analysis.id} className="mb-2">
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-4">
+                                <Calculator className="h-5 w-5 text-blue-500 mt-0.5" />
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div>
+                                      <span className="font-medium text-sm">{analysis.name || 'Analysis'}</span>
+                                      <span className="text-sm text-gray-500 ml-2">
+                                        {new Date(analysis.createdAt).toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => loadAnalysis(analysis)}
+                                    >
+                                      Load
+                                    </Button>
+                                  </div>
+                                  <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs space-y-1">
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">ARV:</span>
+                                      <span className="font-medium">${Math.round(analysis.arv).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Repairs:</span>
+                                      <span className="font-medium">${Math.round(analysis.repairTotal).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">MAO:</span>
+                                      <span className="font-medium">${Math.round(analysis.maxOffer).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Method:</span>
+                                      <span className="font-medium capitalize">{analysis.arvMethod}</span>
+                                    </div>
+                                  </div>
+                                  {analysis.notes && (
+                                    <p className="text-xs text-gray-500 mt-2">{analysis.notes}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {/* Show seed data history as demo */}
+                  {(!selectedPropertyId || savedAnalyses.length === 0) && (
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-500 mb-2">
+                        {selectedPropertyId
+                          ? "No saved analyses yet. Save an analysis to see it here."
+                          : "Select a property to see saved analyses."}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Always show seed data history for demo */}
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Demo History</h4>
                   {currentHistory.map((entry) => (
                     <Card key={entry.id}>
                       <CardContent className="p-4">

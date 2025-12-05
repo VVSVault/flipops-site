@@ -27,6 +27,7 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowRight,
+  Download,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -316,6 +317,34 @@ export default function TasksPage() {
     return `${hours}h`;
   };
 
+  const exportToCSV = () => {
+    const tasksToExport = filteredTasks.length > 0 ? filteredTasks : tasks;
+    if (tasksToExport.length === 0) {
+      toast.error("No tasks to export");
+      return;
+    }
+
+    let csvContent = "Title,Type,Priority,Due Date,Status,Property,Description,Created\n";
+
+    tasksToExport.forEach(t => {
+      const status = t.completed ? "Completed" : "Pending";
+      const property = t.property ? `${t.property.address}, ${t.property.city}` : "";
+      csvContent += `"${t.title}",${t.type},${t.priority},${t.dueDate},${status},"${property}","${t.description || ""}",${t.createdAt}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `tasks-export-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(`Exported ${tasksToExport.length} tasks to CSV`);
+  };
+
   if (!isMounted) {
     return <div>Loading...</div>;
   }
@@ -342,14 +371,19 @@ export default function TasksPage() {
                 Manage your to-dos and follow-ups
               </p>
             </div>
-            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Task
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={exportToCSV} disabled={tasks.length === 0}>
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Task
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Create New Task</DialogTitle>
                   <DialogDescription>
@@ -441,6 +475,7 @@ export default function TasksPage() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
 
           {/* Metrics */}

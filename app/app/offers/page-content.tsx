@@ -22,6 +22,7 @@ import {
   AlertCircle,
   FileSignature,
   Plus,
+  Download,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -280,6 +281,32 @@ export default function OffersPage() {
     totalValue: offers.reduce((sum, o) => sum + o.amount, 0),
   };
 
+  const exportToCSV = () => {
+    const offersToExport = filteredOffers.length > 0 ? filteredOffers : offers;
+    if (offersToExport.length === 0) {
+      toast.error("No offers to export");
+      return;
+    }
+
+    let csvContent = "Property,City,State,Owner,Amount,Status,Earnest Money,Closing Date,Sent At,Created\n";
+
+    offersToExport.forEach(o => {
+      csvContent += `"${o.property.address}",${o.property.city},${o.property.state},"${o.property.ownerName || ""}",${o.amount},${o.status},${o.earnestMoney || ""},${o.closingDate || ""},${o.sentAt || ""},${o.createdAt}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `offers-export-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(`Exported ${offersToExport.length} offers to CSV`);
+  };
+
   if (!isMounted) {
     return <div>Loading...</div>;
   }
@@ -295,11 +322,17 @@ export default function OffersPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Offers</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Track and manage all your property offers
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Offers</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Track and manage all your property offers
+          </p>
+        </div>
+        <Button variant="outline" onClick={exportToCSV} disabled={offers.length === 0}>
+          <Download className="h-4 w-4 mr-2" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Stats */}

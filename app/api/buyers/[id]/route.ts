@@ -4,6 +4,65 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 /**
+ * GET /api/buyers/[id]
+ * Get a single buyer with performance data
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const { id } = await params;
+
+    const buyer = await prisma.buyer.findFirst({
+      where: {
+        id,
+        userId,
+      },
+      include: {
+        _count: {
+          select: {
+            assignments: true,
+          },
+        },
+        assignments: {
+          include: {
+            contract: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 5,
+        },
+      },
+    });
+
+    if (!buyer) {
+      return NextResponse.json(
+        { error: 'Buyer not found' },
+        { status: 404 }
+      );
+    }
+
+    // Parse JSON fields
+    const formattedBuyer = {
+      ...buyer,
+      propertyTypes: buyer.propertyTypes ? JSON.parse(buyer.propertyTypes) : null,
+      targetMarkets: buyer.targetMarkets ? JSON.parse(buyer.targetMarkets) : null,
+    };
+
+    return NextResponse.json({ buyer: formattedBuyer });
+  } catch (error) {
+    console.error('Error fetching buyer:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * PATCH /api/buyers/[id]
  * Update a buyer
  * Body: Any buyer fields to update

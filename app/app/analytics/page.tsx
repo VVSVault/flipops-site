@@ -138,6 +138,80 @@ function KPICard({
   );
 }
 
+// Default demo data for fallback
+const DEFAULT_KPIS: KPIMetrics = {
+  leads: 1247,
+  qualifiedLeads: 561,
+  appointments: 280,
+  offers: 168,
+  contracts: 89,
+  closedDeals: 76,
+  netProfit: 1842000,
+  grossProfit: 2156000,
+  totalSpend: 52000,
+  romi: 35.4,
+  roas: 48.2,
+  avgDaysToContract: 12,
+  avgSpeedToLead: 8,
+  conversionRate: 0.061
+};
+
+const DEFAULT_FUNNEL: FunnelStage[] = [
+  { stage: 'Leads', count: 1247, percentage: 100, conversionToNext: 45 },
+  { stage: 'Qualified', count: 561, percentage: 45, conversionToNext: 50 },
+  { stage: 'Appointments', count: 280, percentage: 22.5, conversionToNext: 60 },
+  { stage: 'Offers', count: 168, percentage: 13.5, conversionToNext: 53 },
+  { stage: 'Contracts', count: 89, percentage: 7.1, conversionToNext: 85 },
+  { stage: 'Closed', count: 76, percentage: 6.1 }
+];
+
+const DEFAULT_WATERFALL = [
+  { stage: 'Revenue', value: 3250000, isProfit: true },
+  { stage: 'Purchase', value: 780000 },
+  { stage: 'Gross Profit', value: 2470000, isProfit: true },
+  { stage: 'Rehab', value: 425000 },
+  { stage: 'Holding', value: 87000 },
+  { stage: 'Closing', value: 116000 },
+  { stage: 'Net Profit', value: 1842000, isProfit: true }
+];
+
+const DEFAULT_TRENDS = [
+  { date: new Date('2024-01-01'), value: 380000 },
+  { date: new Date('2024-01-08'), value: 420000 },
+  { date: new Date('2024-01-15'), value: 465000 },
+  { date: new Date('2024-01-22'), value: 512000 },
+  { date: new Date('2024-01-29'), value: 485000 }
+];
+
+const DEFAULT_MARKETING: MarketingMetrics[] = [
+  { channel: 'PPC', spend: 28000, leads: 562, contracts: 45, closedDeals: 38, cpl: 49.82, cpa: 622, cpd: 737, roas: 52.3, romi: 41.2 },
+  { channel: 'SEO', spend: 5000, leads: 245, contracts: 12, closedDeals: 10, cpl: 20.41, cpa: 417, cpd: 500, roas: 28.4, romi: 22.6 },
+  { channel: 'Direct Mail', spend: 8000, leads: 186, contracts: 9, closedDeals: 8, cpl: 43.01, cpa: 889, cpd: 1000, roas: 18.5, romi: 14.2 },
+  { channel: 'Cold Call', spend: 6000, leads: 142, contracts: 7, closedDeals: 6, cpl: 42.25, cpa: 857, cpd: 1000, roas: 15.8, romi: 11.3 },
+  { channel: 'SMS', spend: 3000, leads: 87, contracts: 5, closedDeals: 4, cpl: 34.48, cpa: 600, cpd: 750, roas: 12.6, romi: 9.8 },
+  { channel: 'Referral', spend: 2000, leads: 25, contracts: 11, closedDeals: 10, cpl: 80, cpa: 182, cpd: 200, roas: 85.2, romi: 72.5 }
+];
+
+const DEFAULT_TEAM: TeamMetrics[] = [
+  { userId: '1', userName: 'Sarah Chen', role: 'Acquisition', touchesPerDay: 48, firstResponseTime: 5, appointmentSetRate: 0.42, offerRate: 0.65, winRate: 0.58, followUpSLA: 0.96, totalActivities: 1440, totalDeals: 28, totalRevenue: 1120000 },
+  { userId: '2', userName: 'Mike Rodriguez', role: 'Acquisition', touchesPerDay: 42, firstResponseTime: 8, appointmentSetRate: 0.38, offerRate: 0.60, winRate: 0.52, followUpSLA: 0.92, totalActivities: 1260, totalDeals: 24, totalRevenue: 960000 },
+  { userId: '3', userName: 'Emily Johnson', role: 'Disposition', touchesPerDay: 36, firstResponseTime: 12, appointmentSetRate: 0.35, offerRate: 0.55, winRate: 0.48, followUpSLA: 0.88, totalActivities: 1080, totalDeals: 20, totalRevenue: 800000 },
+  { userId: '4', userName: 'David Park', role: 'Account Manager', touchesPerDay: 32, firstResponseTime: 15, appointmentSetRate: 0.32, offerRate: 0.50, winRate: 0.45, followUpSLA: 0.85, totalActivities: 960, totalDeals: 16, totalRevenue: 640000 }
+];
+
+const DEFAULT_VENDORS: VendorMetrics[] = [
+  { vendorId: '1', vendorName: 'Phoenix Premier Contractors', category: 'Contractor', totalJobs: 42, onTimePercentage: 95, quoteVariance: 3.2, avgRating: 4.8, changeOrderRate: 5, totalSpend: 425000, avgJobValue: 10119 },
+  { vendorId: '2', vendorName: 'Lightning Electric Solutions', category: 'Electrician', totalJobs: 28, onTimePercentage: 92, quoteVariance: 2.8, avgRating: 4.6, changeOrderRate: 3, totalSpend: 84000, avgJobValue: 3000 },
+  { vendorId: '3', vendorName: 'Desert Cool HVAC', category: 'HVAC', totalJobs: 24, onTimePercentage: 88, quoteVariance: 4.5, avgRating: 4.5, changeOrderRate: 8, totalSpend: 96000, avgJobValue: 4000 },
+  { vendorId: '4', vendorName: 'Blue Wave Plumbing', category: 'Plumber', totalJobs: 18, onTimePercentage: 72, quoteVariance: 28.5, avgRating: 3.2, changeOrderRate: 35, totalSpend: 63000, avgJobValue: 3500 },
+  { vendorId: '5', vendorName: 'Sunset Roofing Specialists', category: 'Roofing', totalJobs: 15, onTimePercentage: 91, quoteVariance: 5.1, avgRating: 4.7, changeOrderRate: 6, totalSpend: 120000, avgJobValue: 8000 },
+  { vendorId: '6', vendorName: 'Valley Floor & Tile', category: 'Flooring', totalJobs: 22, onTimePercentage: 85, quoteVariance: 7.3, avgRating: 4.4, changeOrderRate: 10, totalSpend: 88000, avgJobValue: 4000 },
+  { vendorId: '7', vendorName: 'Pro Paint Arizona', category: 'Painting', totalJobs: 31, onTimePercentage: 94, quoteVariance: 2.1, avgRating: 4.9, changeOrderRate: 2, totalSpend: 62000, avgJobValue: 2000 },
+  { vendorId: '8', vendorName: 'GreenThumb Landscaping', category: 'Landscaping', totalJobs: 19, onTimePercentage: 78, quoteVariance: 15.8, avgRating: 3.8, changeOrderRate: 22, totalSpend: 38000, avgJobValue: 2000 },
+  { vendorId: '9', vendorName: 'QuickFix Drywall', category: 'Drywall', totalJobs: 14, onTimePercentage: 68, quoteVariance: 32.1, avgRating: 3.5, changeOrderRate: 28, totalSpend: 42000, avgJobValue: 3000 },
+  { vendorId: '10', vendorName: 'Budget Windows & Doors', category: 'Windows', totalJobs: 11, onTimePercentage: 75, quoteVariance: 19.7, avgRating: 3.9, changeOrderRate: 18, totalSpend: 55000, avgJobValue: 5000 }
+];
+
 export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState("executive");
   const [filters, setFilters] = useState<DashboardFilters>({
@@ -148,102 +222,153 @@ export default function AnalyticsPage() {
   });
   const [comparison, setComparison] = useState<ComparisonPeriod>({ type: 'previous' });
   const [refreshing, setRefreshing] = useState(false);
-  
-  // Force positive demo data
-  const [kpis, setKpis] = useState<KPIMetrics>({
-    leads: 1247,
-    qualifiedLeads: 561,
-    appointments: 280,
-    offers: 168,
-    contracts: 89,
-    closedDeals: 76,
-    netProfit: 1842000,
-    grossProfit: 2156000,
-    totalSpend: 52000,
-    romi: 35.4,
-    roas: 48.2,
-    avgDaysToContract: 12,
-    avgSpeedToLead: 8,
-    conversionRate: 0.061
-  });
+  const [loading, setLoading] = useState(true);
+  const [hasRealData, setHasRealData] = useState(false);
+  const [dataPeriod, setDataPeriod] = useState(30);
 
-  const funnel: FunnelStage[] = [
-    { stage: 'Leads', count: 1247, percentage: 100, conversionToNext: 45 },
-    { stage: 'Qualified', count: 561, percentage: 45, conversionToNext: 50 },
-    { stage: 'Appointments', count: 280, percentage: 22.5, conversionToNext: 60 },
-    { stage: 'Offers', count: 168, percentage: 13.5, conversionToNext: 53 },
-    { stage: 'Contracts', count: 89, percentage: 7.1, conversionToNext: 85 },
-    { stage: 'Closed', count: 76, percentage: 6.1 }
-  ];
+  // State for API data with fallback to demo data
+  const [kpis, setKpis] = useState<KPIMetrics>(DEFAULT_KPIS);
+  const [funnel, setFunnel] = useState<FunnelStage[]>(DEFAULT_FUNNEL);
+  const [waterfall, setWaterfall] = useState(DEFAULT_WATERFALL);
+  const [trends, setTrends] = useState(DEFAULT_TRENDS);
+  const [marketingMetrics, setMarketingMetrics] = useState<MarketingMetrics[]>(DEFAULT_MARKETING);
+  const [teamMetrics, setTeamMetrics] = useState<TeamMetrics[]>(DEFAULT_TEAM);
+  const [vendorMetrics, setVendorMetrics] = useState<VendorMetrics[]>(DEFAULT_VENDORS);
 
-  const waterfall = [
-    { stage: 'Revenue', value: 3250000, isProfit: true },
-    { stage: 'Purchase', value: 780000 },
-    { stage: 'Gross Profit', value: 2470000, isProfit: true },
-    { stage: 'Rehab', value: 425000 },
-    { stage: 'Holding', value: 87000 },
-    { stage: 'Closing', value: 116000 },
-    { stage: 'Net Profit', value: 1842000, isProfit: true }
-  ];
+  // Fetch analytics data from API
+  const fetchAnalytics = async () => {
+    try {
+      setRefreshing(true);
+      const response = await fetch(`/api/analytics?period=${dataPeriod}&tab=all`);
+      if (response.ok) {
+        const data = await response.json();
 
-  const trends = [
-    { date: new Date('2024-01-01'), value: 380000 },
-    { date: new Date('2024-01-08'), value: 420000 },
-    { date: new Date('2024-01-15'), value: 465000 },
-    { date: new Date('2024-01-22'), value: 512000 },
-    { date: new Date('2024-01-29'), value: 485000 }
-  ];
+        // Update state with API data, keeping defaults as fallback
+        if (data.kpis) setKpis(data.kpis);
+        if (data.funnel) setFunnel(data.funnel);
+        if (data.waterfall) setWaterfall(data.waterfall);
+        if (data.trends) {
+          setTrends(data.trends.map((t: any) => ({
+            ...t,
+            date: new Date(t.date)
+          })));
+        }
+        if (data.marketingMetrics) setMarketingMetrics(data.marketingMetrics);
+        if (data.teamMetrics) setTeamMetrics(data.teamMetrics);
+        if (data.vendorMetrics && data.vendorMetrics.length > 0) {
+          setVendorMetrics(data.vendorMetrics);
+        }
 
-  const marketingMetrics: MarketingMetrics[] = [
-    { channel: 'PPC', spend: 28000, leads: 562, contracts: 45, closedDeals: 38, cpl: 49.82, cpa: 622, cpd: 737, roas: 52.3, romi: 41.2 },
-    { channel: 'SEO', spend: 5000, leads: 245, contracts: 12, closedDeals: 10, cpl: 20.41, cpa: 417, cpd: 500, roas: 28.4, romi: 22.6 },
-    { channel: 'Direct Mail', spend: 8000, leads: 186, contracts: 9, closedDeals: 8, cpl: 43.01, cpa: 889, cpd: 1000, roas: 18.5, romi: 14.2 },
-    { channel: 'Cold Call', spend: 6000, leads: 142, contracts: 7, closedDeals: 6, cpl: 42.25, cpa: 857, cpd: 1000, roas: 15.8, romi: 11.3 },
-    { channel: 'SMS', spend: 3000, leads: 87, contracts: 5, closedDeals: 4, cpl: 34.48, cpa: 600, cpd: 750, roas: 12.6, romi: 9.8 },
-    { channel: 'Referral', spend: 2000, leads: 25, contracts: 11, closedDeals: 10, cpl: 80, cpa: 182, cpd: 200, roas: 85.2, romi: 72.5 }
-  ];
+        setHasRealData(data.hasRealData || false);
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    } finally {
+      setRefreshing(false);
+      setLoading(false);
+    }
+  };
 
-  const teamMetrics: TeamMetrics[] = [
-    { userId: '1', userName: 'Sarah Chen', role: 'Acquisition', touchesPerDay: 48, firstResponseTime: 5, appointmentSetRate: 0.42, offerRate: 0.65, winRate: 0.58, followUpSLA: 0.96, totalActivities: 1440, totalDeals: 28, totalRevenue: 1120000 },
-    { userId: '2', userName: 'Mike Rodriguez', role: 'Acquisition', touchesPerDay: 42, firstResponseTime: 8, appointmentSetRate: 0.38, offerRate: 0.60, winRate: 0.52, followUpSLA: 0.92, totalActivities: 1260, totalDeals: 24, totalRevenue: 960000 },
-    { userId: '3', userName: 'Emily Johnson', role: 'Disposition', touchesPerDay: 36, firstResponseTime: 12, appointmentSetRate: 0.35, offerRate: 0.55, winRate: 0.48, followUpSLA: 0.88, totalActivities: 1080, totalDeals: 20, totalRevenue: 800000 },
-    { userId: '4', userName: 'David Park', role: 'Account Manager', touchesPerDay: 32, firstResponseTime: 15, appointmentSetRate: 0.32, offerRate: 0.50, winRate: 0.45, followUpSLA: 0.85, totalActivities: 960, totalDeals: 16, totalRevenue: 640000 }
-  ];
-
-  const vendorMetrics: VendorMetrics[] = [
-    { vendorId: '1', vendorName: 'Phoenix Premier Contractors', category: 'Contractor', totalJobs: 42, onTimePercentage: 95, quoteVariance: 3.2, avgRating: 4.8, changeOrderRate: 5, totalSpend: 425000, avgJobValue: 10119 },
-    { vendorId: '2', vendorName: 'Lightning Electric Solutions', category: 'Electrician', totalJobs: 28, onTimePercentage: 92, quoteVariance: 2.8, avgRating: 4.6, changeOrderRate: 3, totalSpend: 84000, avgJobValue: 3000 },
-    { vendorId: '3', vendorName: 'Desert Cool HVAC', category: 'HVAC', totalJobs: 24, onTimePercentage: 88, quoteVariance: 4.5, avgRating: 4.5, changeOrderRate: 8, totalSpend: 96000, avgJobValue: 4000 },
-    { vendorId: '4', vendorName: 'Blue Wave Plumbing', category: 'Plumber', totalJobs: 18, onTimePercentage: 72, quoteVariance: 28.5, avgRating: 3.2, changeOrderRate: 35, totalSpend: 63000, avgJobValue: 3500 },
-    { vendorId: '5', vendorName: 'Sunset Roofing Specialists', category: 'Roofing', totalJobs: 15, onTimePercentage: 91, quoteVariance: 5.1, avgRating: 4.7, changeOrderRate: 6, totalSpend: 120000, avgJobValue: 8000 },
-    { vendorId: '6', vendorName: 'Valley Floor & Tile', category: 'Flooring', totalJobs: 22, onTimePercentage: 85, quoteVariance: 7.3, avgRating: 4.4, changeOrderRate: 10, totalSpend: 88000, avgJobValue: 4000 },
-    { vendorId: '7', vendorName: 'Pro Paint Arizona', category: 'Painting', totalJobs: 31, onTimePercentage: 94, quoteVariance: 2.1, avgRating: 4.9, changeOrderRate: 2, totalSpend: 62000, avgJobValue: 2000 },
-    { vendorId: '8', vendorName: 'GreenThumb Landscaping', category: 'Landscaping', totalJobs: 19, onTimePercentage: 78, quoteVariance: 15.8, avgRating: 3.8, changeOrderRate: 22, totalSpend: 38000, avgJobValue: 2000 },
-    { vendorId: '9', vendorName: 'QuickFix Drywall', category: 'Drywall', totalJobs: 14, onTimePercentage: 68, quoteVariance: 32.1, avgRating: 3.5, changeOrderRate: 28, totalSpend: 42000, avgJobValue: 3000 },
-    { vendorId: '10', vendorName: 'Budget Windows & Doors', category: 'Windows', totalJobs: 11, onTimePercentage: 75, quoteVariance: 19.7, avgRating: 3.9, changeOrderRate: 18, totalSpend: 55000, avgJobValue: 5000 }
-  ];
+  // Initial fetch
+  useEffect(() => {
+    fetchAnalytics();
+  }, [dataPeriod]);
 
   const handleExport = (format: 'csv' | 'xlsx' | 'pdf') => {
-    toast.success(`Exporting ${activeTab} dashboard as ${format.toUpperCase()}`);
+    if (format !== 'csv') {
+      toast.info(`${format.toUpperCase()} export coming soon`);
+      return;
+    }
+
+    let csvContent = "";
+    let filename = "";
+
+    switch (activeTab) {
+      case "executive":
+        filename = "executive-kpis";
+        csvContent = "Metric,Value\n";
+        csvContent += `Total Leads,${kpis.leads}\n`;
+        csvContent += `Qualified Leads,${kpis.qualifiedLeads}\n`;
+        csvContent += `Appointments,${kpis.appointments}\n`;
+        csvContent += `Offers,${kpis.offers}\n`;
+        csvContent += `Contracts,${kpis.contracts}\n`;
+        csvContent += `Closed Deals,${kpis.closedDeals}\n`;
+        csvContent += `Net Profit,$${kpis.netProfit}\n`;
+        csvContent += `Gross Profit,$${kpis.grossProfit}\n`;
+        csvContent += `ROMI,${kpis.romi}x\n`;
+        break;
+
+      case "marketing":
+        filename = "marketing-performance";
+        csvContent = "Channel,Spend,Leads,Contracts,Closed Deals,CPL,CPA,ROAS,ROMI\n";
+        marketingMetrics.forEach(m => {
+          csvContent += `${m.channel},$${m.spend},${m.leads},${m.contracts},${m.closedDeals},$${m.cpl.toFixed(2)},$${m.cpa},${m.roas}x,${m.romi}x\n`;
+        });
+        break;
+
+      case "team":
+        filename = "team-performance";
+        csvContent = "Name,Role,Touches/Day,Response Time (min),Win Rate,Deals,Revenue\n";
+        teamMetrics.forEach(m => {
+          csvContent += `${m.userName},${m.role},${m.touchesPerDay},${m.firstResponseTime},${(m.winRate * 100).toFixed(1)}%,${m.totalDeals},$${m.totalRevenue}\n`;
+        });
+        break;
+
+      case "vendors":
+        filename = "vendor-performance";
+        csvContent = "Vendor,Category,Jobs,On-Time %,Quote Variance,Rating,Total Spend\n";
+        vendorMetrics.forEach(v => {
+          csvContent += `"${v.vendorName}",${v.category},${v.totalJobs},${v.onTimePercentage}%,${v.quoteVariance}%,${v.avgRating},$${v.totalSpend}\n`;
+        });
+        break;
+
+      default:
+        filename = "analytics-export";
+        csvContent = "Tab,Note\n";
+        csvContent += `${activeTab},Export not implemented for this tab\n`;
+    }
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${filename}-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(`Exported ${activeTab} dashboard as CSV`);
   };
 
   const handleDateRangeChange = (range: string) => {
     const now = new Date();
     let from = new Date();
-    
+    let days = 30;
+
     switch (range) {
       case '7d':
         from.setDate(now.getDate() - 7);
+        days = 7;
         break;
       case '30d':
         from.setDate(now.getDate() - 30);
+        days = 30;
         break;
       case '90d':
         from.setDate(now.getDate() - 90);
+        days = 90;
         break;
     }
-    
+
     setFilters({ ...filters, dateRange: { from, to: now } });
+    setDataPeriod(days); // This will trigger the useEffect to fetch new data
+  };
+
+  const handleRefresh = () => {
+    fetchAnalytics();
+    toast.success("Data refreshed!");
   };
 
   return (
@@ -251,14 +376,23 @@ export default function AnalyticsPage() {
       {/* Compact Header */}
       <div className="px-4 py-2 bg-white dark:bg-gray-900 border-b">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold">Analytics Dashboard</h1>
-            <p className="text-[10px] text-gray-500">AI-Powered Insights • 35.4x ROMI • 76 Deals Closed</p>
+          <div className="flex items-center gap-2">
+            <div>
+              <h1 className="text-lg font-bold">Analytics Dashboard</h1>
+              <p className="text-[10px] text-gray-500">
+                AI-Powered Insights • {kpis.romi}x ROMI • {kpis.closedDeals} Deals Closed
+              </p>
+            </div>
+            {!loading && (
+              <Badge variant={hasRealData ? "default" : "secondary"} className="text-[10px]">
+                {hasRealData ? "Live Data" : "Demo Data"}
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => toast.success("Data refreshed!")}>
-              <RefreshCw className="h-3 w-3 mr-1" />
-              Refresh
+            <Button size="sm" variant="outline" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={cn("h-3 w-3 mr-1", refreshing && "animate-spin")} />
+              {refreshing ? "Loading..." : "Refresh"}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

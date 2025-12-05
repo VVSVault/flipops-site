@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
  * Query params:
  *   - search: filter by name, email, or company
  *   - cashBuyer: filter by cash buyer status (true/false)
+ *   - reliability: filter by reliability status (reliable/unreliable/unknown)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -81,6 +82,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search');
     const cashBuyerFilter = searchParams.get('cashBuyer');
+    const reliabilityFilter = searchParams.get('reliability');
 
     const where: any = { userId };
 
@@ -90,12 +92,18 @@ export async function GET(request: NextRequest) {
         { name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { company: { contains: search, mode: 'insensitive' } },
+        { targetMarkets: { contains: search, mode: 'insensitive' } },
       ];
     }
 
     // Add cash buyer filter
-    if (cashBuyerFilter !== null) {
+    if (cashBuyerFilter !== null && cashBuyerFilter !== undefined) {
       where.cashBuyer = cashBuyerFilter === 'true';
+    }
+
+    // Add reliability filter
+    if (reliabilityFilter && reliabilityFilter !== 'all') {
+      where.reliability = reliabilityFilter;
     }
 
     const buyers = await prisma.buyer.findMany({

@@ -72,6 +72,28 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+// Define API buyer type
+interface ApiBuyer {
+  id: string;
+  userId: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  company: string | null;
+  propertyTypes: string[] | null;
+  minPrice: number | null;
+  maxPrice: number | null;
+  targetMarkets: string[] | null;
+  cashBuyer: boolean;
+  dealsClosed: number;
+  totalRevenue: number;
+  reliability: string;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: { assignments: number };
+}
+
 export default function BuyersPage() {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
@@ -83,22 +105,80 @@ export default function BuyersPage() {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [importMethod, setImportMethod] = useState("csv");
   const [importData, setImportData] = useState("");
-  
+
+  // API state
+  const [apiBuyers, setApiBuyers] = useState<ApiBuyer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [useApi, setUseApi] = useState(true);
+
   // Filter states
   const [statusFilter, setStatusFilter] = useState("all");
   const [scoreFilter, setScoreFilter] = useState([0, 100]);
   const [marketFilter, setMarketFilter] = useState<string[]>([]);
   const [performanceFilter, setPerformanceFilter] = useState("all");
   const [documentFilter, setDocumentFilter] = useState("all");
-  
+
   // Prevent hydration mismatch by ensuring client-side only rendering
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch buyers from API
+  useEffect(() => {
+    const fetchBuyers = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/buyers');
+        if (response.ok) {
+          const data = await response.json();
+          setApiBuyers(data.buyers || []);
+          // If we have API buyers, use them; otherwise fall back to seed data
+          setUseApi(data.buyers && data.buyers.length > 0);
+        } else {
+          console.warn('Failed to fetch buyers, using seed data');
+          setUseApi(false);
+        }
+      } catch (error) {
+        console.error('Error fetching buyers:', error);
+        setUseApi(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (mounted) {
+      fetchBuyers();
+    }
+  }, [mounted]);
+
+  // Convert API buyer to seed data format for compatibility
+  const convertApiBuyer = (apiBuyer: ApiBuyer) => ({
+    id: apiBuyer.id,
+    name: apiBuyer.name,
+    entity: apiBuyer.company || "Individual",
+    type: "individual" as const,
+    status: apiBuyer.reliability === "reliable" ? "vip" as const :
+            apiBuyer.reliability === "unreliable" ? "inactive" as const : "active" as const,
+    markets: apiBuyer.targetMarkets || [],
+    phone: apiBuyer.phone || "",
+    email: apiBuyer.email || "",
+    preferredContact: "email" as const,
+    tags: apiBuyer.cashBuyer ? ["cash-buyer"] : [],
+    score: Math.min(100, 50 + (apiBuyer.dealsClosed * 5)),
+    joinedDate: apiBuyer.createdAt,
+    lastActive: apiBuyer.updatedAt,
+    notes: apiBuyer.notes || undefined,
+  });
+
+  // Get the effective buyers list (API or seed data)
+  const effectiveBuyers = useApi
+    ? apiBuyers.map(convertApiBuyer)
+    : buyersSeedData.buyers;
   
-  // Get buyer data with performance metrics
+  // Get buyer data with performance metrics (uses seed data for performance/docs until APIs are built)
   const getBuyerWithMetrics = (buyerId: string) => {
-    const buyer = buyersSeedData.buyers.find(b => b.id === buyerId);
+    const buyer = effectiveBuyers.find(b => b.id === buyerId);
+    // Performance and documents still use seed data for demo
     const performance = buyersSeedData.performance.find(p => p.buyerId === buyerId);
     const buyBox = buyersSeedData.buyBoxes.find(bb => bb.buyerId === buyerId);
     const documents = buyersSeedData.documents.filter(d => d.buyerId === buyerId);
@@ -106,38 +186,39 @@ export default function BuyersPage() {
   };
 
   // Get all unique markets for filter options
-  const allMarkets = [...new Set(buyersSeedData.buyers.flatMap(b => b.markets))];
+  const allMarkets = [...new Set(effectiveBuyers.flatMap(b => b.markets))];
 
   // Apply filters
-  const filteredBuyers = buyersSeedData.buyers.filter(buyer => {
+  const filteredBuyers = effectiveBuyers.filter(buyer => {
     // Search filter
     const matchesSearch = buyer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       buyer.entity.toLowerCase().includes(searchQuery.toLowerCase()) ||
       buyer.markets.some(m => m.toLowerCase().includes(searchQuery.toLowerCase()));
-    
+
     // Status filter
     const matchesStatus = statusFilter === "all" || buyer.status === statusFilter;
-    
+
     // Score filter
     const matchesScore = buyer.score >= scoreFilter[0] && buyer.score <= scoreFilter[1];
-    
+
     // Market filter
-    const matchesMarket = marketFilter.length === 0 || 
+    const matchesMarket = marketFilter.length === 0 ||
       buyer.markets.some(m => marketFilter.includes(m));
-    
-    // Performance filter
+
+    // Performance filter - for API buyers, check dealsClosed from API; for seed, use performance data
     const performance = buyersSeedData.performance.find(p => p.buyerId === buyer.id);
+    const dealCount = performance?.dealsClosedCount || 0;
     let matchesPerformance = true;
     if (performanceFilter === "high") {
-      matchesPerformance = performance ? performance.dealsClosedCount >= 20 : false;
+      matchesPerformance = dealCount >= 20;
     } else if (performanceFilter === "medium") {
-      matchesPerformance = performance ? performance.dealsClosedCount >= 10 && performance.dealsClosedCount < 20 : false;
+      matchesPerformance = dealCount >= 10 && dealCount < 20;
     } else if (performanceFilter === "low") {
-      matchesPerformance = performance ? performance.dealsClosedCount < 10 : false;
+      matchesPerformance = dealCount > 0 && dealCount < 10;
     } else if (performanceFilter === "none") {
-      matchesPerformance = !performance || performance.dealsClosedCount === 0;
+      matchesPerformance = dealCount === 0;
     }
-    
+
     // Document filter
     const documents = buyersSeedData.documents.filter(d => d.buyerId === buyer.id);
     let matchesDocument = true;
@@ -213,7 +294,7 @@ export default function BuyersPage() {
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Active Buyers</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {buyersSeedData.buyers.filter(b => b.status !== 'inactive' && b.status !== 'blacklisted').length}
+                      {effectiveBuyers.filter(b => b.status !== 'inactive' && b.status !== 'blacklisted').length}
                     </p>
                   </div>
                   <Users className="h-8 w-8 text-blue-500" />
@@ -308,7 +389,7 @@ export default function BuyersPage() {
                     <CardContent className="p-0">
                       <ScrollArea className="h-[400px]">
                         <div className="space-y-2 p-6 pt-0">
-                          {buyersSeedData.buyers
+                          {effectiveBuyers
                             .filter(b => b.status === 'vip' || b.score >= 85)
                             .map(buyer => {
                               const perf = buyersSeedData.performance.find(p => p.buyerId === buyer.id);
@@ -581,7 +662,7 @@ export default function BuyersPage() {
                     marketFilter.length > 0 || performanceFilter !== "all" || documentFilter !== "all") && (
                     <div className="flex items-center justify-between px-2">
                       <p className="text-sm text-gray-500">
-                        Showing {filteredBuyers.length} of {buyersSeedData.buyers.length} buyers
+                        Showing {filteredBuyers.length} of {effectiveBuyers.length} buyers
                       </p>
                       {filteredBuyers.length === 0 && (
                         <Button
@@ -864,7 +945,7 @@ export default function BuyersPage() {
                             <CardTitle>AI Match Results</CardTitle>
                             <CardDescription>Buyers ranked by compatibility score</CardDescription>
                           </div>
-                          <Badge variant="secondary">Analyzed {buyersSeedData.buyers.length} buyers in 0.3s</Badge>
+                          <Badge variant="secondary">Analyzed {effectiveBuyers.length} buyers in 0.3s</Badge>
                         </div>
                       </CardHeader>
                       <CardContent>

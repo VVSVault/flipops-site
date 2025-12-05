@@ -121,6 +121,23 @@ const categoryIcons: Record<string, any> = {
   flooring: Square,
 };
 
+// API vendor type
+interface ApiVendor {
+  id: string;
+  userId: string | null;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  trade: string[];
+  region: string | null;
+  onTimePct: number;
+  onBudgetPct: number;
+  reliability: number;
+  createdAt: string;
+  updatedAt: string;
+  _count: { bids: number; invoices: number };
+}
+
 export default function VendorsPage() {
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -141,37 +158,100 @@ export default function VendorsPage() {
     factors: any;
   }>>([]);
 
+  // API state
+  const [apiVendors, setApiVendors] = useState<ApiVendor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [useApi, setUseApi] = useState(true);
+
   useEffect(() => {
     setMounted(true);
-    // Select first vendor by default
-    if (vendorsSeedData.vendors.length > 0) {
-      setSelectedVendor(vendorsSeedData.vendors[0]);
-    }
   }, []);
+
+  // Fetch vendors from API
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/vendors');
+        if (response.ok) {
+          const data = await response.json();
+          setApiVendors(data.vendors || []);
+          // If we have API vendors, use them; otherwise fall back to seed data
+          setUseApi(data.vendors && data.vendors.length > 0);
+        } else {
+          console.warn('Failed to fetch vendors, using seed data');
+          setUseApi(false);
+        }
+      } catch (error) {
+        console.error('Error fetching vendors:', error);
+        setUseApi(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (mounted) {
+      fetchVendors();
+    }
+  }, [mounted]);
+
+  // Convert API vendor to seed data format for compatibility
+  const convertApiVendor = (apiVendor: ApiVendor): Vendor => ({
+    id: apiVendor.id,
+    name: apiVendor.name,
+    categories: apiVendor.trade || [],
+    phone: apiVendor.phone || "",
+    email: apiVendor.email || "",
+    website: undefined,
+    locationCity: apiVendor.region?.split(',')[0]?.trim() || "Phoenix",
+    locationState: apiVendor.region?.split(',')[1]?.trim() || "AZ",
+    zip: "85001",
+    description: `Vendor specializing in ${(apiVendor.trade || []).join(', ')}`,
+    ratingAvg: apiVendor.reliability / 20, // Convert 0-100 to 0-5 scale
+    ratingCount: apiVendor._count?.bids || 0,
+    isVerified: apiVendor.reliability >= 80,
+    availabilityStatus: 'available' as const,
+    currency: "USD",
+    tags: [],
+    createdAt: new Date(apiVendor.createdAt),
+    updatedAt: new Date(apiVendor.updatedAt),
+  });
+
+  // Get the effective vendors list (API or seed data)
+  const effectiveVendors = useApi
+    ? apiVendors.map(convertApiVendor)
+    : vendorsSeedData.vendors;
+
+  // Select first vendor when effective vendors change
+  useEffect(() => {
+    if (effectiveVendors.length > 0 && !selectedVendor) {
+      setSelectedVendor(effectiveVendors[0]);
+    }
+  }, [effectiveVendors, selectedVendor]);
 
   // Filter vendors
   const filterVendors = () => {
-    return vendorsSeedData.vendors.filter(vendor => {
+    return effectiveVendors.filter(vendor => {
       const matchesSearch = vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         vendor.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         vendor.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-      
+
       const matchesCategories = selectedCategories.length === 0 ||
         vendor.categories.some(cat => selectedCategories.includes(cat));
-      
+
       const matchesRating = vendor.ratingAvg >= minRating;
-      
+
       const matchesCity = selectedCity === "all" || vendor.locationCity === selectedCity;
-      
-      const matchesAvailability = selectedAvailability === "all" || 
+
+      const matchesAvailability = selectedAvailability === "all" ||
         vendor.availabilityStatus === selectedAvailability;
-      
+
       const matchesPrice = priceRange === "all" ||
         (priceRange === "low" && (vendor.hourlyRateMin || 0) < 75) ||
         (priceRange === "medium" && (vendor.hourlyRateMin || 0) >= 75 && (vendor.hourlyRateMax || 0) <= 125) ||
         (priceRange === "high" && (vendor.hourlyRateMax || 0) > 125);
-      
-      return matchesSearch && matchesCategories && matchesRating && 
+
+      return matchesSearch && matchesCategories && matchesRating &&
         matchesCity && matchesAvailability && matchesPrice;
     });
   };

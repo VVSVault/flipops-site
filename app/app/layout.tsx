@@ -48,6 +48,7 @@ const baseNavigation: NavigationItem[] = [
   { name: "Inbox", href: "/app/inbox", icon: MessageSquare },
   { name: "Campaigns", href: "/app/campaigns", icon: Megaphone },
   { name: "Underwriting", href: "/app/underwriting", icon: Calculator },
+  { name: "Offers", href: "/app/offers", icon: FileText },
   { name: "Contracts", href: "/app/contracts", icon: FileSignature },
   { name: "Buyers", href: "/app/buyers", icon: UserCheck, visibleTo: NAVIGATION_RULES['Buyers'] },
   { name: "Renovations", href: "/app/renovations", icon: Hammer, visibleTo: NAVIGATION_RULES['Renovations'] },
@@ -231,30 +232,11 @@ export default function AppLayout({
         </header>
 
         {/* Page content */}
-        <main className="p-6 min-h-[calc(100vh-4rem)]">
+        <main className="p-6 h-[calc(100dvh-4rem)] overflow-hidden">
           <ErrorBoundary>
             {children}
           </ErrorBoundary>
         </main>
-
-        {/* Footer */}
-        <footer className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 py-6 px-6 mt-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-            <p>© 2025 FlipOps. All rights reserved.</p>
-            <div className="flex gap-6">
-              <Link href="/terms" className="hover:text-gray-900 dark:hover:text-white transition-colors">
-                Terms of Service
-              </Link>
-              <Link href="/privacy" className="hover:text-gray-900 dark:hover:text-white transition-colors">
-                Privacy Policy
-              </Link>
-            </div>
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 text-center sm:text-left">
-            FlipOps does not provide investment, legal, or financial advice.
-            All calculations are estimates. Consult professionals before making investment decisions.
-          </p>
-        </footer>
       </div>
 
       {/* Quick Add Lead Modal */}

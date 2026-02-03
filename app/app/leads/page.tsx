@@ -707,7 +707,9 @@ export default function LeadsPage() {
       }
 
       const data = await response.json();
-      setProperties(data.properties || []);
+      // Use seed data for demo if user has no properties yet
+      const props = data.properties || [];
+      setProperties(props.length > 0 ? props : seedProperties);
     } catch (error) {
       console.error('Failed to fetch properties, using demo data:', error);
       // Use seed data as fallback instead of showing error

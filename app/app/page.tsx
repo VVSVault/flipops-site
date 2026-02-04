@@ -37,6 +37,94 @@ import { getInvestorTypeDisplayName, type InvestorType } from "@/lib/navigation-
 export const dynamic = 'force-dynamic';
 
 // ============================================================================
+// SEED DATA - Demo data for new users
+// ============================================================================
+
+const seedStats: DashboardStats = {
+  newLeads24h: 12,
+  newLeads7d: 47,
+  newLeadsPrevious24h: 8,
+  newLeadsPrevious7d: 32,
+  propertiesContacted: 23,
+  propertiesContactedPrevious: 18,
+  propertiesSkipTraced: 35,
+  propertiesSkipTracedPrevious: 28,
+  tasksOverdue: 3,
+  tasksCompleted: 7,
+};
+
+const seedHotLeads: HotLead[] = [
+  {
+    id: 'seed-1',
+    address: '1234 Oak Street',
+    city: 'Austin',
+    state: 'TX',
+    score: 92,
+    dataSource: 'REI Skip',
+    skipTraced: true,
+    contacted: false,
+  },
+  {
+    id: 'seed-2',
+    address: '567 Maple Avenue',
+    city: 'Dallas',
+    state: 'TX',
+    score: 89,
+    dataSource: 'PropStream',
+    skipTraced: true,
+    contacted: true,
+  },
+  {
+    id: 'seed-3',
+    address: '890 Pine Road',
+    city: 'Houston',
+    state: 'TX',
+    score: 87,
+    dataSource: 'BatchLeads',
+    skipTraced: false,
+    contacted: false,
+  },
+  {
+    id: 'seed-4',
+    address: '321 Cedar Lane',
+    city: 'San Antonio',
+    state: 'TX',
+    score: 85,
+    dataSource: 'REI Skip',
+    skipTraced: true,
+    contacted: false,
+  },
+];
+
+const seedActionItems: ActionItem[] = [
+  {
+    id: 'seed-action-1',
+    type: 'first_contact',
+    title: 'Make initial contact',
+    description: '1234 Oak Street - High score, not contacted',
+    propertyAddress: '1234 Oak Street',
+  },
+  {
+    id: 'seed-action-2',
+    type: 'follow_up',
+    title: 'Follow up on offer',
+    description: '567 Maple Avenue - Waiting for response',
+    propertyAddress: '567 Maple Avenue',
+  },
+];
+
+const seedOverdueTasks: OverdueTask[] = [
+  {
+    id: 'seed-overdue-1',
+    title: 'Review comps for Oak Street property',
+    dueDate: new Date(Date.now() - 86400000).toISOString(),
+    priority: 'high',
+    propertyAddress: '1234 Oak Street',
+    overdueDays: 1,
+  },
+];
+
+// ============================================================================
 // TYPES
 // ============================================================================
 
@@ -654,6 +742,19 @@ export default function DashboardPage() {
   const [investorType, setInvestorType] = useState<InvestorType>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  // Helper function to check if stats have any real data
+  const hasRealStats = (s: DashboardStats | null): boolean => {
+    if (!s) return false;
+    return (
+      s.newLeads24h > 0 ||
+      s.newLeads7d > 0 ||
+      s.propertiesContacted > 0 ||
+      s.propertiesSkipTraced > 0 ||
+      s.tasksOverdue > 0 ||
+      s.tasksCompleted > 0
+    );
+  };
+
   // Fetch all dashboard data
   const fetchDashboardData = async (isRefresh = false) => {
     try {
@@ -672,38 +773,58 @@ export default function DashboardPage() {
         fetch('/api/notifications?limit=5'),
       ]);
 
+      // Handle stats - use seed data if API fails or returns no data
+      let fetchedStats: DashboardStats | null = null;
       if (statsRes.ok) {
         const data = await statsRes.json();
-        setStats(data.stats);
+        fetchedStats = data.stats;
       }
+      // Use seed data if no real data exists
+      setStats(hasRealStats(fetchedStats) ? fetchedStats : seedStats);
 
+      // Handle hot leads - use seed data if empty
+      let fetchedHotLeads: HotLead[] = [];
       if (hotLeadsRes.ok) {
         const data = await hotLeadsRes.json();
-        setHotLeads(data.hotLeads || []);
+        fetchedHotLeads = data.hotLeads || [];
       }
+      setHotLeads(fetchedHotLeads.length > 0 ? fetchedHotLeads : seedHotLeads);
 
+      // Handle action items - use seed data if empty
+      let fetchedActionItems: ActionItem[] = [];
       if (actionItemsRes.ok) {
         const data = await actionItemsRes.json();
-        setActionItems(data.actionItems || []);
+        fetchedActionItems = data.actionItems || [];
       }
+      setActionItems(fetchedActionItems.length > 0 ? fetchedActionItems : seedActionItems);
 
+      // Handle overdue tasks - use seed data if empty
+      let fetchedOverdueTasks: OverdueTask[] = [];
       if (overdueTasksRes.ok) {
         const data = await overdueTasksRes.json();
-        setOverdueTasks(data.overdueTasks || []);
+        fetchedOverdueTasks = data.overdueTasks || [];
       }
+      setOverdueTasks(fetchedOverdueTasks.length > 0 ? fetchedOverdueTasks : seedOverdueTasks);
 
+      // Handle investor stats - no seed data needed (optional section)
       if (investorStatsRes.ok) {
         const data = await investorStatsRes.json();
         setInvestorStats(data.stats || null);
         setInvestorType(data.investorType || null);
       }
 
+      // Handle notifications - no seed data (fine to be empty)
       if (notificationsRes.ok) {
         const data = await notificationsRes.json();
         setNotifications(data.notifications || []);
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // On complete failure, use seed data
+      setStats(seedStats);
+      setHotLeads(seedHotLeads);
+      setActionItems(seedActionItems);
+      setOverdueTasks(seedOverdueTasks);
     } finally {
       setLoading(false);
       setRefreshing(false);

@@ -972,6 +972,9 @@ export default function DashboardPage() {
                 {getInvestorTypeDisplayName(investorType)}
               </Badge>
             )}
+            <Badge variant="outline" className="ml-2 text-[10px] font-mono opacity-50">
+              v2.4.0
+            </Badge>
           </p>
         </div>
         <Button

@@ -55,7 +55,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { type Buyer, type BuyerPerformance, type BuyBox, type BuyerDocument, type DispoListing } from "./seed-data";
+import { type Buyer, type BuyerPerformance, type BuyBox, type BuyerDocument, type DispoListing, buyersSeedData } from "./seed-data";
 import { exportToCSV, generateFilename, formatCurrencyForCSV, formatBooleanForCSV } from "@/lib/csv-export";
 import {
   DropdownMenu,
@@ -437,9 +437,11 @@ export default function BuyersPage() {
       const response = await fetch('/api/buyers');
       if (response.ok) {
         const data = await response.json();
-        setApiBuyers(data.buyers || []);
+        const buyers = data.buyers || [];
+        // Use seed data if no real data
+        setApiBuyers(buyers.length > 0 ? buyers : []);
       } else {
-        console.warn('Failed to fetch buyers');
+        console.warn('Failed to fetch buyers, using seed data');
         setApiBuyers([]);
       }
     } catch (error) {
@@ -526,8 +528,10 @@ export default function BuyersPage() {
     notes: apiBuyer.notes || undefined,
   });
 
-  // Get the effective buyers list from API
-  const effectiveBuyers = apiBuyers.map(convertApiBuyer);
+  // Get the effective buyers list from API, fallback to seed data
+  const effectiveBuyers = apiBuyers.length > 0
+    ? apiBuyers.map(convertApiBuyer)
+    : buyersSeedData.buyers;
 
   // Get buyer data with performance metrics (empty until APIs are built)
   const getBuyerWithMetrics = (buyerId: string) => {

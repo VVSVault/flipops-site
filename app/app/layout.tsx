@@ -4,11 +4,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserButton } from "@clerk/nextjs";
 import { QuickAddLead } from "@/app/components/quick-add-lead";
 import {
   Home,
   Users,
-  Building,
   MessageSquare,
   Megaphone,
   Calculator,
@@ -17,13 +17,11 @@ import {
   Briefcase,
   FileText,
   BarChart,
-  Database,
   Settings,
   Menu,
   X,
   Search,
   Bell,
-  LayoutDashboard,
   FileSignature,
   Hammer,
   Building2
@@ -40,8 +38,6 @@ import {
   type NavigationItem
 } from "@/lib/navigation-config";
 
-const PANELS_ENABLED = process.env.NEXT_PUBLIC_ENABLE_DATASOURCE_PANELS === "1";
-
 const baseNavigation: NavigationItem[] = [
   { name: "Overview", href: "/app", icon: Home },
   { name: "Leads", href: "/app/leads", icon: Users },
@@ -57,20 +53,8 @@ const baseNavigation: NavigationItem[] = [
   { name: "Vendors", href: "/app/vendors", icon: Briefcase },
   { name: "Documents", href: "/app/documents", icon: FileText },
   { name: "Analytics", href: "/app/analytics", icon: BarChart },
-  { name: "Data Sources", href: "/app/data-sources", icon: Database },
+  { name: "Settings", href: "/app/settings", icon: Settings },
 ];
-
-// Add panels link if feature flag is enabled
-if (PANELS_ENABLED) {
-  baseNavigation.push({
-    name: "Panel APIs",
-    href: "/app/data-sources/panels",
-    icon: LayoutDashboard,
-    indent: true
-  });
-}
-
-baseNavigation.push({ name: "Settings", href: "/app/settings", icon: Settings });
 
 export default function AppLayout({
   children,
@@ -179,7 +163,14 @@ export default function AppLayout({
           {/* User section */}
           <div className="border-t border-gray-200 dark:border-gray-800 p-4">
             <div className="flex items-center gap-3">
-              {/* Temporarily disabled - debugging Clerk issues */}
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "h-9 w-9"
+                  }
+                }}
+                afterSignOutUrl="/"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 dark:text-white truncate">Account</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Manage your account</p>
@@ -203,28 +194,29 @@ export default function AppLayout({
           </Button>
 
           {/* Search */}
-          <div className="flex-1 flex items-center gap-4">
-            <div className="relative max-w-md w-full">
+          <div className="flex-1 flex items-center gap-4 min-w-0">
+            <div className="relative w-full max-w-md">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 type="search"
-                placeholder="Search leads, properties, owners..."
-                className="pl-10 bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                placeholder="Search..."
+                className="pl-10 h-9 bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 text-sm"
               />
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
               <span className="absolute top-1 right-1 h-2 w-2 bg-blue-500 rounded-full" />
             </Button>
-            <Button 
-              variant="default" 
+            <Button
+              variant="default"
               size="sm"
               onClick={() => setQuickAddLeadOpen(true)}
+              className="hidden sm:inline-flex"
             >
               Quick Add Lead
             </Button>

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
+import { getAuthenticatedUserId } from '@/lib/auth-helpers';
 
 /**
  * GET /api/dashboard/hot-leads
@@ -9,7 +8,11 @@ const prisma = new PrismaClient();
  */
 export async function GET() {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const authResult = await getAuthenticatedUserId();
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    }
+    const userId = authResult.userId!;
 
     // Get top 5 hot leads with score >= 85
     const hotLeads = await prisma.property.findMany({

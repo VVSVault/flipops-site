@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
+/**
+ * Helper to get the database user ID from Clerk auth
+ */
+async function getDbUserId(): Promise<string | null> {
+  const { userId: clerkId } = await auth();
+  if (!clerkId) return null;
+
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId },
+    select: { id: true },
+  });
+
+  return dbUser?.id || null;
+}
 
 /**
  * GET /api/properties/[id]
@@ -12,7 +26,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const userId = await getDbUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { id } = await params;
 
@@ -46,7 +63,10 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const userId = await getDbUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { id } = await params;
     const body = await request.json();
@@ -74,7 +94,7 @@ export async function PATCH(
     ];
 
     // Filter body to only include allowed fields
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
         updateData[field] = body[field];
@@ -106,7 +126,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const userId = await getDbUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { id } = await params;
 

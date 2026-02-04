@@ -17,6 +17,16 @@ export async function POST(request: NextRequest) {
   const log = logger.child({ requestId, endpoint: '/api/bids/award' });
 
   try {
+    // API key authentication (required)
+    const apiKey = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace('Bearer ', '');
+    const expectedApiKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
+
+    // SECURITY: Check BOTH that expectedKey exists AND matches
+    if (!expectedApiKey || apiKey !== expectedApiKey) {
+      log.warn({ apiKey: apiKey ? '[redacted]' : 'none' }, 'Unauthorized request');
+      return NextResponse.json({ error: 'Unauthorized', requestId }, { status: 401 });
+    }
+
     // Parse and validate request body
     const body = await request.json();
     const validationResult = BidAwardRequestSchema.safeParse(body);

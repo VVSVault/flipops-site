@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import log from '@/lib/logger';
 
-const prisma = new PrismaClient();
+// NOTE: Use shared prisma singleton, never create new PrismaClient instances
 
 interface ScoreUpdate {
   onTimePct?: number;
@@ -15,6 +15,15 @@ export async function PUT(
   { params }: { params: { vendorId: string } }
 ) {
   try {
+    // API key authentication (required)
+    const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
+    const expectedApiKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
+
+    // SECURITY: Check BOTH that expectedKey exists AND matches
+    if (!expectedApiKey || apiKey !== expectedApiKey) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const vendorId = params.vendorId;
     const body: ScoreUpdate = await req.json();
 
@@ -112,7 +121,6 @@ export async function PUT(
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error',
     }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
+  // NOTE: Do not call prisma.$disconnect() - uses shared singleton
 }

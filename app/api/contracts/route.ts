@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 
 // POST /api/contracts
 // Create a contract from an accepted offer
 export async function POST(request: Request) {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const { userId: clerkUserId } = await auth();
+
+    if (!clerkUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = clerkUserId;
 
     const body = await request.json();
     const { offerId, closingDate, notes } = body;
@@ -76,68 +83,70 @@ export async function POST(request: Request) {
       },
     });
 
-    // Auto-create closing tasks
-    const closingTasksData = [
-      {
-        title: 'Schedule home inspection',
-        description: `Schedule and complete home inspection for ${offer.property.address}`,
-        category: 'closing',
-        priority: 'high',
-        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 21 * 24 * 60 * 60 * 1000) : null, // 21 days before closing
-      },
-      {
-        title: 'Order appraisal',
-        description: `Order property appraisal for ${offer.property.address}`,
-        category: 'closing',
-        priority: 'high',
-        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 21 * 24 * 60 * 60 * 1000) : null, // 21 days before closing
-      },
-      {
-        title: 'Apply for financing',
-        description: `Submit financing application for ${offer.property.address}`,
-        category: 'closing',
-        priority: 'high',
-        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 30 * 24 * 60 * 60 * 1000) : null, // 30 days before closing
-      },
-      {
-        title: 'Review title report',
-        description: `Review title report and resolve any title issues for ${offer.property.address}`,
-        category: 'closing',
-        priority: 'medium',
-        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 14 * 24 * 60 * 60 * 1000) : null, // 14 days before closing
-      },
-      {
-        title: 'Schedule final walkthrough',
-        description: `Schedule and complete final walkthrough of ${offer.property.address}`,
-        category: 'closing',
-        priority: 'medium',
-        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 2 * 24 * 60 * 60 * 1000) : null, // 2 days before closing
-      },
-      {
-        title: 'Prepare closing documents',
-        description: `Review and prepare all closing documents for ${offer.property.address}`,
-        category: 'closing',
-        priority: 'high',
-        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 3 * 24 * 60 * 60 * 1000) : null, // 3 days before closing
-      },
-      {
-        title: 'Wire closing funds',
-        description: `Wire funds for closing on ${offer.property.address}`,
-        category: 'closing',
-        priority: 'high',
-        dueDate: closingDate ? new Date(new Date(closingDate).getTime() - 1 * 24 * 60 * 60 * 1000) : null, // 1 day before closing
-      },
-    ];
+    // Auto-create closing tasks (only if closing date is set)
+    if (closingDate) {
+      const closingDateObj = new Date(closingDate);
+      const closingTasksData = [
+        {
+          title: 'Schedule home inspection',
+          description: `Schedule and complete home inspection for ${offer.property.address}`,
+          type: 'custom',
+          priority: 'high',
+          dueDate: new Date(closingDateObj.getTime() - 21 * 24 * 60 * 60 * 1000), // 21 days before closing
+        },
+        {
+          title: 'Order appraisal',
+          description: `Order property appraisal for ${offer.property.address}`,
+          type: 'custom',
+          priority: 'high',
+          dueDate: new Date(closingDateObj.getTime() - 21 * 24 * 60 * 60 * 1000), // 21 days before closing
+        },
+        {
+          title: 'Apply for financing',
+          description: `Submit financing application for ${offer.property.address}`,
+          type: 'custom',
+          priority: 'high',
+          dueDate: new Date(closingDateObj.getTime() - 30 * 24 * 60 * 60 * 1000), // 30 days before closing
+        },
+        {
+          title: 'Review title report',
+          description: `Review title report and resolve any title issues for ${offer.property.address}`,
+          type: 'custom',
+          priority: 'medium',
+          dueDate: new Date(closingDateObj.getTime() - 14 * 24 * 60 * 60 * 1000), // 14 days before closing
+        },
+        {
+          title: 'Schedule final walkthrough',
+          description: `Schedule and complete final walkthrough of ${offer.property.address}`,
+          type: 'custom',
+          priority: 'medium',
+          dueDate: new Date(closingDateObj.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days before closing
+        },
+        {
+          title: 'Prepare closing documents',
+          description: `Review and prepare all closing documents for ${offer.property.address}`,
+          type: 'custom',
+          priority: 'high',
+          dueDate: new Date(closingDateObj.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days before closing
+        },
+        {
+          title: 'Wire closing funds',
+          description: `Wire funds for closing on ${offer.property.address}`,
+          type: 'custom',
+          priority: 'high',
+          dueDate: new Date(closingDateObj.getTime() - 1 * 24 * 60 * 60 * 1000), // 1 day before closing
+        },
+      ];
 
-    // Create tasks for this contract
-    await prisma.task.createMany({
-      data: closingTasksData.map((task) => ({
-        userId: user.id,
-        propertyId: offer.propertyId,
-        ...task,
-        status: 'pending',
-      })),
-    });
+      // Create tasks for this contract
+      await prisma.task.createMany({
+        data: closingTasksData.map((task) => ({
+          userId: user.id,
+          propertyId: offer.propertyId,
+          ...task,
+        })),
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -163,63 +172,127 @@ export async function POST(request: Request) {
   }
 }
 
+// Admin email that should NOT see demo data
+const ADMIN_EMAIL = 'tannercarlson@vvsvault.com';
+// Demo user email whose data is shown to all non-admin users
+const DEMO_USER_EMAIL = 'tanner@claritydigital.dev';
+
 // GET /api/contracts
-// List all contracts for the current user
+// List all contracts for the current user (+ demo data for non-admin users)
 export async function GET() {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const { userId: clerkUserId } = await auth();
+
+    if (!clerkUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = clerkUserId;
 
     // Find the user
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    // Check if user is admin or the demo user themselves
+    const isAdmin = user?.email === ADMIN_EMAIL;
+    const isDemoUser = user?.email === DEMO_USER_EMAIL;
+
+    // For non-admin users (except demo user), also fetch demo data
+    let demoContracts: Awaited<ReturnType<typeof prisma.contract.findMany>> = [];
+    if (!isAdmin && !isDemoUser) {
+      const demoUser = await prisma.user.findFirst({
+        where: { email: DEMO_USER_EMAIL },
+      });
+
+      if (demoUser) {
+        demoContracts = await prisma.contract.findMany({
+          where: { userId: demoUser.id },
+          include: {
+            property: true,
+            offer: true,
+            assignment: {
+              include: {
+                buyer: true,
+              },
+            },
+            renovation: {
+              include: {
+                _count: {
+                  select: {
+                    scopeNodes: true,
+                    bids: true,
+                    changeOrders: true,
+                    tasks: true,
+                  },
+                },
+              },
+            },
+            rental: {
+              include: {
+                _count: {
+                  select: {
+                    tenants: true,
+                    income: true,
+                    expenses: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        });
+      }
     }
 
-    // Get all contracts for this user
-    const contracts = await prisma.contract.findMany({
-      where: { userId: user.id },
-      include: {
-        property: true,
-        offer: true,
-        assignment: {
-          include: {
-            buyer: true,
+    // Get user's own contracts (if user exists)
+    let contracts: Awaited<ReturnType<typeof prisma.contract.findMany>> = [];
+    if (user) {
+      contracts = await prisma.contract.findMany({
+        where: { userId: user.id },
+        include: {
+          property: true,
+          offer: true,
+          assignment: {
+            include: {
+              buyer: true,
+            },
           },
-        },
-        renovation: {
-          include: {
-            _count: {
-              select: {
-                scopeNodes: true,
-                bids: true,
-                changeOrders: true,
-                tasks: true,
+          renovation: {
+            include: {
+              _count: {
+                select: {
+                  scopeNodes: true,
+                  bids: true,
+                  changeOrders: true,
+                  tasks: true,
+                },
+              },
+            },
+          },
+          rental: {
+            include: {
+              _count: {
+                select: {
+                  tenants: true,
+                  income: true,
+                  expenses: true,
+                },
               },
             },
           },
         },
-        rental: {
-          include: {
-            _count: {
-              select: {
-                tenants: true,
-                income: true,
-                expenses: true,
-              },
-            },
-          },
+        orderBy: {
+          createdAt: 'desc',
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+      });
+    }
 
-    return NextResponse.json({
-      contracts: contracts.map((contract) => ({
+    // Combine user contracts with demo contracts (demo contracts marked with isDemo flag)
+    const allContracts = [
+      ...contracts.map((contract) => ({
         id: contract.id,
         propertyId: contract.propertyId,
         offerId: contract.offerId,
@@ -248,8 +321,42 @@ export async function GET() {
         assignment: contract.assignment,
         renovation: contract.renovation,
         rental: contract.rental,
+        isDemo: false,
       })),
-    });
+      ...demoContracts.map((contract) => ({
+        id: contract.id,
+        propertyId: contract.propertyId,
+        offerId: contract.offerId,
+        purchasePrice: contract.purchasePrice,
+        status: contract.status,
+        closingDate: contract.closingDate,
+        signedAt: contract.signedAt,
+        escrowOpenedAt: contract.escrowOpenedAt,
+        closedAt: contract.closedAt,
+        notes: contract.notes,
+        documentUrls: contract.documentUrls ? JSON.parse(contract.documentUrls) : [],
+        createdAt: contract.createdAt,
+        updatedAt: contract.updatedAt,
+        property: {
+          id: contract.property.id,
+          address: contract.property.address,
+          city: contract.property.city,
+          state: contract.property.state,
+          zip: contract.property.zip,
+        },
+        offer: {
+          id: contract.offer.id,
+          amount: contract.offer.amount,
+          status: contract.offer.status,
+        },
+        assignment: contract.assignment,
+        renovation: contract.renovation,
+        rental: contract.rental,
+        isDemo: true,
+      })),
+    ];
+
+    return NextResponse.json({ contracts: allContracts });
   } catch (error) {
     console.error('Error fetching contracts:', error);
     return NextResponse.json({ error: 'Failed to fetch contracts' }, { status: 500 });

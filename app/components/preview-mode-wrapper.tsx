@@ -30,11 +30,11 @@ export function PreviewModeWrapper({
             <div className="mx-auto mb-4 p-3 bg-primary/10 rounded-full w-fit">
               <Construction className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="flex items-center justify-center gap-2">
+            <CardTitle className="text-center mb-2">
               {title}
-              <Badge variant="secondary">Coming Soon</Badge>
             </CardTitle>
-            <CardDescription>{description}</CardDescription>
+            <Badge variant="secondary" className="mx-auto mb-3">Coming Soon</Badge>
+            <CardDescription className="text-center">{description}</CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">

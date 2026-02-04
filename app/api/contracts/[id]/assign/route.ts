@@ -1,7 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { auth } from '@clerk/nextjs/server';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
+/**
+ * Helper to get userId from Clerk auth
+ */
+async function getAuthenticatedUserId() {
+  const { userId: clerkId } = await auth();
+
+  if (!clerkId) {
+    return { error: 'Unauthorized', status: 401, userId: null };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId },
+    select: { id: true },
+  });
+
+  if (!user) {
+    return { error: 'User not found', status: 404, userId: null };
+  }
+
+  return { error: null, status: null, userId: user.id };
+}
 
 /**
  * POST /api/contracts/[id]/assign
@@ -18,7 +39,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const { error, status, userId } = await getAuthenticatedUserId();
+    if (error) {
+      return NextResponse.json({ error }, { status: status! });
+    }
 
     const { id: contractId } = await params;
     const body = await request.json();
@@ -124,7 +148,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const { error, status, userId } = await getAuthenticatedUserId();
+    if (error) {
+      return NextResponse.json({ error }, { status: status! });
+    }
 
     const { id: contractId } = await params;
 

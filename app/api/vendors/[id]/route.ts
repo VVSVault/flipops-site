@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
+import { getAuthenticatedUserId } from '@/lib/auth-helpers';
 
 /**
  * GET /api/vendors/[id]
@@ -12,7 +11,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = "mock-user-id"; // Temporary for development
+    const authResult = await getAuthenticatedUserId();
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    }
+    const userId = authResult.userId!;
     const { id } = await params;
 
     const vendor = await prisma.vendor.findFirst({
@@ -77,7 +80,11 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = "mock-user-id"; // Temporary for development
+    const authResult = await getAuthenticatedUserId();
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    }
+    const userId = authResult.userId!;
     const { id } = await params;
     const body = await request.json();
 
@@ -141,7 +148,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = "mock-user-id"; // Temporary for development
+    const authResult = await getAuthenticatedUserId();
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    }
+    const userId = authResult.userId!;
     const { id } = await params;
 
     // Verify vendor belongs to user

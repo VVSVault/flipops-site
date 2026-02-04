@@ -19,13 +19,32 @@ FlipOps is a real estate investment automation platform built with Next.js 16, R
 ```
 app/                    # Next.js App Router
   app/                  # Authenticated app pages (/app/*)
+    campaigns/          # Campaigns page and seed data
+    offers/             # Offers page and seed data
+    vendors/            # Vendors page with network system
+      page.tsx          # Main vendors UI (USE_DEMO_DATA toggle)
+      seed-data.ts      # Demo vendor data (12 vendors)
+    components/         # Shared app components
+      campaign-detail.tsx  # Campaign detail view component
   api/                  # API routes
+    campaigns/          # Campaign CRUD endpoints
+    offers/             # Offer CRUD endpoints
+    vendors/            # Vendor network API
+      my/               # User's vendor network
+        route.ts        # GET user vendors
+        add/route.ts    # POST link platform vendor
+        private/route.ts # POST create private vendor
+      platform/route.ts # GET browse platform vendors
+    markets/route.ts    # GET available markets
   (marketing)/          # Public marketing pages
 components/             # React components
   ui/                   # Base UI components (shadcn/ui style)
+  campaigns/            # Campaign-specific components (wizard, etc.)
 lib/                    # Core business logic
   prisma.ts             # Prisma client singleton (IMPORTANT: use this, don't create new instances)
   reapi/                # RealEstateAPI integration
+  vendors/              # Vendor network integrations
+    google-places.ts    # Google Places API (New) integration
   cron/                 # TypeScript cron automation
     guardrails/         # G1-G4 guardrail jobs
     monitoring/         # Data refresh, pipeline monitoring
@@ -33,7 +52,16 @@ lib/                    # Core business logic
     worker.ts           # Main cron worker entry point
 prisma/                 # Database schema
 scripts/                # Utility scripts
+  list-users.ts         # List database users
+  seed-platform-vendors.ts    # Seed vendors from Google Places
+  refresh-platform-vendors.ts # Refresh stale vendor data
+  setup-user-vendor-network.ts # Link vendors to user accounts
 docs/                   # Documentation
+  CAMPAIGNS.md          # Campaigns system documentation
+  OFFERS_CONTRACTS.md   # Offers & contracts documentation
+  development/          # Dev guides (DECISIONS.md, UI-DECISIONS.md, TESTS.md)
+  guardrails/           # G1-G4 implementation docs
+  deployment/           # Deployment & credentials guides
 ```
 
 ## Critical Patterns
@@ -123,6 +151,50 @@ import { cn } from '@/lib/utils';
 <div className={cn('base-classes', conditional && 'conditional-classes', className)} />
 ```
 
+### Toast Notifications
+
+**IMPORTANT**: This project uses shadcn/ui toast system, NOT sonner.
+
+```typescript
+// CORRECT - use this pattern
+import { useToast } from "@/components/ui/use-toast";
+
+function MyComponent() {
+  const { toast } = useToast();
+
+  const handleAction = () => {
+    toast({
+      title: "Success",
+      description: "Action completed.",
+      variant: "default", // or "destructive"
+    });
+  };
+}
+
+// WRONG - do NOT use sonner
+import { toast } from "sonner"; // ❌ Not used in this project
+```
+
+The Toaster component is rendered in `app/layout.tsx` at the root level.
+
+### Accessibility Patterns
+
+For Sheet/Dialog components that need accessible titles but have custom headers:
+
+```typescript
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+
+<Sheet>
+  <SheetContent>
+    <VisuallyHidden>
+      <SheetTitle>Accessible Title for Screen Readers</SheetTitle>
+    </VisuallyHidden>
+    {/* Your custom visible header here */}
+  </SheetContent>
+</Sheet>
+```
+
 ### Tailwind CSS v4
 
 This project uses Tailwind v4, which has different syntax from v3:
@@ -138,6 +210,7 @@ Required variables (see `env.sample`):
 - `REAPI_API_KEY` - RealEstateAPI for property data (currently expired, plan to reactivate)
 - `ATTOM_API_KEY` - ATTOM API for property discovery (used by cron)
 - `BATCHDATA_API_KEY` - BatchData API for skip tracing ($0.20/record)
+- `GOOGLE_PLACES_API_KEY` - Google Places API (New) for vendor network sourcing
 
 ## Guardrails System (G1-G4)
 
@@ -149,7 +222,9 @@ The app implements 4 automated guardrails:
 
 See `docs/guardrails/` for implementation details.
 
-## Feature Status (Last Reviewed: 2026-01-28)
+## Feature Status (Last Reviewed: 2026-01-30, Updated: 2026-01-30)
+
+> **Note**: Vendor Network System added 2026-01-30. Currently using demo data (`USE_DEMO_DATA = true`). Production system ready with Google Places integration, tiered access, and admin scripts.
 
 ### ✅ FULLY IMPLEMENTED & WORKING
 
@@ -200,14 +275,28 @@ Location: `lib/reapi/utils/distress-scorer.ts` (v2.0)
 - Dashboard widget displays recent notifications
 
 #### Database Schema
-Complete 24-model schema covering:
+Complete schema covering:
 - Properties, Deals, Vendors, Bids, Invoices, ChangeOrders
 - Buyers, ContractAssignments, BuyerOffers, Campaigns (wholesale)
 - Rentals, Tenants, RentalIncome, RentalExpense (buy-and-hold)
 - Events (audit trail), Tasks, Policies, CostModels
+- **Vendor Network System** (new 2026-01-30):
+  - `PlatformVendor` - Vendors sourced from Google Places API (shared across all users)
+  - `UserVendor` - Private vendors created by individual users
+  - `UserVendorRelationship` - Junction table linking users to platform vendors (favorites, preferred, notes)
+  - `Market` - Geographic markets for vendor organization (e.g., "Jacksonville, FL")
+  - `VendorCategory` enum - 28 trade types (GENERAL_CONTRACTOR, ROOFER, PLUMBER, etc.)
 
 #### UI Pages (app/app/)
-18 authenticated pages: Dashboard, Leads, Tasks, Contracts, Renovations, Rentals, Offers, Underwriting, Campaigns, Inbox, Documents, Data Sources, Analytics, Settings, Vendors, Buyers, Onboarding
+17 authenticated pages: Dashboard, Leads, Tasks, Contracts, Renovations, Rentals, Offers, Underwriting, Campaigns, Inbox, Documents (with folder navigation, 3 view modes, template library), Analytics, Settings, Vendors (with network system), Buyers, Onboarding
+
+#### Demo Data System
+For pre-beta preview, non-admin users see demo data:
+- Admin account (`tannercarlson@vvsvault.com`) sees only their own data
+- Demo user account (`tanner@claritydigital.dev`) sees their own data (the demo data)
+- All other users see demo data merged with their own data
+- Demo contracts marked with `isDemo: true` flag
+- Seed demo data: `npx tsx scripts/seed-contracts.ts`
 
 ### ⚠️ NOTES / CONSIDERATIONS
 
@@ -238,13 +327,13 @@ Complete 24-model schema covering:
 - Zapier/Make integration
 - Native mobile app
 
-## Frontend Redesign Status (2026-01-28)
+## Frontend Redesign Status (2026-01-28, Updated: 2026-02-03, Overview/Settings: 2026-02-03)
 
 Goal: Apple-like quality - seamless, intuitive for older users, impressive for younger users.
 
 ### ✅ COMPLETED
 
-#### Dashboard (`app/app/page.tsx`)
+#### Overview/Dashboard (`app/app/page.tsx`)
 Completely redesigned with:
 - **No dynamic import flicker** - Direct render, proper skeleton loading
 - **KPI Cards** - Clickable with hover effects, sparklines, trend badges, semantic colors
@@ -254,8 +343,64 @@ Completely redesigned with:
 - **Dynamic Greeting** - "Good morning/afternoon/evening" based on time
 - **Investor Stats** - Wholesaler/Flipper/Buy-and-Hold specific sections
 - **Responsive Grid** - 2→3→6 columns based on screen size
+- **Fixed Height Bottom Cards** - Hot Leads and Today's Actions use `h-[510px]` to align with third column (Deal Pipeline + Recent Activity)
+- **Internal Scrolling** - Cards use flex layout with `overflow-y-auto` for content overflow
+
+**Bottom Grid Layout Pattern:**
+```tsx
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+  {/* Hot Leads - fixed 510px height */}
+  <Card className="lg:col-span-1 flex flex-col h-[510px]">
+    <CardHeader className="pb-2 flex-shrink-0">...</CardHeader>
+    <CardContent className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div className="space-y-3 flex-1 overflow-y-auto min-h-0">
+        {/* Scrollable content */}
+      </div>
+      <Link className="flex-shrink-0 mt-auto pt-2">
+        {/* Button pinned to bottom */}
+      </Link>
+    </CardContent>
+  </Card>
+
+  {/* Today's Actions - same pattern */}
+  <Card className="flex flex-col h-[510px]">...</Card>
+
+  {/* Pipeline + Notifications - natural height, sets alignment target */}
+  <div className="flex flex-col gap-6">
+    <PipelineFunnel stages={pipelineStages} />
+    <NotificationsPreview notifications={notifications} />
+  </div>
+</div>
+```
 
 New component: `components/ui/skeleton.tsx` for loading states.
+
+#### Settings (`app/app/settings/page.tsx`)
+Completely redesigned with:
+- **Two-Tab Interface** - Preferences (active) and Integrations (coming soon)
+- **Consolidated Preferences** - All settings on one scrollable tab, two-column grid on desktop
+- **Notifications Section** - Email alerts toggle, daily digest toggle with time selector
+- **Regional Settings** - Timezone selector (7 US timezones), currency selector (USD/CAD)
+- **Email Signature** - Enable/disable toggle, sender name, company name, custom signature with preview
+- **Account & Security** - Link to Clerk security management, delete account (disabled during beta)
+- **Viewport-Fitting Layout** - Uses `h-full flex flex-col overflow-hidden` pattern
+- **Server Persistence** - Settings saved via `/api/user` PUT endpoint
+- **Integrations Tab** - Coming Q2 2025 placeholder with planned integrations grid
+
+Settings Form Data:
+```typescript
+interface SettingsFormData {
+  emailAlerts: boolean;
+  dailyDigest: boolean;
+  digestTime: string;         // "06:00" - "18:00"
+  timezone: string;           // "America/New_York", etc.
+  currency: string;           // "USD" | "CAD"
+  emailSignatureEnabled: boolean;
+  emailSenderName: string;
+  emailCompanyName: string;
+  emailSignature: string;
+}
+```
 
 #### Leads (`app/app/leads/page.tsx`)
 Completely redesigned with:
@@ -305,61 +450,474 @@ Completely redesigned with "Command Center Elegance" aesthetic:
 
 New components: `Sparkline`, `ProgressRing`, `StatusIndicator`, `ChannelBadges`, `CampaignCard`, `StatCard`
 
+#### Campaign Detail View (`app/app/components/campaign-detail.tsx`)
+Detailed campaign analytics view when clicking a campaign card:
+- **Header Section** - Campaign name, status badge, action buttons (Pause/Resume, Edit, Export)
+- **Key Metrics Bar** - 7 compact stat chips (Audience, Sent, Delivered%, Replies, Positive, Contracts, Total Cost)
+- **Progress Bar** - Inline progress indicator with percentage
+- **5 Tabbed Views**:
+  - **Overview Tab** - Step Funnel + Channel Performance + Sentiment Analysis
+  - **Analytics Tab** - Geographic Performance table, A/B Test Results (if enabled)
+  - **Deliveries Tab** - Individual message delivery log with lead info, status, sentiment
+  - **Audience Tab** - Filter badges, audience size, lead preview list
+  - **Settings Tab** - Compliance settings (DNC, consent, quiet hours), Throttle settings
+- **Step Funnel** - Vertical stacked progress bars showing delivery → replied → positive per step
+- **Channel Performance** - Visual cards per channel (SMS/Email/Voicemail) with gradient progress bars, reply rate, cost
+- **Sentiment Analysis** - 2x2 grid with Lucide icons (TrendingUp, Minus, TrendingDown, HelpCircle), stacked bar visualization
+- **Viewport-Fitting Layout** - Uses flex columns with `min-h-0` to fit content without external scrolling
+
+Campaign Data Structure:
+```typescript
+interface Campaign {
+  id: string;
+  name: string;
+  status: "running" | "paused" | "completed" | "draft";
+  objective: "inbound" | "reengage" | "disposition";
+  channels: string[]; // ["sms", "email", "voicemail", "letter"]
+  audience: { size: number; filters: string[] };
+  metrics: {
+    sends: number;
+    delivered: number;
+    replies: number;
+    positive: number;
+    contracts: number;
+    cost: number;
+    revenue?: number;
+  };
+  progress: number; // 0-100
+  abTest: boolean;
+  lastRun: Date | null;
+  createdAt: Date;
+}
+```
+
+#### Underwriting (`app/app/underwriting/page-content.tsx`)
+Completely redesigned with "Command Center Precision" aesthetic:
+- **DealGauge Component** - SVG half-circle gauge showing deal viability score (0-100%), color-coded (green=75%+, amber=50%+, orange=25%+, red=<25%), no drop-shadow to avoid box artifacts
+- **PropertyHeroCard** - Premium card with property photo placeholder, address, bed/bath/sqft/year stats grid, distress signal badges (Pre-FC, Vacant, Tax Delinquent, etc.)
+- **PropertyCard** - Left panel property selector with score badges, quick stats, gradient score indicators
+- **CompCard** - Clickable comp cards with SimilarityRing (circular progress), outlier warnings, selection checkmarks
+- **SimilarityRing** - SVG circular indicator showing comp similarity percentage
+- **RepairCategoryIcon** - Color-coded icons for repair categories (roof, kitchen, hvac, etc.)
+- **NetSheetSummary** - Sticky footer with animated numbers showing ARV → Repairs → MAO → Offer, circular badge icons (Minus, Equal, ChevronRight) with `mt-5` for number alignment
+- **ScenarioCard** - Exit strategy comparison cards (Wholesale, Flip, Rental) with profit/ROI calculations
+- **AnimatedNumber** - Smooth number transitions when values change
+- **Collapsible Left Panel** - Property selector with search, expandable/collapsible, `py-0 gap-0` Card override
+- **Color-Coded Tabs** - Background colors instead of borders to avoid rounded corner clipping (blue=Comps, amber=Repairs, emerald=Scenarios)
+- **ARV Adjustment Slider** - -20% to +20% manual ARV adjustment
+- **Contingency Buffer Slider** - 0-30% repairs buffer
+- **Add Repair Dialog** - Category dropdown, description, cost input
+- **Create Offer Dialog** - Full offer form with terms, contingencies, dates
+- **Skeleton Loading** - Proper loading states throughout
+- **Empty State** - Helpful CTA when no properties available
+- **Seed Comps** - "1234 Oak Street" (prop-001) has 6 hardcoded Jacksonville-area comps for demo
+
+New components: `DealGauge`, `SimilarityRing`, `AnimatedNumber`, `PropertyCard`, `CompCard`, `RepairCategoryIcon`, `NetSheetSummary`, `ScenarioCard`
+
+**Remaining**: Update page.tsx to direct import (remove dynamic import wrapper)
+
+#### Offers (`app/app/offers/page.tsx`)
+Completely redesigned with "Command Center Elegance" aesthetic:
+- **No dynamic import flicker** - Merged page.tsx and page-content.tsx into single file
+- **Premium Stat Chips** - Horizontal scrolling stats bar (Total, Pending, Countered, Won, Needs Contract, Conversion Rate)
+- **OfferCard Component** - Visual cards with status-colored gradient top bar, property info, owner avatar
+- **StatusTimeline Component** - 4-step visual timeline (Draft → Sent → Response → Outcome) with state indicators
+- **StatusIndicator Component** - Pill badges with icons and pulse animation for active states
+- **ExpirationBadge Component** - Color-coded urgency indicators (red=expires soon, amber=days left)
+- **Grid/List Toggle** - Switch between card grid and compact list views
+- **Offer Amount Display** - Side-by-side boxes showing offer vs ARV or counter offer (for countered status)
+- **Counter Offer Highlighting** - Amber-themed display when seller counters
+- **Contract Integration** - Shows contract status badge, "Needs Contract" warning for accepted offers without contracts
+- **Terms & Closing Info** - Cash/financing badge, closing date display in footer
+- **Details Dialog** - Clean modal showing all offer details with proper formatting
+- **Update Status Dialog** - Change status with response notes
+- **Create Contract Dialog** - Convert accepted offers to contracts with closing date picker
+- **Skeleton Loading** - Proper loading state with card skeletons
+- **Empty State** - Sparkles icon with CTA to Underwriting page
+- **Seed Data** - 12 sample offers covering all statuses for demo/development (`seed-data.ts`)
+
+New components: `StatChip`, `StatusTimeline`, `StatusIndicator`, `ExpirationBadge`, `OfferCard`, `OfferCardSkeleton`
+
+Offer Data Structure:
+```typescript
+interface Offer {
+  id: string;
+  amount: number;
+  terms: string | null; // "cash", "financing", etc.
+  contingencies: string[] | null; // ["inspection", "title", "financing"]
+  closingDate: string | null;
+  expiresAt: string | null;
+  earnestMoney: number | null;
+  status: "draft" | "sent" | "countered" | "accepted" | "rejected" | "expired";
+  sentAt: string | null;
+  responseAt: string | null;
+  responseNotes: string | null;
+  counterAmount: number | null;
+  notes: string | null;
+  createdAt: string;
+  property: {
+    id: string;
+    address: string;
+    city: string;
+    state: string;
+    zip: string | null;
+    ownerName: string | null;
+    beds?: number;
+    baths?: number;
+    sqft?: number;
+    arv?: number;
+  };
+  contract?: { id: string; status: string };
+}
+```
+
+#### Contracts (`app/app/contracts/page-content.tsx`)
+Completely redesigned with "Command Center Elegance" aesthetic:
+- **Compact Metrics Bar** - 8 stat chips (Total, Pending, Signed, Escrow, Closed, Total Value, Avg Days, This Month)
+- **Status Pipeline** - Horizontal pipeline visualization (Pending → Signed → Escrow → Closed) with counts, clickable to filter
+- **Dual View Modes**:
+  - **List View** - Enhanced table with property info, status badges, timeline indicators, assignment badges
+  - **Board View (Kanban)** - Pipeline columns with draggable cards showing address, price, days in stage
+- **Slide-Out Detail Panel (Sheet)** - Replaces modal, 540px right-side panel with tabbed interface:
+  - **Overview Tab** - Property info, key dates, notes
+  - **Timeline Tab** - Visual status change history
+  - **Documents Tab** - Placeholder for file uploads
+  - **Actions Tab** - Update status, assign buyer, start renovation/rental
+- **ContractCard Component** - Status-colored border, property address, price, days in stage, buyer assignment
+- **StatusBadge Component** - Color-coded pills (amber=pending, blue=signed, purple=escrow, emerald=closed)
+- **Workflow Indicators** - Icons showing linked renovation or rental
+- **Demo Data System** - Non-admin users see demo data from `tanner@claritydigital.dev` account
+- **Seed Script** - `npx tsx scripts/seed-contracts.ts` creates 12 sample contracts
+
+New components: `StatChip`, `StatusPipeline`, `ContractCard`, embedded in page-content.tsx
+
+Contract Data Structure:
+```typescript
+interface Contract {
+  id: string;
+  purchasePrice: number;
+  status: "pending" | "signed" | "escrow" | "closed" | "cancelled";
+  closingDate: string | null;
+  signedAt: string | null;
+  escrowOpenedAt: string | null;
+  closedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  property: { id: string; address: string; city: string; state: string; zip: string };
+  offer: { id: string; amount: number; status: string };
+  assignment?: { id: string; buyerId: string; assignmentFee: number; status: string; buyer: { name: string } };
+  renovation?: { id: string; status: string };
+  rental?: { id: string; status: string };
+  isDemo: boolean; // True for demo data shown to non-admin users
+}
+```
+
+#### Renovations (`app/app/renovations/page.tsx`)
+Completely redesigned with "Construction Command Center" aesthetic:
+- **No dynamic import flicker** - Merged page.tsx and page-content.tsx
+- **Horizontal Stat Chips** - Total, Active, Planning, On Hold, Budget, Spent, Avg ROI, Pending COs
+- **Status Pipeline** - Visual pipeline (Planning → Active → On Hold → Completed) with clickable filters
+- **BudgetGauge Component** - Visual progress bar showing spent vs committed vs baseline, color-coded (green=healthy, amber=near budget, red=over)
+- **TradeChips Component** - Color-coded trade badges (Kitchen, Bath, HVAC, Electrical, etc.)
+- **RenovationCard Component** - Full card with:
+  - Status gradient bar at top
+  - Property info (beds/baths/sqft)
+  - Budget section with gauge
+  - Metrics grid (ARV, Target ROI, Duration)
+  - Trade scope chips
+  - Pending bids/change orders warnings
+- **KanbanCard Component** - Compact card for board view
+- **Grid/List/Kanban Views** - Three view modes with toggle
+- **Detail Sheet Panel** - Right-side slide-out with 5 tabs:
+  - Overview (property, budget gauge, timeline)
+  - Scope (trade-grouped line items)
+  - Bids (vendor comparison with status, "Request Bid" button)
+  - Changes (change orders with cost/schedule impact)
+  - Actions (status updates, quick actions)
+- **Vendor-Bid Integration** - Full workflow for requesting bids from vendors:
+  - Request Bid dialog with trade selector (14 TRADE_CONFIG options)
+  - Vendor picker filtered by selected trade via `/api/vendors?trade=X`
+  - Bid amount and notes input
+  - Creates bid via `/api/bids` POST endpoint
+  - New bid appears in renovation's bid list with "pending" status
+- **Dark Mode Support** - Explicit `bg-white dark:bg-gray-900` on Sheet/Dialog content
+- **Skeleton Loading** - Proper loading states for all view modes
+- **Seed Data Fallback** - 9 demo renovation projects covering all statuses (planning, active, on_hold, completed, cancelled)
+- **API Routes Fixed** - Now use Prisma singleton + Clerk auth
+
+New components: `BudgetGauge`, `TradeChips`, `StatusBadge`, `StatusPipeline`, `RenovationCard`, `KanbanCard`
+
+New API endpoints:
+- `POST /api/bids` - Create bid (requires dealId, vendorId, subtotal)
+- `GET /api/bids?dealId=X` - List bids for a renovation (optional status, vendorId filters)
+
+Data structure follows Prisma schema: DealSpec, ScopeTreeNode, Bid, ChangeOrder, BudgetLedger
+
+#### Tasks (`app/app/tasks/page-content.tsx`)
+Completely redesigned with modern task management interface:
+- **Viewport-Fitting Layout** - Uses `h-full` with flex column pattern (see "Viewport-Fitting Layout Pattern" section)
+- **Single Bordered Container** - Header, toolbar, and table all inside one rounded bordered container
+- **SLA Compliance Gauge** - SVG circular gauge showing team SLA compliance percentage
+- **Stat Chips** - Overdue, Urgent, Due Today, Completed quick stats with color coding
+- **Status Pipeline** - Clickable filter bar (All, Open, In Progress, Blocked, Overdue, Done) with counts
+- **Table View** - Sortable table with checkbox selection, task type icons, assignee avatars, priority badges, SLA indicators
+- **Grid View** - Card-based alternative view with same data
+- **Task Detail Sheet** - Right-side slide-out panel (540px) with tabs: Overview, Subtasks, Activity, Comments
+- **ScrollArea Integration** - Proper scrolling within bordered container with sticky table headers
+- **Skeleton Loading** - Table and grid skeleton states during load
+- **Seed Data** - 27 sample tasks covering all types and statuses
+
+Key layout pattern established:
+```tsx
+<div className="h-full flex flex-col border rounded-lg bg-card overflow-hidden">
+  <div className="shrink-0 border-b px-6 py-4">Header</div>
+  <div className="shrink-0 border-b px-6 py-3">Toolbar</div>
+  <div className="flex-1 min-h-0 overflow-hidden">
+    <ScrollArea className="h-full">Content</ScrollArea>
+  </div>
+</div>
+```
+
+#### Vendors (`app/app/vendors/page.tsx`)
+Completely redesigned with "Vendor Command Center" aesthetic:
+- **No dynamic import flicker** - Merged page.tsx and page-content.tsx
+- **Horizontal Stat Chips** - Total, Verified, Favorites, Avg Rating, Trade Types
+- **TRADE_CONFIG Color System** - 28 trade types with color-coded badges/gradients matching VendorCategory enum (GENERAL_CONTRACTOR, ROOFER, PLUMBER, ELECTRICIAN, HVAC, FLOORING, PAINTER, LANDSCAPER, DEMOLITION, FRAMING, DUMPSTER_RENTAL, LOCKSMITH, CLEANING_SERVICE, HOME_INSPECTOR, APPRAISER, SIDING, WINDOWS, INSULATION, DRYWALL, KITCHEN, BATHROOM, FENCING, CONCRETE, POOL, PEST_CONTROL, GARAGE_DOOR, APPLIANCE_REPAIR, OTHER)
+- **ReliabilityGauge Component** - SVG circular gauge showing reliability percentage with color thresholds (emerald 90%+, amber 75%+, orange 50%+, rose <50%)
+- **VendorCard Component** - Trade-colored gradient stripe, trade icon badge, star rating, location, quick stats (reviews, rate, reliability gauge), availability badge
+- **Grid/List View Toggle** - Full cards vs compact horizontal rows
+- **VendorDetailSheet** - 540px right panel with 4 tabs:
+  - Overview (contact info, services/trades, rates)
+  - Reviews (placeholder for vendor reviews)
+  - Projects (placeholder for completed projects)
+  - Documents (placeholder for uploads)
+- **Clean Header Design** - Removed heavy gradient, uses subtle `bg-muted/30` with `border-b`
+- **Add Vendor Modal** - Full form for adding private vendors (name, categories, contact info, address, notes)
+- **Message/Contract/Invoice Modals** - Quick actions from vendor detail sheet
+- **Toast Notifications** - Uses shadcn/ui `useToast` hook (NOT sonner)
+- **Accessibility** - SheetTitle wrapped in `VisuallyHidden` for screen reader compliance
+
+**Demo Mode Toggle**:
+```typescript
+// At top of page.tsx - toggle between demo and production data
+const USE_DEMO_DATA = true;  // Set to false for API-driven data
+```
+- When `true`: Uses 12 demo vendors from `seed-data.ts` (no API calls)
+- When `false`: Fetches from `/api/vendors/my` and `/api/vendors/platform`
+
+**Seed Data** (`app/app/vendors/seed-data.ts`):
+- 12 demo vendors across 8 trade categories
+- Sample reviews, documents, projects, availability
+- Arizona-based (Phoenix, Scottsdale, Mesa, etc.)
+- Mix of ratings (0-4.9), verification statuses, availability states
+
+New components: `StatChip`, `ReliabilityGauge`, `VendorCard`, `VendorCardSkeleton`, `VendorDetailSheet`
+
+#### Vendor Network System (Production Architecture)
+
+**Two-Tier Vendor Model**:
+1. **PlatformVendor** - Shared vendors sourced from Google Places API
+   - Seeded per market by admins
+   - Contains Google Place ID, source rating/reviews, categories
+   - Available to premium-tier users (Scale, Accelerator, Partner)
+
+2. **UserVendor** - Private vendors created by individual users
+   - Personal contractor contacts
+   - Full control over data (rating, notes, contact info)
+
+3. **UserVendorRelationship** - Links users to platform vendors
+   - Enables favorites, preferred status, personal notes
+   - Tracks last used date for sorting
+
+**API Endpoints**:
+- `GET /api/vendors/my` - User's vendor network (both UserVendor + linked PlatformVendor)
+- `GET /api/vendors/platform` - Browse platform vendors by market (premium feature)
+- `POST /api/vendors/my/add` - Link a platform vendor to user's network
+- `POST /api/vendors/my/private` - Create a private UserVendor
+- `GET /api/markets` - List available markets
+
+**Admin Scripts** (in `scripts/`):
+```bash
+# List users in database
+npx tsx scripts/list-users.ts
+
+# Seed platform vendors from Google Places (requires GOOGLE_PLACES_API_KEY)
+npx tsx scripts/seed-platform-vendors.ts
+
+# Refresh stale vendor data from Google Places
+npx tsx scripts/refresh-platform-vendors.ts
+
+# Set up vendor network for a user (links top-rated vendors)
+npx tsx scripts/setup-user-vendor-network.ts \
+  --user-email="user@example.com" \
+  --market="Jacksonville, FL" \
+  --per-category=3  # Max vendors per trade category
+```
+
+**Google Places Integration** (`lib/vendors/google-places.ts`):
+- Uses Places API (New) - Text Search and Place Details endpoints
+- Searches for contractors by trade + location
+- Extracts: name, address, phone, website, rating, review count, price level
+- Lazy-loaded API key: `const getApiKey = () => process.env.GOOGLE_PLACES_API_KEY`
+- Radius capped at 50km (Google maximum)
+
+**Tiered Access**:
+- Free/Launch tiers: Can only add private vendors
+- Scale/Accelerator/Partner tiers: Can browse and add platform vendors
+- Check: `const hasPremiumAccess = (tier) => ['SCALE', 'ACCELERATOR', 'PARTNER'].includes(tier)`
+
+#### Rentals (`app/app/rentals/page.tsx`)
+Completely redesigned with "Wealth Command Center" aesthetic:
+- **No dynamic import flicker** - Merged page.tsx and page-content.tsx
+- **Light/Dark Theme Support** - Uses theme variables (`bg-card`, `text-foreground`, `bg-muted`) for proper theming
+- **Gold Accent for Financial Data** - Rent amounts use `text-amber-600 dark:text-amber-400` for visual hierarchy
+- **Horizontal Stat Chips** - Properties, Leased/Vacant, Monthly Rent (gold highlight), Cash Flow, Cap Rate, Portfolio Value, Expiring Leases, Open Tickets
+- **OccupancyGauge Component** - SVG circular progress with color-coded thresholds (emerald 90%+, amber 70%+, rose <70%), available in sm/md/lg sizes
+- **LeaseCountdown Component** - Color-coded urgency badges for lease expiration (rose ≤30d, amber ≤60d, yellow ≤90d, emerald >90d)
+- **CashFlowIndicator Component** - Centered inline +/- display with trend icons (TrendingUp/TrendingDown), uses `justify-center` for alignment with other metrics
+- **RentalCard Component** - Status gradient bar, property stats (beds/baths/sqft), metrics grid (Rent/Cash Flow/Cap Rate), tenant/maintenance counts
+- **Grid/List View Toggle** - Full cards vs compact horizontal rows
+- **RentalDetailSheet** - 540px right panel with 4 tabs:
+  - Overview (metrics, lease info, recent payments)
+  - Tenants (TenantCard with contact info, payment status)
+  - Financials (FinancialSummary with income/expense breakdown, property value/equity)
+  - Maintenance (MaintenanceCard with priority/status badges)
+- **Accessibility** - SheetTitle wrapped in `VisuallyHidden` from `@radix-ui/react-visually-hidden` for screen reader compliance
+- **Toast Notifications** - Uses shadcn/ui `useToast` hook (NOT sonner) for action feedback
+- **Action Buttons**:
+  - Edit button - Shows toast with "Edit Property" message
+  - Record Payment button - Shows toast with payment dialog placeholder
+  - Send Renewal Contract button - Conditionally shown when lease expires within 60 days, amber gradient styling
+- **Lease Renewal Feature** - Properties with `status === "leased"` and lease expiring within 60 days show a prominent "Send Renewal Contract" button with days remaining badge
+- **Financial Calculations** - Monthly cash flow, cap rate, cash-on-cash return, equity
+- **Seed Data** - 10 Florida rental properties covering all statuses with tenants and maintenance requests
+
+New components: `StatChip`, `OccupancyGauge`, `LeaseCountdown`, `CashFlowIndicator`, `RentalCard`, `TenantCard`, `MaintenanceCard`, `FinancialSummary`, `RentalDetailSheet`
+
+#### Documents (`app/app/documents/page.tsx`)
+Cleaned up and made fully functional with:
+- **Three View Modes** - Table (default), Kanban (by status), Packets (bundled documents)
+- **Folder Navigation** - Recursive tree with expand/collapse, document counts
+- **Quick Access Filters** - "Awaiting Signature" and "Drafts" shortcuts
+- **Status Configuration** - Centralized colors, gradients, icons for draft/sent/signed/expired/void
+- **Document Type Icons** - LOI, PSA, JV, Assignment, NDA, Addendum with distinct icons
+- **Horizontal Stat Chips** - Total, Awaiting, Signed, Avg Time, Templates
+- **DocumentCard Component** - Kanban cards with status gradient bar, signer indicators
+- **Document Viewer Sheet** - 540px right panel with 4 tabs (Details, Signers, Versions, Audit)
+- **Template Library Dialog** - 5 category tabs (Acquisition, Assignment, Partnership, Legal, Modification)
+- **Packet Builder Dialog** - Create document bundles for deals
+- **Action Handlers** - All actions wired with toast notifications (Edit, Send, Download, New Version, Duplicate, Archive, Void, Resend)
+- **Accessibility** - VisuallyHidden SheetTitle for screen readers
+- **Dark Mode** - Explicit `bg-white dark:bg-gray-900` on dialogs/sheets
+
+New components: `StatChip`, `DocumentCard`
+
+Data structure in `seed-data.ts`:
+- Documents with signerRoles and auditLog
+- Folders with parent relationships
+- Templates with rolesSchema
+- Packets with packetItems
+- Helper functions: `getDocumentsByFolder`, `getTemplatesByCategory`, `getDocumentVersions`, `calculateDocumentMetrics`
+
+Key patterns established:
+```typescript
+// Toast notifications (NOT sonner)
+import { useToast } from "@/components/ui/use-toast";
+const { toast } = useToast();
+toast({ title: "Action", description: "Details..." });
+
+// Accessibility for Sheet components
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+<SheetContent>
+  <VisuallyHidden><SheetTitle>Title</SheetTitle></VisuallyHidden>
+  {/* Visible content */}
+</SheetContent>
+
+// Conditional lease renewal display
+const daysUntilExpiration = getDaysUntil(rental.leaseEnd);
+const showRenewalOption = rental.status === "leased" &&
+  daysUntilExpiration !== null &&
+  daysUntilExpiration <= 60 &&
+  daysUntilExpiration >= 0;
+```
+
+#### Analytics (`app/app/analytics/page.tsx`)
+Completely redesigned with "Data Command Center" aesthetic:
+- **No dynamic import flicker** - Direct render, proper skeleton loading
+- **Viewport-Fitting Layout** - Uses `h-full` with flex column pattern
+- **Single Bordered Container** - Header, stats bar, tabs all inside one rounded container
+- **Horizontal Stat Chips Bar** - 8 key metrics with trends (Leads, Qualified, Offers, Contracts, Closed, Net Profit, ROMI, Conversion)
+- **StatChip Component** - Compact stat display with icon, label, value, trend indicator, highlight option
+- **Custom Tooltip Component** - Polished tooltips with backdrop blur, handles Date objects automatically
+- **6 Dashboard Tabs**:
+  - **Executive** - Conversion funnel, weekly profit trend, profit waterfall
+  - **Marketing** - Channel performance table, lead source pie chart, campaign performance
+  - **Acquisition** - Speed metrics, lead quality by source, response time distribution
+  - **Profitability** - Profit by market, top deals, margin distribution, deal size by market
+  - **Team** - Team stats cards, paginated member table with search/sort (see Team Tab section below)
+  - **Vendors** - Performance alerts, vendor matrix, spend by category
+- **Enhanced Chart Styling (Modern Look)**:
+  - Gradient fills on bar charts and area charts (`linearGradient` definitions)
+  - Fading area gradients with multi-stop opacity (0.4 → 0.15 → 0)
+  - Rounded corners on bars (`radius={[6, 6, 0, 0]}`)
+  - Subtle axis lines (`stroke: '#e5e7eb'`) with hidden tick lines (`tickLine={false}`)
+  - Dashed horizontal grid only (`strokeDasharray="3 3" vertical={false}`)
+  - Dark mode grid support (`className="dark:stroke-zinc-700"`)
+  - Drop shadows on chart elements (`className="drop-shadow-sm"`)
+  - Muted cursor hover effect (`cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}`)
+  - Donut-style pie charts (`innerRadius` + `paddingAngle`)
+  - Active dots with white stroke (`activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2 }}`)
+  - LabelList for percentage display on funnel bars
+  - Compact card headers (`pb-2 pt-3`) to maximize chart space
+- **Date Range Selector** - 7d/30d/90d quick filters
+- **Refresh Button** - Manual data refresh with loading state
+- **Export Dropdown** - CSV export (Excel/PDF coming soon)
+- **Live/Demo Data Badge** - Shows data source status
+- **Skeleton Loading** - StatChipSkeleton, ChartCardSkeleton, TableSkeleton
+- **API Route Fixed** - Uses Prisma singleton + Clerk auth
+
+**Team Tab (Updated 2026-01-31)**:
+- **4 Stat Cards** - Total Revenue, Team Members (14), Win Rate (avg), Response Time (avg)
+- **Paginated Table** - 9 members per page (`TEAM_PAGE_SIZE = 9`), static layout (no scroll)
+- **Table Columns** - Team Member (avatar + name), Role, Revenue, Deals, Win Rate, Response, SLA, Activities
+- **Search & Sort** - Search by name/role, sort by Revenue/Deals/Win Rate
+- **Table/Card View Toggle** - Switch between table and card grid views
+- **Top 3 Indicators** - Crown/Medal/Award icons for top performers when sorted by revenue desc
+- **Avatar Colors** - 6 rotating colors (blue, emerald, purple, amber, rose, cyan)
+- **Compact Pagination** - `py-1` padding, page numbers visible in viewport
+- **14 Demo Members** - Fallback data in both API and frontend for consistency:
+  - Sarah Chen, Mike Rodriguez, Emily Johnson, David Park, Jessica Martinez, James Wilson, Ashley Thompson, Robert Garcia, Amanda Lee, Christopher Brown, Jennifer Davis, Daniel Kim, Megan Taylor, Ryan Anderson
+- **API Debug Logging** - Console logs for `currentTeamId` and member count to trace data flow
+
+**Vendors Tab (Updated 2026-01-31)**:
+- **4 Stat Cards** - Total Vendors, Total Spend, Avg Rating, Avg On-Time %
+- **Static Layout** - No ScrollArea wrapper, content flows naturally
+- **Vendor Performance Card** - Scrollable list with `max-h-[420px]`, shows ~4-5 vendors before scroll
+- **Rating Formatting** - `.toFixed(2)` to prevent floating point display issues (e.g., `1.76` not `1.7600000000000002`)
+- **Category-Based Avatar Colors** - Different gradients per vendor type (Contractor=blue, Electrician=amber, etc.)
+- **Alert Styling** - Red border/background for vendors with <80% on-time
+- **Spend by Category Chart** - Horizontal bar chart with gradient fill
+- **On-Time Performance Trend** - Area chart showing weekly trend
+
+New components: `StatChip`, `StatChipSkeleton`, `ChartCardSkeleton`, `TableSkeleton`, `CustomTooltip`
+
+Chart gradient pattern:
+```tsx
+<defs>
+  <linearGradient id="myGradient" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stopColor="#10B981" stopOpacity={1} />
+    <stop offset="100%" stopColor="#059669" stopOpacity={0.8} />
+  </linearGradient>
+</defs>
+<Bar dataKey="value" fill="url(#myGradient)" radius={[6, 6, 0, 0]} />
+```
+
 ### 📋 PAGES TO REDESIGN (Priority Order)
 
-#### 1. Underwriting (`app/app/underwriting/page.tsx`)
-Current: Form-based calculator
-Planned:
-- **Deal Analyzer Card** - Property photo, address, key metrics at glance
-- **ARV Calculator** - Comp selection with map view, adjustment sliders
-- **Repair Estimator** - Category-based cost breakdown with line items
-- **70% Rule Widget** - Visual gauge showing max offer vs asking price
-- **Scenario Comparison** - Side-by-side flip vs hold vs wholesale analysis
-
-#### 2. Contracts (`app/app/contracts/page.tsx`)
-Current: Basic table
-Planned:
-- **Contract Timeline** - Visual status flow (Draft → Sent → Signed → Closed)
-- **Document Preview** - Inline PDF viewer with signature highlights
-- **E-Sign Integration** - Send for signature, track status, view history
-- **Assignment UI** - Buyer assignment flow with fee calculator
-- **Closing Checklist** - Task list with due dates and completion tracking
-
-#### 3. Renovations (`app/app/renovations/page.tsx`)
-Current: 40% stub
-Planned:
-- **Project Cards** - Property photo, progress bar, budget vs actual
-- **Scope Builder** - Room-by-room checklist with cost estimates
-- **Bid Management** - Vendor comparison table, award/reject actions
-- **Timeline View** - Gantt-style chart with milestones
-- **Photo Documentation** - Before/during/after gallery with timestamps
-- **Change Order Workflow** - Request → Approve → Execute flow
-
-#### 4. Rentals (`app/app/rentals/page.tsx`)
-Current: 40% stub
-Planned:
-- **Property Cards** - Occupancy status, rent roll, lease expiration countdown
-- **Tenant Management** - Contact info, payment history, lease documents
-- **Rent Collection** - Payment tracking, late fee automation, receipt generation
-- **Maintenance Requests** - Ticket system with vendor assignment
-- **Financial Dashboard** - Cash flow, NOI, cap rate calculations
-
-#### 5. Analytics (`app/app/analytics/page.tsx`)
-Current: Already polished
-Planned additions:
-- **Drill-down Capability** - Click charts to see underlying data
-- **Custom Date Ranges** - Date picker for all metrics
-- **Export Options** - PDF reports, CSV data download
-- **Saved Views** - User-defined dashboard configurations
-
-#### 6. Settings (`app/app/settings/page.tsx`)
-Current: localStorage only
-Planned:
-- **Server Persistence** - Save settings to database via API
-- **Profile Section** - Photo upload, company info, investor type
-- **Notification Preferences** - Email/SMS toggle per event type
-- **Integration Status** - Connected services with test/reconnect buttons
-- **Team Management** - User invites, role assignment (future)
+All major pages have been redesigned. Future enhancements:
+- **Profile Section** - Photo upload, company info, investor type (Settings page)
+- **Team Management** - User invites, role assignment (Settings page)
+- **Mobile Optimization** - Responsive improvements across all pages
 
 ### Frontend Design Patterns
 
@@ -369,6 +927,100 @@ Planned:
 - **Spacing**: Consistent scale - `space-y-8` for sections, `gap-4` for grids
 - **Typography**: `tracking-tight` on headlines, `text-muted-foreground` for secondary
 - **Icons**: Use colored icons in rounded containers (`w-8 h-8 rounded-lg bg-blue-50`)
+- **Font**: TikTok Sans as primary font (loaded via Google Fonts)
+- **Scrollbars**: Use ScrollArea component; scrollbars are 6px wide, full-height, always visible
+- **Cards with ScrollAreas**: Add `py-0 gap-0` to Card className to remove default spacing
+
+### Viewport-Fitting Layout Pattern (IMPORTANT)
+
+The app layout (`app/app/layout.tsx`) provides a fixed-height container for all pages:
+```tsx
+<main className="p-6 h-[calc(100dvh-4rem)] overflow-hidden">
+  {children}
+</main>
+```
+
+**Key Rules for Child Pages:**
+
+1. **DO NOT add extra padding** - The layout already provides `p-6`. Adding `p-4` or `p-6` in your page creates double padding.
+
+2. **Use `h-full` not calculated heights** - Your page component should use `h-full` to fill the available space, NOT `h-[calc(100vh-4rem)]`.
+
+3. **Flex column with min-h-0 for scrollable areas** - The parent must allow children to shrink:
+```tsx
+// Correct pattern for a page with scrollable content
+<div className="h-full flex flex-col border rounded-lg bg-card overflow-hidden">
+  {/* Fixed header section */}
+  <div className="shrink-0 border-b px-6 py-4">
+    <h1>Page Title</h1>
+  </div>
+
+  {/* Fixed toolbar/filters */}
+  <div className="shrink-0 border-b px-6 py-3">
+    <FilterBar />
+  </div>
+
+  {/* Scrollable content area */}
+  <div className="flex-1 min-h-0 overflow-hidden">
+    <ScrollArea className="h-full">
+      <Table>...</Table>
+    </ScrollArea>
+  </div>
+</div>
+```
+
+4. **Critical CSS classes:**
+   - `shrink-0` on fixed sections (headers, toolbars) - prevents them from shrinking
+   - `flex-1 min-h-0` on scrollable content wrapper - allows it to shrink and scroll
+   - `overflow-hidden` on containers that shouldn't show scrollbars
+   - `h-full` on ScrollArea inside the flex-1 container
+
+5. **Fragment wrapper for siblings** - If your page has modals/sheets alongside the main content:
+```tsx
+return (
+  <>
+    <div className="h-full flex flex-col ...">
+      {/* Main content */}
+    </div>
+    <Sheet>...</Sheet>
+    <Dialog>...</Dialog>
+  </>
+);
+```
+
+**Common Mistakes:**
+- Adding `p-6` or `m-6` to the page container (layout already has padding)
+- Using `h-[calc(100vh-4rem)]` instead of `h-full`
+- Forgetting `min-h-0` on the flex-1 container (content won't scroll)
+- Forgetting `shrink-0` on headers (they'll collapse when content is tall)
+
+### UI/UX Fixes (2026-01-29)
+
+See `docs/development/DECISIONS.md` for comprehensive documentation.
+
+#### Global Styling (`app/globals.css`)
+- **Font**: TikTok Sans via `--font-sans` variable
+- **ScrollArea Fixes**:
+  - Scrollbar always visible: `opacity: 1 !important`
+  - Scrollbar width: 6px (`w-1.5`) for cleaner appearance
+  - Full-height positioning: `top: 0, bottom: 0, right: 0` inline styles override Radix defaults
+  - Transparent background: Prevents visual artifacts in dark mode
+  - Hidden corner element via `[data-radix-scroll-area-corner] { display: none }`
+  - Fixed Radix `display: table` issue causing spacing
+- **Card Override Pattern**: Use `py-0 gap-0` on Cards containing ScrollAreas to remove default padding/gap
+
+#### Leads Page Table
+- **Sticky Header**: `className="sticky top-0 bg-card z-10"` inside ScrollArea
+- **Table Height**: `max-h-[495px]` shows ~9 rows before scrolling
+- **Status Bar**: Minimal footer with `py-0.5 text-[11px]`
+- **Seed Data**: 16 sample properties for demo/development fallback
+
+#### Campaigns Page Enhancements
+- **Sparkline Animation**: Visible by default, subtle gradient fill
+- **Progress Ring**: Animated fill with CSS keyframes
+- **Status Colors**: emerald=running, amber=paused, gray=completed, blue=draft
+- **Pulsing Indicator**: `animate-ping` for running campaigns
+- **View Toggle**: Grid vs list layout options
 
 ### Pre-existing TypeScript Errors (Not from redesign)
 
@@ -407,6 +1059,30 @@ PORT=3007 npm run dev     # Custom port
 npm run prisma:generate   # Regenerate Prisma client
 npm run prisma:migrate    # Run migrations
 npm run prisma:studio     # Open database GUI
+```
+
+### Seed demo data
+```bash
+npx tsx scripts/seed-contracts.ts   # Seed 12 demo contracts
+```
+
+### Vendor network management
+```bash
+# List all users
+npx tsx scripts/list-users.ts
+
+# Seed platform vendors from Google Places for a market
+npx tsx scripts/seed-platform-vendors.ts
+
+# Refresh stale vendor data
+npx tsx scripts/refresh-platform-vendors.ts
+
+# Link vendors to a user's account (admin task)
+npx tsx scripts/setup-user-vendor-network.ts \
+  --user-email="user@example.com" \
+  --market="Jacksonville, FL" \
+  --per-category=3 \
+  --dry-run  # Preview without creating records
 ```
 
 ### Run cron jobs

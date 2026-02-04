@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
 
 /**
  * POST /api/renovations
@@ -19,7 +18,22 @@ const prisma = new PrismaClient();
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const { userId: clerkId } = await auth();
+    if (!clerkId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get internal user ID from Clerk ID
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userId = user.id;
 
     const body = await request.json();
 
@@ -142,7 +156,22 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const { userId: clerkId } = await auth();
+    if (!clerkId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get internal user ID from Clerk ID
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userId = user.id;
 
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');

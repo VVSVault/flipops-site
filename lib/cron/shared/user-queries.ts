@@ -3,9 +3,10 @@
  * Common Prisma queries used across multiple workflows
  */
 
-import { PrismaClient, User } from '@prisma/client';
+import { User } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
+// NOTE: Use shared prisma singleton - do NOT create new PrismaClient instances
 
 export interface ActiveUser extends User {
   // Add any computed fields here if needed
@@ -159,9 +160,14 @@ export async function createNotification(data: {
 
 /**
  * Cleanup: Close Prisma connection
+ * WARNING: Only call this when running as a standalone process (scripts)
+ * NEVER call this from API routes or shared code paths
  */
 export async function closePrismaConnection() {
-  await prisma.$disconnect();
+  // Only disconnect if running as standalone script, not in API routes
+  if (process.env.STANDALONE_SCRIPT === 'true') {
+    await prisma.$disconnect();
+  }
 }
 
 export { prisma };

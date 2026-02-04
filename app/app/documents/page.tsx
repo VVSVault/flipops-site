@@ -1,19 +1,16 @@
-
 "use client";
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from "react";
-import { PreviewModeWrapper } from "@/app/components/preview-mode-wrapper";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import {
   FileText,
   Plus,
   Search,
-  Filter,
   Download,
   Send,
   Eye,
   Edit,
-  Trash2,
   MoreVertical,
   Clock,
   CheckCircle,
@@ -21,85 +18,25 @@ import {
   XCircle,
   FileSignature,
   FolderOpen,
-  Tag,
-  Calendar,
   Users,
   GitBranch,
   Package,
-  Shield,
   ChevronRight,
   ChevronDown,
-  Upload,
   Copy,
   RefreshCw,
   Archive,
   FileCheck,
   FilePlus,
-  FileX,
   History,
   Layers,
-  Paperclip,
-  MessageSquare,
-  AlertTriangle,
-  Info,
-  ArrowUpDown,
-  Grid3X3,
-  List,
   LayoutGrid,
-  Folder,
+  List,
   Home,
-  Star,
-  ChevronLeft,
-  ExternalLink,
-  Mail,
-  Phone,
-  MapPin,
-  DollarSign,
-  Briefcase,
-  Building,
-  User,
-  FileCode,
   Lock,
-  Unlock,
-  Zap,
-  Activity,
-  TrendingUp,
-  BarChart3,
-  PieChart,
-  Settings,
-  HelpCircle,
-  X,
-  Check,
-  PlayCircle,
-  PauseCircle,
-  StopCircle,
-  SkipForward,
-  Repeat,
-  Hash,
-  Link,
-  Bookmark,
-  Flag,
-  Printer,
-  Share2,
-  Code,
-  Database,
-  Server,
-  Cpu,
-  HardDrive,
-  Wifi,
-  WifiOff,
-  Cloud,
-  CloudOff,
-  ArrowRight,
-  ArrowLeft,
-  ArrowUp,
-  ArrowDown,
-  ChevronsRight,
-  Square,
-  Circle,
-  Triangle,
+  Sparkles,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -109,8 +46,7 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -124,11 +60,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Table,
@@ -145,7 +76,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Sheet,
@@ -153,8 +83,6 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
-  SheetFooter,
 } from "@/components/ui/sheet";
 import {
   Tooltip,
@@ -162,46 +90,246 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { toast } from "sonner";
+import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { 
-  documentsSeedData, 
-  type Document, 
+import {
+  documentsSeedData,
+  type Document,
   type DocumentTemplate,
   type Folder as FolderType,
   type Packet,
-  type DocumentVersion,
-  type Envelope,
-  type Clause,
-  type RetentionPolicy,
-  calculateDocumentMetrics,
-  getDocumentsByStatus,
   getDocumentsByFolder,
   getTemplatesByCategory,
   getDocumentVersions,
+  calculateDocumentMetrics,
 } from "./seed-data";
 
 type ViewMode = 'table' | 'kanban' | 'packets';
 type DocumentStatus = Document['status'];
 
+// Status configuration for consistent styling
+const statusConfig: Record<DocumentStatus, {
+  color: string;
+  bgColor: string;
+  gradient: string;
+  icon: typeof FileText;
+  label: string;
+}> = {
+  draft: {
+    color: 'text-slate-600 dark:text-slate-400',
+    bgColor: 'bg-slate-100 dark:bg-slate-800',
+    gradient: 'from-slate-400 to-slate-500',
+    icon: FileText,
+    label: 'Draft'
+  },
+  sent: {
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-50 dark:bg-blue-900/30',
+    gradient: 'from-blue-400 to-blue-500',
+    icon: Send,
+    label: 'Awaiting Signature'
+  },
+  signed: {
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bgColor: 'bg-emerald-50 dark:bg-emerald-900/30',
+    gradient: 'from-emerald-400 to-emerald-500',
+    icon: CheckCircle,
+    label: 'Signed'
+  },
+  void: {
+    color: 'text-red-600 dark:text-red-400',
+    bgColor: 'bg-red-50 dark:bg-red-900/30',
+    gradient: 'from-red-400 to-red-500',
+    icon: XCircle,
+    label: 'Void'
+  },
+  expired: {
+    color: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-amber-50 dark:bg-amber-900/30',
+    gradient: 'from-amber-400 to-amber-500',
+    icon: AlertCircle,
+    label: 'Expired'
+  },
+};
+
+// Document type icons
+const docTypeIcons: Record<Document['docType'], typeof FileText> = {
+  LOI: FileSignature,
+  PSA: FileCheck,
+  JV: Users,
+  Assignment: GitBranch,
+  NDA: Lock,
+  Addendum: FilePlus,
+  Other: FileText,
+};
+
+// Stat chip component for metrics display
+function StatChip({
+  icon: Icon,
+  label,
+  value,
+  color = 'gray'
+}: {
+  icon: typeof FileText;
+  label: string;
+  value: string | number;
+  color?: 'gray' | 'blue' | 'emerald' | 'amber' | 'purple';
+}) {
+  const colorClasses = {
+    gray: 'text-gray-600 dark:text-gray-400',
+    blue: 'text-blue-600 dark:text-blue-400',
+    emerald: 'text-emerald-600 dark:text-emerald-400',
+    amber: 'text-amber-600 dark:text-amber-400',
+    purple: 'text-purple-600 dark:text-purple-400',
+  };
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+      <Icon className={cn("h-4 w-4", colorClasses[color])} />
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-sm font-semibold tabular-nums">{value}</span>
+        <span className="text-xs text-muted-foreground">{label}</span>
+      </div>
+    </div>
+  );
+}
+
+// Document card for kanban view
+function DocumentCard({
+  doc,
+  onClick,
+  onView,
+  onDownload,
+  onSend,
+}: {
+  doc: Document;
+  onClick: () => void;
+  onView: () => void;
+  onDownload: () => void;
+  onSend: () => void;
+}) {
+  const config = statusConfig[doc.status];
+  const TypeIcon = docTypeIcons[doc.docType];
+
+  return (
+    <Card
+      className={cn(
+        "group cursor-pointer transition-all duration-200",
+        "hover:shadow-lg hover:shadow-black/5 dark:hover:shadow-black/20",
+        "hover:-translate-y-0.5",
+        "overflow-hidden"
+      )}
+      onClick={onClick}
+    >
+      {/* Status gradient bar */}
+      <div className={cn("h-1 w-full bg-gradient-to-r", config.gradient)} />
+
+      <CardContent className="p-3">
+        <div className="flex items-start justify-between mb-2">
+          <div className={cn("p-1.5 rounded-md", config.bgColor)}>
+            <TypeIcon className={cn("h-4 w-4", config.color)} />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <MoreVertical className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-white dark:bg-gray-900">
+              <DropdownMenuItem onClick={onView}>
+                <Eye className="h-4 w-4 mr-2" />
+                View
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onDownload}>
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </DropdownMenuItem>
+              {doc.status === 'draft' && (
+                <DropdownMenuItem onClick={onSend}>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <h4 className="font-medium text-sm mb-1 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          {doc.title}
+        </h4>
+
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+            {doc.docType}
+          </Badge>
+          <span className="tabular-nums">v{doc.version}</span>
+        </div>
+
+        {doc.relatedName && (
+          <div className="text-xs text-muted-foreground truncate mb-2">
+            {doc.relatedName}
+          </div>
+        )}
+
+        {doc.signerRoles.length > 0 && (
+          <div className="flex -space-x-1.5">
+            {doc.signerRoles.slice(0, 3).map((signer, idx) => (
+              <TooltipProvider key={idx}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={cn(
+                        "h-6 w-6 rounded-full border-2 border-white dark:border-gray-900 flex items-center justify-center text-[10px] font-medium",
+                        signer.status === 'signed' && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400",
+                        signer.status === 'sent' && "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400",
+                        signer.status === 'viewed' && "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400",
+                        signer.status === 'pending' && "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                      )}
+                    >
+                      {signer.role[0]}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-xs">
+                      <div className="font-medium">{signer.role}</div>
+                      {signer.name && <div className="text-muted-foreground">{signer.name}</div>}
+                      <div className="capitalize text-muted-foreground">{signer.status}</div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ))}
+            {doc.signerRoles.length > 3 && (
+              <div className="h-6 w-6 rounded-full border-2 border-white dark:border-gray-900 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-medium text-gray-600 dark:text-gray-400">
+                +{doc.signerRoles.length - 3}
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function DocumentsPage() {
+  const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
   const [selectedFolder, setSelectedFolder] = useState<FolderType | null>(null);
   const [showTemplateLibrary, setShowTemplateLibrary] = useState(false);
   const [showPacketBuilder, setShowPacketBuilder] = useState(false);
   const [showDocumentViewer, setShowDocumentViewer] = useState(false);
-  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [filterStatus, setFilterStatus] = useState<DocumentStatus | 'all'>('all');
   const [filterDocType, setFilterDocType] = useState<Document['docType'] | 'all'>('all');
   const [filterFolder, setFilterFolder] = useState<string>('all');
   const [expandedFolders, setExpandedFolders] = useState<string[]>(['fld-1', 'fld-7']);
-  const [activeTab, setActiveTab] = useState('documents');
-  const [compareVersions, setCompareVersions] = useState<{ v1?: string; v2?: string }>({});
   const [newPacket, setNewPacket] = useState<Partial<Packet>>({
     packetType: 'Acquisition',
     status: 'draft',
@@ -218,51 +346,13 @@ export default function DocumentsPage() {
       const matchesSearch = doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         doc.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (doc.relatedName && doc.relatedName.toLowerCase().includes(searchQuery.toLowerCase()));
-      
+
       const matchesStatus = filterStatus === 'all' || doc.status === filterStatus;
       const matchesType = filterDocType === 'all' || doc.docType === filterDocType;
       const matchesFolder = filterFolder === 'all' || doc.folderId === filterFolder;
-      
+
       return matchesSearch && matchesStatus && matchesType && matchesFolder;
     });
-  };
-
-  // Get status color
-  const getStatusColor = (status: DocumentStatus) => {
-    const colors = {
-      draft: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400',
-      sent: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-      signed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-      void: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-      expired: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-    };
-    return colors[status];
-  };
-
-  // Get status icon
-  const getStatusIcon = (status: DocumentStatus) => {
-    const icons = {
-      draft: FileText,
-      sent: Send,
-      signed: CheckCircle,
-      void: XCircle,
-      expired: AlertCircle,
-    };
-    return icons[status];
-  };
-
-  // Get document type icon
-  const getDocTypeIcon = (docType: Document['docType']) => {
-    const icons = {
-      LOI: FileSignature,
-      PSA: FileCheck,
-      JV: Users,
-      Assignment: GitBranch,
-      NDA: Lock,
-      Addendum: FilePlus,
-      Other: FileText,
-    };
-    return icons[docType];
   };
 
   // Toggle folder expansion
@@ -277,21 +367,22 @@ export default function DocumentsPage() {
   // Render folder tree
   const renderFolderTree = (parentId?: string, level = 0) => {
     const folders = documentsSeedData.folders.filter(f => f.parentFolderId === parentId);
-    
+
     return folders.map(folder => {
       const hasChildren = documentsSeedData.folders.some(f => f.parentFolderId === folder.id);
       const isExpanded = expandedFolders.includes(folder.id);
       const isSelected = selectedFolder?.id === folder.id;
       const docCount = getDocumentsByFolder(folder.id).length;
-      
+
       return (
         <div key={folder.id}>
           <div
             className={cn(
-              "flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer",
-              isSelected && "bg-blue-50 dark:bg-blue-900/20 text-blue-600"
+              "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors",
+              "hover:bg-gray-100 dark:hover:bg-gray-800",
+              isSelected && "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
             )}
-            style={{ paddingLeft: `${level * 16 + 8}px` }}
+            style={{ paddingLeft: `${level * 12 + 8}px` }}
             onClick={() => {
               setSelectedFolder(folder);
               setFilterFolder(folder.id);
@@ -300,23 +391,22 @@ export default function DocumentsPage() {
           >
             {hasChildren ? (
               isExpanded ? (
-                <ChevronDown className="h-4 w-4 text-gray-500" />
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               ) : (
-                <ChevronRight className="h-4 w-4 text-gray-500" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               )
             ) : (
-              <div className="w-4" />
+              <div className="w-3.5 shrink-0" />
             )}
-            <FolderOpen className={cn("h-4 w-4",
-              folder.color === '#3B82F6' ? 'text-blue-500' :
-              folder.color === '#6B7280' ? 'text-gray-500' :
-              ''
+            <FolderOpen className={cn(
+              "h-4 w-4 shrink-0",
+              isSelected ? "text-blue-500" : "text-muted-foreground"
             )} />
-            <span className="flex-1 text-sm">{folder.name}</span>
+            <span className="flex-1 text-sm truncate">{folder.name}</span>
             {docCount > 0 && (
-              <Badge variant="secondary" className="text-xs">
+              <span className="text-xs tabular-nums text-muted-foreground bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
                 {docCount}
-              </Badge>
+              </span>
             )}
           </div>
           {hasChildren && isExpanded && renderFolderTree(folder.id, level + 1)}
@@ -325,34 +415,85 @@ export default function DocumentsPage() {
     });
   };
 
-  // Handle document actions
+  // Document actions with proper toast
   const handleSendDocument = (doc: Document) => {
-    toast.success(`Document sent for signature: ${doc.title}`);
+    toast({
+      title: "Document sent",
+      description: `${doc.title} has been sent for signature.`,
+    });
   };
 
   const handleDownloadDocument = (doc: Document) => {
-    toast.success(`Downloading: ${doc.title}`);
+    toast({
+      title: "Download started",
+      description: `Downloading ${doc.title}...`,
+    });
   };
 
   const handleVoidDocument = (doc: Document) => {
-    toast.warning(`Document voided: ${doc.title}`);
+    toast({
+      title: "Document voided",
+      description: `${doc.title} has been voided.`,
+      variant: "destructive",
+    });
   };
 
   const handleNewVersion = (doc: Document) => {
     setSelectedDocument(doc);
-    toast.info(`Creating new version of: ${doc.title}`);
+    toast({
+      title: "Creating new version",
+      description: `Starting new version of ${doc.title}`,
+    });
   };
 
-  // Handle template actions
+  const handleEditDocument = (doc: Document) => {
+    setSelectedDocument(doc);
+    setShowDocumentViewer(true);
+    toast({
+      title: "Edit mode",
+      description: `Editing ${doc.title}`,
+    });
+  };
+
+  const handleDuplicateDocument = (doc: Document) => {
+    toast({
+      title: "Document duplicated",
+      description: `Created copy of ${doc.title}`,
+    });
+  };
+
+  const handleArchiveDocument = (doc: Document) => {
+    toast({
+      title: "Document archived",
+      description: `${doc.title} has been archived.`,
+    });
+  };
+
+  const handleResendDocument = (doc: Document) => {
+    toast({
+      title: "Reminder sent",
+      description: `Signature reminder sent for ${doc.title}`,
+    });
+  };
+
+  const handleViewDocument = (doc: Document) => {
+    setSelectedDocument(doc);
+    setShowDocumentViewer(true);
+  };
+
   const handleUseTemplate = (template: DocumentTemplate) => {
-    setSelectedTemplate(template);
-    setShowTemplateEditor(true);
-    toast.info(`Using template: ${template.name}`);
+    toast({
+      title: "Template selected",
+      description: `Using template: ${template.name}`,
+    });
+    setShowTemplateLibrary(false);
   };
 
-  // Handle packet actions
   const handleGeneratePacket = () => {
-    toast.success("Packet generated successfully!");
+    toast({
+      title: "Packet created",
+      description: "Your document packet has been generated successfully.",
+    });
     setShowPacketBuilder(false);
   };
 
@@ -361,8 +502,11 @@ export default function DocumentsPage() {
 
   if (!mounted) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="text-gray-500">Loading documents...</div>
+      <div className="h-full flex items-center justify-center">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Sparkles className="h-5 w-5 animate-pulse" />
+          <span>Loading documents...</span>
+        </div>
       </div>
     );
   }
@@ -370,28 +514,33 @@ export default function DocumentsPage() {
   const filteredDocuments = filterDocuments();
 
   return (
-    <PreviewModeWrapper
-      title="Document Management"
-      description="DocuSign integration, template library, and packet builder for contract management. This feature is under active development."
-      expectedRelease="Q1 2025"
-    >
-    <div className="flex h-[calc(100vh-6.5rem)] bg-gray-50 dark:bg-gray-950 p-2 gap-3 overflow-hidden">
-      {/* Left Sidebar - Folders */}
-      <div className="w-64 flex flex-col border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg overflow-hidden">
-        <div className="p-2 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-          <Button className="w-full h-8" size="sm" onClick={() => setShowTemplateLibrary(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Document
-          </Button>
-        </div>
-        
-        <ScrollArea className="flex-1 overflow-y-auto">
-          <div className="p-2">
-            <div className="mb-4">
-              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">Quick Access</div>
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Main content area */}
+      <div className="flex-1 min-h-0 flex gap-3 p-3">
+        {/* Left Sidebar - Folders */}
+        <div className="w-56 shrink-0 flex flex-col border rounded-lg bg-card overflow-hidden">
+          {/* New Document Button */}
+          <div className="shrink-0 p-2 border-b">
+            <Button
+              className="w-full h-8 gap-2"
+              size="sm"
+              onClick={() => setShowTemplateLibrary(true)}
+            >
+              <Plus className="h-4 w-4" />
+              New Document
+            </Button>
+          </div>
+
+          {/* Quick Access */}
+          <ScrollArea className="flex-1 min-h-0">
+            <div className="p-2 space-y-1">
+              <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                Quick Access
+              </div>
               <div
                 className={cn(
-                  "flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer",
+                  "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors",
+                  "hover:bg-gray-100 dark:hover:bg-gray-800",
                   filterStatus === 'sent' && "bg-blue-50 dark:bg-blue-900/20 text-blue-600"
                 )}
                 onClick={() => {
@@ -402,11 +551,14 @@ export default function DocumentsPage() {
               >
                 <Send className="h-4 w-4" />
                 <span className="flex-1 text-sm">Awaiting Signature</span>
-                <Badge variant="secondary">{metrics.byStatus.sent}</Badge>
+                <span className="text-xs tabular-nums text-muted-foreground bg-blue-100 dark:bg-blue-900/50 px-1.5 py-0.5 rounded">
+                  {metrics.byStatus.sent}
+                </span>
               </div>
               <div
                 className={cn(
-                  "flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer",
+                  "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors",
+                  "hover:bg-gray-100 dark:hover:bg-gray-800",
                   filterStatus === 'draft' && "bg-blue-50 dark:bg-blue-900/20 text-blue-600"
                 )}
                 onClick={() => {
@@ -417,856 +569,1009 @@ export default function DocumentsPage() {
               >
                 <FileText className="h-4 w-4" />
                 <span className="flex-1 text-sm">Drafts</span>
-                <Badge variant="secondary">{metrics.byStatus.draft}</Badge>
+                <span className="text-xs tabular-nums text-muted-foreground bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                  {metrics.byStatus.draft}
+                </span>
               </div>
               <div
-                className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                 onClick={() => setShowPacketBuilder(true)}
               >
                 <Package className="h-4 w-4" />
                 <span className="flex-1 text-sm">Create Packet</span>
               </div>
-            </div>
-            
-            <Separator className="my-2" />
-            
-            <div>
-              <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">Folders</div>
+
+              <Separator className="my-2" />
+
+              <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                Folders
+              </div>
               <div
                 className={cn(
-                  "flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer",
+                  "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors",
+                  "hover:bg-gray-100 dark:hover:bg-gray-800",
                   filterFolder === 'all' && !selectedFolder && "bg-blue-50 dark:bg-blue-900/20 text-blue-600"
                 )}
                 onClick={() => {
                   setFilterFolder('all');
                   setSelectedFolder(null);
+                  setFilterStatus('all');
                 }}
               >
                 <Home className="h-4 w-4" />
                 <span className="flex-1 text-sm">All Documents</span>
-                <Badge variant="secondary">{documentsSeedData.documents.length}</Badge>
+                <span className="text-xs tabular-nums text-muted-foreground bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                  {documentsSeedData.documents.length}
+                </span>
               </div>
               {renderFolderTree()}
             </div>
-          </div>
-        </ScrollArea>
-        
-        <div className="p-2 border-t border-gray-200 dark:border-gray-800 flex-shrink-0">
-          <div className="text-xs text-gray-500">Storage: 6.5/10 GB</div>
-          <Progress value={65} className="h-1 mt-1" />
-        </div>
-      </div>
+          </ScrollArea>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg overflow-hidden">
-        {/* Header */}
-        <div className="px-3 py-1 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex-shrink-0">
-          <div className="flex items-center justify-between mb-1">
-            <div>
-              <h1 className="text-xl font-bold">Documents</h1>
-              <p className="text-xs text-gray-500">
-                Manage contracts, agreements, and legal documents
-              </p>
+          {/* Storage indicator */}
+          <div className="shrink-0 p-3 border-t bg-gray-50/50 dark:bg-gray-800/50">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+              <span>Storage</span>
+              <span className="tabular-nums">6.5/10 GB</span>
             </div>
-            
-            <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={() => setShowTemplateLibrary(true)}>
-                      <Layers className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Template Library</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" onClick={() => setShowPacketBuilder(true)}>
-                      <Package className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Packet Builder</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <div className="flex items-center border rounded-lg">
-                <Button
-                  variant={viewMode === 'table' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="rounded-r-none"
-                  onClick={() => setViewMode('table')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="rounded-none border-x"
-                  onClick={() => setViewMode('kanban')}
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'packets' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="rounded-l-none"
-                  onClick={() => setViewMode('packets')}
-                >
-                  <Package className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          {/* Metrics Cards */}
-          <div className="grid grid-cols-5 gap-2">
-            <Card>
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500">Total Docs</p>
-                    <p className="text-xl font-bold">{metrics.total}</p>
-                  </div>
-                  <FileText className="h-5 w-5 text-gray-400" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500">Awaiting</p>
-                    <p className="text-xl font-bold">{metrics.byStatus.sent}</p>
-                  </div>
-                  <Send className="h-5 w-5 text-blue-500" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500">Signed</p>
-                    <p className="text-xl font-bold">{metrics.byStatus.signed}</p>
-                  </div>
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500">Avg Time</p>
-                    <p className="text-xl font-bold">{metrics.avgSigningTimeHours}h</p>
-                  </div>
-                  <Clock className="h-5 w-5 text-purple-500" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500">Templates</p>
-                    <p className="text-xl font-bold">{metrics.templatesActive}</p>
-                  </div>
-                  <Layers className="h-5 w-5 text-orange-500" />
-                </div>
-              </CardContent>
-            </Card>
+            <Progress value={65} className="h-1" />
           </div>
         </div>
-        
-        {/* Filters */}
-        <div className="px-3 py-1 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex-shrink-0">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Search documents..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="sent">Sent</SelectItem>
-                <SelectItem value="signed">Signed</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-                <SelectItem value="void">Void</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select value={filterDocType} onValueChange={(value: any) => setFilterDocType(value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="LOI">LOI</SelectItem>
-                <SelectItem value="PSA">PSA</SelectItem>
-                <SelectItem value="JV">JV Agreement</SelectItem>
-                <SelectItem value="Assignment">Assignment</SelectItem>
-                <SelectItem value="NDA">NDA</SelectItem>
-                <SelectItem value="Addendum">Addendum</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            {selectedDocuments.length > 0 && (
+
+        {/* Main Content */}
+        <div className="flex-1 min-w-0 flex flex-col border rounded-lg bg-card overflow-hidden">
+          {/* Header */}
+          <div className="shrink-0 px-4 py-3 border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-lg font-semibold">Documents</h1>
+                <p className="text-xs text-muted-foreground">
+                  Manage contracts, agreements, and legal documents
+                </p>
+              </div>
+
               <div className="flex items-center gap-2">
-                <Badge variant="secondary">
-                  {selectedDocuments.length} selected
-                </Badge>
-                <Button variant="outline" size="sm" onClick={() => setSelectedDocuments([])}>
-                  Clear
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setShowTemplateLibrary(true)}>
+                        <Layers className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Template Library</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setShowPacketBuilder(true)}>
+                        <Package className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Packet Builder</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {/* View mode toggle */}
+                <div className="flex items-center border rounded-md">
+                  <Button
+                    variant={viewMode === 'table' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="rounded-r-none h-8 px-2.5"
+                    onClick={() => setViewMode('table')}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="rounded-none border-x h-8 px-2.5"
+                    onClick={() => setViewMode('kanban')}
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'packets' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="rounded-l-none h-8 px-2.5"
+                    onClick={() => setViewMode('packets')}
+                  >
+                    <Package className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Metrics bar - horizontal StatChip pattern */}
+            <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1">
+              <StatChip icon={FileText} label="total" value={metrics.total} color="gray" />
+              <StatChip icon={Send} label="awaiting" value={metrics.byStatus.sent} color="blue" />
+              <StatChip icon={CheckCircle} label="signed" value={metrics.byStatus.signed} color="emerald" />
+              <StatChip icon={Clock} label="avg time" value={`${metrics.avgSigningTimeHours}h`} color="purple" />
+              <StatChip icon={Layers} label="templates" value={metrics.templatesActive} color="amber" />
+            </div>
           </div>
-        </div>
-        
-        {/* Content Area */}
-        <ScrollArea className="flex-1 overflow-y-auto">
-          <div className="p-3">
-            {viewMode === 'table' && (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">
-                      <Checkbox
-                        checked={selectedDocuments.length === filteredDocuments.length}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedDocuments(filteredDocuments.map(d => d.id));
-                          } else {
-                            setSelectedDocuments([]);
-                          }
-                        }}
-                      />
-                    </TableHead>
-                    <TableHead>Document</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Related To</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Signers</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredDocuments.map(doc => {
-                    const StatusIcon = getStatusIcon(doc.status);
-                    const TypeIcon = getDocTypeIcon(doc.docType);
-                    
-                    return (
-                      <TableRow key={doc.id}>
-                        <TableCell>
+
+          {/* Filters toolbar */}
+          <div className="shrink-0 px-4 py-2 border-b bg-gray-50/50 dark:bg-gray-800/30">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search documents..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 h-8 text-sm"
+                />
+              </div>
+
+              <Select value={filterStatus} onValueChange={(value: DocumentStatus | 'all') => setFilterStatus(value)}>
+                <SelectTrigger className="w-32 h-8 text-sm">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-gray-900">
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="sent">Sent</SelectItem>
+                  <SelectItem value="signed">Signed</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
+                  <SelectItem value="void">Void</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterDocType} onValueChange={(value: Document['docType'] | 'all') => setFilterDocType(value)}>
+                <SelectTrigger className="w-32 h-8 text-sm">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-gray-900">
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="LOI">LOI</SelectItem>
+                  <SelectItem value="PSA">PSA</SelectItem>
+                  <SelectItem value="JV">JV Agreement</SelectItem>
+                  <SelectItem value="Assignment">Assignment</SelectItem>
+                  <SelectItem value="NDA">NDA</SelectItem>
+                  <SelectItem value="Addendum">Addendum</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {selectedDocuments.length > 0 && (
+                <div className="flex items-center gap-2 ml-auto">
+                  <Badge variant="secondary" className="tabular-nums">
+                    {selectedDocuments.length} selected
+                  </Badge>
+                  <Button variant="outline" size="sm" className="h-8" onClick={() => setSelectedDocuments([])}>
+                    Clear
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Content Area */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="p-4">
+                {viewMode === 'table' && (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-10">
                           <Checkbox
-                            checked={selectedDocuments.includes(doc.id)}
+                            checked={selectedDocuments.length === filteredDocuments.length && filteredDocuments.length > 0}
                             onCheckedChange={(checked) => {
                               if (checked) {
-                                setSelectedDocuments([...selectedDocuments, doc.id]);
+                                setSelectedDocuments(filteredDocuments.map(d => d.id));
                               } else {
-                                setSelectedDocuments(selectedDocuments.filter(id => id !== doc.id));
+                                setSelectedDocuments([]);
                               }
                             }}
                           />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <TypeIcon className="h-5 w-5 text-gray-500" />
-                            <div>
-                              <div
-                                className="font-medium hover:text-blue-600 cursor-pointer"
-                                onClick={() => {
-                                  setSelectedDocument(doc);
-                                  setShowDocumentViewer(true);
-                                }}
-                              >
-                                {doc.title}
-                              </div>
-                              {doc.tags.length > 0 && (
-                                <div className="flex gap-1 mt-1">
-                                  {doc.tags.slice(0, 2).map(tag => (
-                                    <Badge key={tag} variant="outline" className="text-xs">
-                                      {tag}
-                                    </Badge>
-                                  ))}
-                                  {doc.tags.length > 2 && (
-                                    <Badge variant="outline" className="text-xs">
-                                      +{doc.tags.length - 2}
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{doc.docType}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getStatusColor(doc.status)}>
-                            <StatusIcon className="h-3 w-3 mr-1" />
-                            {doc.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {doc.relatedName && (
-                            <div className="text-sm">
-                              <div className="font-medium">{doc.relatedName}</div>
-                              <div className="text-gray-500 capitalize">{doc.relatedEntity}</div>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            <div>{new Date(doc.createdAt).toLocaleDateString()}</div>
-                            <div className="text-gray-500">v{doc.version}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {doc.signerRoles.length > 0 && (
-                            <div className="flex -space-x-2">
-                              {doc.signerRoles.slice(0, 3).map((signer, idx) => (
-                                <TooltipProvider key={idx}>
-                                  <Tooltip>
-                                    <TooltipTrigger>
-                                      <Avatar className="h-8 w-8 border-2 border-white">
-                                        <AvatarFallback
-                                          className={cn(
-                                            signer.status === 'signed' && "bg-green-100 text-green-700",
-                                            signer.status === 'sent' && "bg-blue-100 text-blue-700",
-                                            signer.status === 'viewed' && "bg-yellow-100 text-yellow-700"
-                                          )}
-                                        >
-                                          {signer.role[0]}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <div>{signer.role}</div>
-                                      {signer.name && <div className="text-xs">{signer.name}</div>}
-                                      <div className="text-xs capitalize">{signer.status}</div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              ))}
-                              {doc.signerRoles.length > 3 && (
-                                <Avatar className="h-8 w-8 border-2 border-white">
-                                  <AvatarFallback>+{doc.signerRoles.length - 3}</AvatarFallback>
-                                </Avatar>
-                              )}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => {
-                                setSelectedDocument(doc);
-                                setShowDocumentViewer(true);
-                              }}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                View
-                              </DropdownMenuItem>
-                              {doc.status === 'draft' && (
-                                <>
-                                  <DropdownMenuItem>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleSendDocument(doc)}>
-                                    <Send className="h-4 w-4 mr-2" />
-                                    Send
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                              {doc.status === 'sent' && (
-                                <DropdownMenuItem>
-                                  <RefreshCw className="h-4 w-4 mr-2" />
-                                  Resend
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem onClick={() => handleDownloadDocument(doc)}>
-                                <Download className="h-4 w-4 mr-2" />
-                                Download
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleNewVersion(doc)}>
-                                <GitBranch className="h-4 w-4 mr-2" />
-                                New Version
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>
-                                <Copy className="h-4 w-4 mr-2" />
-                                Duplicate
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Archive className="h-4 w-4 mr-2" />
-                                Archive
-                              </DropdownMenuItem>
-                              {doc.status !== 'void' && (
-                                <DropdownMenuItem 
-                                  className="text-red-600"
-                                  onClick={() => handleVoidDocument(doc)}
-                                >
-                                  <XCircle className="h-4 w-4 mr-2" />
-                                  Void
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                        </TableHead>
+                        <TableHead>Document</TableHead>
+                        <TableHead className="w-24">Type</TableHead>
+                        <TableHead className="w-28">Status</TableHead>
+                        <TableHead>Related To</TableHead>
+                        <TableHead className="w-28">Created</TableHead>
+                        <TableHead className="w-28">Signers</TableHead>
+                        <TableHead className="w-12 text-right">Actions</TableHead>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            )}
-            
-            {viewMode === 'kanban' && (
-              <div className="grid grid-cols-5 gap-4">
-                {(['draft', 'sent', 'signed', 'expired', 'void'] as DocumentStatus[]).map(status => {
-                  const StatusIcon = getStatusIcon(status);
-                  const docsInStatus = filteredDocuments.filter(d => d.status === status);
-                  
-                  return (
-                    <div key={status} className="flex flex-col">
-                      <div className="flex items-center gap-2 mb-3">
-                        <StatusIcon className="h-4 w-4" />
-                        <h3 className="font-semibold capitalize">{status}</h3>
-                        <Badge variant="secondary">{docsInStatus.length}</Badge>
-                      </div>
-                      <ScrollArea className="flex-1 h-[400px]">
-                        <div className="space-y-2">
-                          {docsInStatus.map(doc => {
-                            const TypeIcon = getDocTypeIcon(doc.docType);
-                            
-                            return (
-                              <Card 
-                                key={doc.id}
-                                className="cursor-pointer hover:shadow-md transition-shadow"
-                                onClick={() => {
-                                  setSelectedDocument(doc);
-                                  setShowDocumentViewer(true);
+                    </TableHeader>
+                    <TableBody>
+                      {filteredDocuments.map(doc => {
+                        const config = statusConfig[doc.status];
+                        const StatusIcon = config.icon;
+                        const TypeIcon = docTypeIcons[doc.docType];
+
+                        return (
+                          <TableRow
+                            key={doc.id}
+                            className="group cursor-pointer"
+                            onClick={() => {
+                              setSelectedDocument(doc);
+                              setShowDocumentViewer(true);
+                            }}
+                          >
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={selectedDocuments.includes(doc.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedDocuments([...selectedDocuments, doc.id]);
+                                  } else {
+                                    setSelectedDocuments(selectedDocuments.filter(id => id !== doc.id));
+                                  }
                                 }}
-                              >
-                                <CardContent className="p-3">
-                                  <div className="flex items-start justify-between mb-2">
-                                    <TypeIcon className="h-4 w-4 text-gray-500" />
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                        <Button variant="ghost" size="icon" className="h-6 w-6">
-                                          <MoreVertical className="h-3 w-3" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end">
-                                        <DropdownMenuItem>View</DropdownMenuItem>
-                                        <DropdownMenuItem>Download</DropdownMenuItem>
-                                        {status === 'draft' && (
-                                          <DropdownMenuItem>Send</DropdownMenuItem>
-                                        )}
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  </div>
-                                  <h4 className="font-medium text-sm mb-1 line-clamp-2">
-                                    {doc.title}
-                                  </h4>
-                                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                                    <Badge variant="outline" className="text-xs">
-                                      {doc.docType}
-                                    </Badge>
-                                    <span>v{doc.version}</span>
-                                  </div>
-                                  {doc.relatedName && (
-                                    <div className="mt-2 text-xs text-gray-500">
-                                      {doc.relatedName}
-                                    </div>
-                                  )}
-                                  {doc.signerRoles.length > 0 && (
-                                    <div className="mt-2 flex -space-x-1">
-                                      {doc.signerRoles.slice(0, 3).map((signer, idx) => (
-                                        <div
-                                          key={idx}
-                                          className={cn(
-                                            "h-6 w-6 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium",
-                                            signer.status === 'signed' && "bg-green-100 text-green-700",
-                                            signer.status === 'sent' && "bg-blue-100 text-blue-700",
-                                            signer.status === 'viewed' && "bg-yellow-100 text-yellow-700",
-                                            signer.status === 'pending' && "bg-gray-100 text-gray-700"
-                                          )}
-                                        >
-                                          {signer.role[0]}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            );
-                          })}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            
-            {viewMode === 'packets' && (
-              <div className="space-y-4">
-                {documentsSeedData.packets.map(packet => (
-                  <Card key={packet.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-4">
-                          <Package className="h-8 w-8 text-gray-500 mt-1" />
-                          <div>
-                            <h3 className="font-semibold">{packet.name}</h3>
-                            <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
-                              <Badge variant="outline">{packet.packetType}</Badge>
-                              <span>{packet.relatedDealName}</span>
-                              <span>{new Date(packet.createdAt).toLocaleDateString()}</span>
-                            </div>
-                            <div className="mt-3 space-y-2">
-                              {packet.packetItems.map((item, idx) => (
-                                <div key={idx} className="flex items-center gap-3">
-                                  <div className="text-sm font-medium text-gray-500 w-6">
-                                    {item.order}.
-                                  </div>
-                                  <FileText className="h-4 w-4 text-gray-400" />
-                                  <span className="text-sm">{item.title}</span>
-                                  <Badge 
-                                    variant="outline" 
-                                    className={cn(
-                                      "text-xs",
-                                      item.status === 'signed' && "bg-green-50 text-green-700",
-                                      item.status === 'sent' && "bg-blue-50 text-blue-700",
-                                      item.status === 'pending' && "bg-gray-50 text-gray-700"
-                                    )}
-                                  >
-                                    {item.status}
-                                  </Badge>
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <div className={cn("p-1.5 rounded-md shrink-0", config.bgColor)}>
+                                  <TypeIcon className={cn("h-4 w-4", config.color)} />
                                 </div>
-                              ))}
-                            </div>
+                                <div className="min-w-0">
+                                  <div className="font-medium truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                    {doc.title}
+                                  </div>
+                                  {doc.tags.length > 0 && (
+                                    <div className="flex gap-1 mt-0.5">
+                                      {doc.tags.slice(0, 2).map(tag => (
+                                        <Badge key={tag} variant="outline" className="text-[10px] px-1 py-0">
+                                          {tag}
+                                        </Badge>
+                                      ))}
+                                      {doc.tags.length > 2 && (
+                                        <Badge variant="outline" className="text-[10px] px-1 py-0">
+                                          +{doc.tags.length - 2}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {doc.docType}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={cn("gap-1", config.bgColor, config.color)}>
+                                <StatusIcon className="h-3 w-3" />
+                                <span className="capitalize">{doc.status}</span>
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {doc.relatedName && (
+                                <div className="text-sm">
+                                  <div className="font-medium truncate max-w-[150px]">{doc.relatedName}</div>
+                                  <div className="text-xs text-muted-foreground capitalize">{doc.relatedEntity}</div>
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                <div className="tabular-nums">{new Date(doc.createdAt).toLocaleDateString()}</div>
+                                <div className="text-xs text-muted-foreground">v{doc.version}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {doc.signerRoles.length > 0 && (
+                                <div className="flex -space-x-2">
+                                  {doc.signerRoles.slice(0, 3).map((signer, idx) => (
+                                    <TooltipProvider key={idx}>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Avatar className="h-7 w-7 border-2 border-white dark:border-gray-900">
+                                            <AvatarFallback
+                                              className={cn(
+                                                "text-xs",
+                                                signer.status === 'signed' && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50",
+                                                signer.status === 'sent' && "bg-blue-100 text-blue-700 dark:bg-blue-900/50",
+                                                signer.status === 'viewed' && "bg-amber-100 text-amber-700 dark:bg-amber-900/50",
+                                                signer.status === 'pending' && "bg-gray-100 text-gray-700 dark:bg-gray-800"
+                                              )}
+                                            >
+                                              {signer.role[0]}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <div className="text-xs">
+                                            <div className="font-medium">{signer.role}</div>
+                                            {signer.name && <div>{signer.name}</div>}
+                                            <div className="capitalize text-muted-foreground">{signer.status}</div>
+                                          </div>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  ))}
+                                  {doc.signerRoles.length > 3 && (
+                                    <Avatar className="h-7 w-7 border-2 border-white dark:border-gray-900">
+                                      <AvatarFallback className="text-xs bg-gray-100 dark:bg-gray-800">
+                                        +{doc.signerRoles.length - 3}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  )}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-white dark:bg-gray-900">
+                                  <DropdownMenuItem onClick={() => {
+                                    setSelectedDocument(doc);
+                                    setShowDocumentViewer(true);
+                                  }}>
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View
+                                  </DropdownMenuItem>
+                                  {doc.status === 'draft' && (
+                                    <>
+                                      <DropdownMenuItem onClick={() => handleEditDocument(doc)}>
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleSendDocument(doc)}>
+                                        <Send className="h-4 w-4 mr-2" />
+                                        Send
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                  {doc.status === 'sent' && (
+                                    <DropdownMenuItem onClick={() => handleResendDocument(doc)}>
+                                      <RefreshCw className="h-4 w-4 mr-2" />
+                                      Resend
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuItem onClick={() => handleDownloadDocument(doc)}>
+                                    <Download className="h-4 w-4 mr-2" />
+                                    Download
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleNewVersion(doc)}>
+                                    <GitBranch className="h-4 w-4 mr-2" />
+                                    New Version
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => handleDuplicateDocument(doc)}>
+                                    <Copy className="h-4 w-4 mr-2" />
+                                    Duplicate
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleArchiveDocument(doc)}>
+                                    <Archive className="h-4 w-4 mr-2" />
+                                    Archive
+                                  </DropdownMenuItem>
+                                  {doc.status !== 'void' && (
+                                    <DropdownMenuItem
+                                      className="text-red-600 dark:text-red-400"
+                                      onClick={() => handleVoidDocument(doc)}
+                                    >
+                                      <XCircle className="h-4 w-4 mr-2" />
+                                      Void
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
+
+                {viewMode === 'kanban' && (
+                  <div className="grid grid-cols-5 gap-4">
+                    {(['draft', 'sent', 'signed', 'expired', 'void'] as DocumentStatus[]).map(status => {
+                      const config = statusConfig[status];
+                      const docsInStatus = filteredDocuments.filter(d => d.status === status);
+
+                      return (
+                        <div key={status} className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-2 mb-3 px-1">
+                            <div className={cn("h-2 w-2 rounded-full bg-gradient-to-r", config.gradient)} />
+                            <h3 className="text-sm font-medium capitalize">{status}</h3>
+                            <span className="text-xs tabular-nums text-muted-foreground ml-auto">
+                              {docsInStatus.length}
+                            </span>
+                          </div>
+                          <div className="space-y-2 min-h-[200px]">
+                            {docsInStatus.map(doc => (
+                              <DocumentCard
+                                key={doc.id}
+                                doc={doc}
+                                onClick={() => handleViewDocument(doc)}
+                                onView={() => handleViewDocument(doc)}
+                                onDownload={() => handleDownloadDocument(doc)}
+                                onSend={() => handleSendDocument(doc)}
+                              />
+                            ))}
+                            {docsInStatus.length === 0 && (
+                              <div className="h-24 border-2 border-dashed rounded-lg flex items-center justify-center text-xs text-muted-foreground">
+                                No documents
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <Badge className={getStatusColor(packet.status as DocumentStatus)}>
-                            {packet.status}
-                          </Badge>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                Actions
-                                <ChevronDown className="h-4 w-4 ml-2" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Eye className="h-4 w-4 mr-2" />
-                                View Packet
-                              </DropdownMenuItem>
-                              {packet.status === 'draft' && (
-                                <DropdownMenuItem>
-                                  <Send className="h-4 w-4 mr-2" />
-                                  Send All
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem>
-                                <Download className="h-4 w-4 mr-2" />
-                                Download All
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>
-                                <Copy className="h-4 w-4 mr-2" />
-                                Duplicate Packet
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      );
+                    })}
+                  </div>
+                )}
+
+                {viewMode === 'packets' && (
+                  <div className="space-y-3">
+                    {documentsSeedData.packets.map(packet => {
+                      const config = statusConfig[packet.status as DocumentStatus] || statusConfig.draft;
+
+                      return (
+                        <Card key={packet.id} className="overflow-hidden">
+                          <div className={cn("h-1 w-full bg-gradient-to-r", config.gradient)} />
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-4">
+                                <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
+                                  <Package className="h-6 w-6 text-muted-foreground" />
+                                </div>
+                                <div>
+                                  <h3 className="font-semibold">{packet.name}</h3>
+                                  <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                                    <Badge variant="outline" className="text-xs">{packet.packetType}</Badge>
+                                    <span>{packet.relatedDealName}</span>
+                                    <span className="tabular-nums">{new Date(packet.createdAt).toLocaleDateString()}</span>
+                                  </div>
+                                  <div className="mt-3 space-y-1.5">
+                                    {packet.packetItems.map((item, idx) => (
+                                      <div key={idx} className="flex items-center gap-3 text-sm">
+                                        <span className="text-xs font-medium text-muted-foreground w-5 tabular-nums">
+                                          {item.order}.
+                                        </span>
+                                        <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                                        <span>{item.title}</span>
+                                        <Badge
+                                          variant="outline"
+                                          className={cn(
+                                            "text-[10px] ml-auto",
+                                            item.status === 'signed' && "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+                                            item.status === 'sent' && "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                                            item.status === 'pending' && "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                          )}
+                                        >
+                                          {item.status}
+                                        </Badge>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex flex-col items-end gap-2">
+                                <Badge className={cn(config.bgColor, config.color)}>
+                                  {packet.status}
+                                </Badge>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                      Actions
+                                      <ChevronDown className="h-4 w-4 ml-2" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="bg-white dark:bg-gray-900">
+                                    <DropdownMenuItem onClick={() => {
+                                      toast({
+                                        title: "Opening packet",
+                                        description: `Viewing ${packet.name}`,
+                                      });
+                                    }}>
+                                      <Eye className="h-4 w-4 mr-2" />
+                                      View Packet
+                                    </DropdownMenuItem>
+                                    {packet.status === 'draft' && (
+                                      <DropdownMenuItem onClick={() => {
+                                        toast({
+                                          title: "Packet sent",
+                                          description: `All documents in ${packet.name} have been sent for signature.`,
+                                        });
+                                      }}>
+                                        <Send className="h-4 w-4 mr-2" />
+                                        Send All
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem onClick={() => {
+                                      toast({
+                                        title: "Download started",
+                                        description: `Downloading all documents from ${packet.name}...`,
+                                      });
+                                    }}>
+                                      <Download className="h-4 w-4 mr-2" />
+                                      Download All
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => {
+                                      toast({
+                                        title: "Packet duplicated",
+                                        description: `Created copy of ${packet.name}`,
+                                      });
+                                    }}>
+                                      <Copy className="h-4 w-4 mr-2" />
+                                      Duplicate Packet
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            )}
+            </ScrollArea>
           </div>
-        </ScrollArea>
+        </div>
       </div>
 
       {/* Template Library Dialog */}
       <Dialog open={showTemplateLibrary} onOpenChange={setShowTemplateLibrary}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col bg-white dark:bg-gray-900">
           <DialogHeader>
             <DialogTitle>Template Library</DialogTitle>
             <DialogDescription>
               Choose from ready-to-use templates or create your own
             </DialogDescription>
           </DialogHeader>
-          
-          <Tabs defaultValue="acquisition">
-            <TabsList className="grid w-full grid-cols-5">
+
+          <Tabs defaultValue="acquisition" className="flex-1 min-h-0 flex flex-col">
+            <TabsList className="grid w-full grid-cols-5 shrink-0">
               <TabsTrigger value="acquisition">Acquisition</TabsTrigger>
               <TabsTrigger value="assignment">Assignment</TabsTrigger>
               <TabsTrigger value="partnership">Partnership</TabsTrigger>
               <TabsTrigger value="legal">Legal</TabsTrigger>
               <TabsTrigger value="modification">Modification</TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="acquisition" className="mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                {getTemplatesByCategory('Acquisition').map(template => (
-                  <Card key={template.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          {(() => {
-                            const Icon = getDocTypeIcon(template.docType);
-                            return <Icon className="h-8 w-8 text-blue-500" />;
-                          })()}
-                          <div>
-                            <h4 className="font-semibold">{template.name}</h4>
-                            <p className="text-sm text-gray-500">{template.docType}</p>
+
+            <ScrollArea className="flex-1 min-h-0 mt-4">
+              <TabsContent value="acquisition" className="m-0">
+                <div className="grid grid-cols-2 gap-4 p-1">
+                  {getTemplatesByCategory('Acquisition').map(template => {
+                    const Icon = docTypeIcons[template.docType];
+                    return (
+                      <Card
+                        key={template.id}
+                        className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group"
+                      >
+                        <div className="h-1 w-full bg-gradient-to-r from-blue-400 to-blue-500" />
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30">
+                                <Icon className="h-6 w-6 text-blue-500" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                  {template.name}
+                                </h4>
+                                <p className="text-xs text-muted-foreground">{template.docType}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-xs">v{template.version}</Badge>
                           </div>
-                        </div>
-                        <Badge variant="outline">v{template.version}</Badge>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-3">{template.description}</p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span>{template.estimatedPages} pages</span>
-                          <span>{template.rolesSchema.length} signers</span>
-                        </div>
-                        <Button size="sm" onClick={() => handleUseTemplate(template)}>
-                          Use Template
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="assignment" className="mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                {getTemplatesByCategory('Assignment').map(template => (
-                  <Card key={template.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          {(() => {
-                            const Icon = getDocTypeIcon(template.docType);
-                            return <Icon className="h-8 w-8 text-green-500" />;
-                          })()}
-                          <div>
-                            <h4 className="font-semibold">{template.name}</h4>
-                            <p className="text-sm text-gray-500">{template.docType}</p>
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{template.description}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              <span>{template.estimatedPages} pages</span>
+                              <span>{template.rolesSchema.length} signers</span>
+                            </div>
+                            <Button size="sm" onClick={() => handleUseTemplate(template)}>
+                              Use Template
+                            </Button>
                           </div>
-                        </div>
-                        <Badge variant="outline">v{template.version}</Badge>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-3">{template.description}</p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span>{template.estimatedPages} pages</span>
-                          <span>{template.rolesSchema.length} signers</span>
-                        </div>
-                        <Button size="sm" onClick={() => handleUseTemplate(template)}>
-                          Use Template
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="assignment" className="m-0">
+                <div className="grid grid-cols-2 gap-4 p-1">
+                  {getTemplatesByCategory('Assignment').map(template => {
+                    const Icon = docTypeIcons[template.docType];
+                    return (
+                      <Card
+                        key={template.id}
+                        className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group"
+                      >
+                        <div className="h-1 w-full bg-gradient-to-r from-emerald-400 to-emerald-500" />
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
+                                <Icon className="h-6 w-6 text-emerald-500" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                  {template.name}
+                                </h4>
+                                <p className="text-xs text-muted-foreground">{template.docType}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-xs">v{template.version}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{template.description}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              <span>{template.estimatedPages} pages</span>
+                              <span>{template.rolesSchema.length} signers</span>
+                            </div>
+                            <Button size="sm" onClick={() => handleUseTemplate(template)}>
+                              Use Template
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="partnership" className="m-0">
+                <div className="grid grid-cols-2 gap-4 p-1">
+                  {getTemplatesByCategory('Partnership').map(template => {
+                    const Icon = docTypeIcons[template.docType];
+                    return (
+                      <Card
+                        key={template.id}
+                        className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group"
+                      >
+                        <div className="h-1 w-full bg-gradient-to-r from-purple-400 to-purple-500" />
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/30">
+                                <Icon className="h-6 w-6 text-purple-500" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                                  {template.name}
+                                </h4>
+                                <p className="text-xs text-muted-foreground">{template.docType}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-xs">v{template.version}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{template.description}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              <span>{template.estimatedPages} pages</span>
+                              <span>{template.rolesSchema.length} signers</span>
+                            </div>
+                            <Button size="sm" onClick={() => handleUseTemplate(template)}>
+                              Use Template
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="legal" className="m-0">
+                <div className="grid grid-cols-2 gap-4 p-1">
+                  {getTemplatesByCategory('Legal').map(template => {
+                    const Icon = docTypeIcons[template.docType];
+                    return (
+                      <Card
+                        key={template.id}
+                        className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group"
+                      >
+                        <div className="h-1 w-full bg-gradient-to-r from-amber-400 to-amber-500" />
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30">
+                                <Icon className="h-6 w-6 text-amber-500" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                                  {template.name}
+                                </h4>
+                                <p className="text-xs text-muted-foreground">{template.docType}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-xs">v{template.version}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{template.description}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              <span>{template.estimatedPages} pages</span>
+                              <span>{template.rolesSchema.length} signers</span>
+                            </div>
+                            <Button size="sm" onClick={() => handleUseTemplate(template)}>
+                              Use Template
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="modification" className="m-0">
+                <div className="grid grid-cols-2 gap-4 p-1">
+                  {getTemplatesByCategory('Modification').map(template => {
+                    const Icon = docTypeIcons[template.docType];
+                    return (
+                      <Card
+                        key={template.id}
+                        className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group"
+                      >
+                        <div className="h-1 w-full bg-gradient-to-r from-rose-400 to-rose-500" />
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-900/30">
+                                <Icon className="h-6 w-6 text-rose-500" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                                  {template.name}
+                                </h4>
+                                <p className="text-xs text-muted-foreground">{template.docType}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-xs">v{template.version}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{template.description}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              <span>{template.estimatedPages} pages</span>
+                              <span>{template.rolesSchema.length} signers</span>
+                            </div>
+                            <Button size="sm" onClick={() => handleUseTemplate(template)}>
+                              Use Template
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+            </ScrollArea>
           </Tabs>
         </DialogContent>
       </Dialog>
 
       {/* Document Viewer Sheet */}
       <Sheet open={showDocumentViewer} onOpenChange={setShowDocumentViewer}>
-        <SheetContent className="w-[600px] sm:max-w-[600px]">
+        <SheetContent className="w-[540px] sm:max-w-[540px] bg-white dark:bg-gray-900 p-0 flex flex-col">
+          <VisuallyHidden.Root>
+            <SheetTitle>Document Details</SheetTitle>
+          </VisuallyHidden.Root>
+
           {selectedDocument && (
             <>
-              <SheetHeader>
-                <SheetTitle>{selectedDocument.title}</SheetTitle>
-                <SheetDescription>
-                  Version {selectedDocument.version} • {selectedDocument.docType}
-                </SheetDescription>
-              </SheetHeader>
-              
-              <div className="mt-6 space-y-6">
-                <div className="flex items-center justify-between">
-                  <Badge className={getStatusColor(selectedDocument.status)}>
-                    {(() => {
-                      const Icon = getStatusIcon(selectedDocument.status);
-                      return <Icon className="h-3 w-3 mr-1" />;
-                    })()}
-                    {selectedDocument.status}
-                  </Badge>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                    {selectedDocument.status === 'draft' && (
-                      <Button size="sm">
-                        <Send className="h-4 w-4 mr-2" />
-                        Send
-                      </Button>
-                    )}
+              {/* Status gradient header */}
+              <div className={cn(
+                "h-1.5 w-full bg-gradient-to-r shrink-0",
+                statusConfig[selectedDocument.status].gradient
+              )} />
+
+              <SheetHeader className="px-6 pt-5 pb-4 border-b shrink-0">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <SheetTitle className="text-lg">{selectedDocument.title}</SheetTitle>
+                    <SheetDescription>
+                      Version {selectedDocument.version} • {selectedDocument.docType}
+                    </SheetDescription>
                   </div>
+                  <Badge className={cn(
+                    "gap-1",
+                    statusConfig[selectedDocument.status].bgColor,
+                    statusConfig[selectedDocument.status].color
+                  )}>
+                    {(() => {
+                      const Icon = statusConfig[selectedDocument.status].icon;
+                      return <Icon className="h-3 w-3" />;
+                    })()}
+                    <span className="capitalize">{selectedDocument.status}</span>
+                  </Badge>
                 </div>
-                
-                <Tabs defaultValue="details">
-                  <TabsList className="grid w-full grid-cols-4">
+
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleDownloadDocument(selectedDocument)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download
+                  </Button>
+                  {selectedDocument.status === 'draft' && (
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleSendDocument(selectedDocument)}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      Send for Signature
+                    </Button>
+                  )}
+                </div>
+              </SheetHeader>
+
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <Tabs defaultValue="details" className="h-full flex flex-col">
+                  <TabsList className="grid w-full grid-cols-4 px-6 pt-3 shrink-0">
                     <TabsTrigger value="details">Details</TabsTrigger>
                     <TabsTrigger value="signers">Signers</TabsTrigger>
                     <TabsTrigger value="versions">Versions</TabsTrigger>
-                    <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+                    <TabsTrigger value="audit">Audit</TabsTrigger>
                   </TabsList>
-                  
-                  <TabsContent value="details" className="mt-4 space-y-4">
-                    <div>
-                      <Label className="text-xs text-gray-500">Related To</Label>
-                      <div className="mt-1">
-                        {selectedDocument.relatedName || 'Not linked'}
-                        {selectedDocument.relatedEntity && (
-                          <Badge variant="outline" className="ml-2 capitalize">
-                            {selectedDocument.relatedEntity}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Created By</Label>
-                      <div className="mt-1">{selectedDocument.createdByUserName}</div>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Created On</Label>
-                      <div className="mt-1">
-                        {new Date(selectedDocument.createdAt).toLocaleString()}
-                      </div>
-                    </div>
-                    {selectedDocument.signedAt && (
-                      <div>
-                        <Label className="text-xs text-gray-500">Signed On</Label>
-                        <div className="mt-1">
-                          {new Date(selectedDocument.signedAt).toLocaleString()}
-                        </div>
-                      </div>
-                    )}
-                    {selectedDocument.expiresAt && (
-                      <div>
-                        <Label className="text-xs text-gray-500">Expires On</Label>
-                        <div className="mt-1">
-                          {new Date(selectedDocument.expiresAt).toLocaleString()}
-                        </div>
-                      </div>
-                    )}
-                    <div>
-                      <Label className="text-xs text-gray-500">Tags</Label>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {selectedDocument.tags.map(tag => (
-                          <Badge key={tag} variant="outline">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="signers" className="mt-4 space-y-3">
-                    {selectedDocument.signerRoles.map((signer, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarFallback>{signer.role[0]}</AvatarFallback>
-                          </Avatar>
+
+                  <ScrollArea className="flex-1 min-h-0">
+                    <div className="px-6 py-4">
+                      <TabsContent value="details" className="m-0 space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <div className="font-medium">{signer.role}</div>
-                            <div className="text-sm text-gray-500">
-                              {signer.name || signer.email || 'Not assigned'}
+                            <Label className="text-xs text-muted-foreground">Related To</Label>
+                            <div className="mt-1 font-medium">
+                              {selectedDocument.relatedName || 'Not linked'}
+                              {selectedDocument.relatedEntity && (
+                                <Badge variant="outline" className="ml-2 text-xs capitalize">
+                                  {selectedDocument.relatedEntity}
+                                </Badge>
+                              )}
                             </div>
                           </div>
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            signer.status === 'signed' && "bg-green-50 text-green-700",
-                            signer.status === 'sent' && "bg-blue-50 text-blue-700",
-                            signer.status === 'viewed' && "bg-yellow-50 text-yellow-700"
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Created By</Label>
+                            <div className="mt-1 font-medium">{selectedDocument.createdByUserName}</div>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Created On</Label>
+                            <div className="mt-1 font-medium tabular-nums">
+                              {new Date(selectedDocument.createdAt).toLocaleString()}
+                            </div>
+                          </div>
+                          {selectedDocument.signedAt && (
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Signed On</Label>
+                              <div className="mt-1 font-medium tabular-nums">
+                                {new Date(selectedDocument.signedAt).toLocaleString()}
+                              </div>
+                            </div>
                           )}
-                        >
-                          {signer.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </TabsContent>
-                  
-                  <TabsContent value="versions" className="mt-4 space-y-3">
-                    {getDocumentVersions(selectedDocument.id).map(version => (
-                      <div key={version.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          {selectedDocument.expiresAt && (
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Expires On</Label>
+                              <div className="mt-1 font-medium tabular-nums">
+                                {new Date(selectedDocument.expiresAt).toLocaleString()}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         <div>
-                          <div className="font-medium">Version {version.version}</div>
-                          <div className="text-sm text-gray-500">{version.changeLog}</div>
-                          <div className="text-xs text-gray-400 mt-1">
-                            {new Date(version.createdAt).toLocaleString()} by {version.createdByUserName}
+                          <Label className="text-xs text-muted-foreground">Tags</Label>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {selectedDocument.tags.map(tag => (
+                              <Badge key={tag} variant="outline">
+                                {tag}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-2" />
-                          View
-                        </Button>
-                      </div>
-                    ))}
-                  </TabsContent>
-                  
-                  <TabsContent value="audit" className="mt-4">
-                    <ScrollArea className="h-[400px]">
-                      <div className="space-y-3">
-                        {selectedDocument.auditLog.map((event, idx) => (
-                          <div key={idx} className="flex gap-3">
-                            <div className="flex-shrink-0">
-                              <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                {event.action === 'created' && <FilePlus className="h-4 w-4" />}
-                                {event.action === 'sent' && <Send className="h-4 w-4" />}
-                                {event.action === 'viewed' && <Eye className="h-4 w-4" />}
-                                {event.action === 'signed' && <CheckCircle className="h-4 w-4 text-green-600" />}
-                                {event.action === 'updated' && <Edit className="h-4 w-4" />}
+                      </TabsContent>
+
+                      <TabsContent value="signers" className="m-0 space-y-3">
+                        {selectedDocument.signerRoles.map((signer, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarFallback className={cn(
+                                  signer.status === 'signed' && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50",
+                                  signer.status === 'sent' && "bg-blue-100 text-blue-700 dark:bg-blue-900/50",
+                                  signer.status === 'viewed' && "bg-amber-100 text-amber-700 dark:bg-amber-900/50",
+                                  signer.status === 'pending' && "bg-gray-100 text-gray-700 dark:bg-gray-800"
+                                )}>
+                                  {signer.role[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">{signer.role}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {signer.name || signer.email || 'Not assigned'}
+                                </div>
                               </div>
                             </div>
-                            <div className="flex-1">
-                              <div className="text-sm font-medium">{event.userName}</div>
-                              <div className="text-sm text-gray-500">{event.details || event.action}</div>
-                              <div className="text-xs text-gray-400">
-                                {new Date(event.timestamp).toLocaleString()}
-                              </div>
-                            </div>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                signer.status === 'signed' && "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+                                signer.status === 'sent' && "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                                signer.status === 'viewed' && "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                              )}
+                            >
+                              {signer.status}
+                            </Badge>
                           </div>
                         ))}
-                      </div>
-                    </ScrollArea>
-                  </TabsContent>
+                      </TabsContent>
+
+                      <TabsContent value="versions" className="m-0 space-y-3">
+                        {getDocumentVersions(selectedDocument.id).map(version => (
+                          <div key={version.id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div>
+                              <div className="font-medium">Version {version.version}</div>
+                              <div className="text-sm text-muted-foreground">{version.changeLog}</div>
+                              <div className="text-xs text-muted-foreground mt-1 tabular-nums">
+                                {new Date(version.createdAt).toLocaleString()} by {version.createdByUserName}
+                              </div>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                toast({
+                                  title: "Viewing version",
+                                  description: `Opening version ${version.version}`,
+                                });
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
+                            </Button>
+                          </div>
+                        ))}
+                        {getDocumentVersions(selectedDocument.id).length === 0 && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <History className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No version history available</p>
+                          </div>
+                        )}
+                      </TabsContent>
+
+                      <TabsContent value="audit" className="m-0">
+                        <div className="space-y-3">
+                          {selectedDocument.auditLog.map((event, idx) => (
+                            <div key={idx} className="flex gap-3">
+                              <div className="shrink-0">
+                                <div className={cn(
+                                  "h-8 w-8 rounded-full flex items-center justify-center",
+                                  event.action === 'created' && "bg-blue-100 dark:bg-blue-900/30",
+                                  event.action === 'sent' && "bg-purple-100 dark:bg-purple-900/30",
+                                  event.action === 'viewed' && "bg-amber-100 dark:bg-amber-900/30",
+                                  event.action === 'signed' && "bg-emerald-100 dark:bg-emerald-900/30",
+                                  event.action === 'updated' && "bg-gray-100 dark:bg-gray-800"
+                                )}>
+                                  {event.action === 'created' && <FilePlus className="h-4 w-4 text-blue-600" />}
+                                  {event.action === 'sent' && <Send className="h-4 w-4 text-purple-600" />}
+                                  {event.action === 'viewed' && <Eye className="h-4 w-4 text-amber-600" />}
+                                  {event.action === 'signed' && <CheckCircle className="h-4 w-4 text-emerald-600" />}
+                                  {event.action === 'updated' && <Edit className="h-4 w-4 text-gray-600" />}
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium">{event.userName}</div>
+                                <div className="text-sm text-muted-foreground">{event.details || event.action}</div>
+                                <div className="text-xs text-muted-foreground tabular-nums">
+                                  {new Date(event.timestamp).toLocaleString()}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </TabsContent>
+                    </div>
+                  </ScrollArea>
                 </Tabs>
               </div>
             </>
@@ -1276,27 +1581,27 @@ export default function DocumentsPage() {
 
       {/* Packet Builder Dialog */}
       <Dialog open={showPacketBuilder} onOpenChange={setShowPacketBuilder}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-white dark:bg-gray-900">
           <DialogHeader>
             <DialogTitle>Packet Builder</DialogTitle>
             <DialogDescription>
               Create a bundle of documents for your deal
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Label>Packet Type</Label>
               <Select
                 value={newPacket.packetType}
-                onValueChange={(value: Packet['packetType']) => 
+                onValueChange={(value: Packet['packetType']) =>
                   setNewPacket({ ...newPacket, packetType: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="mt-1.5">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white dark:bg-gray-900">
                   <SelectItem value="Acquisition">Acquisition Packet</SelectItem>
                   <SelectItem value="Assignment">Assignment Packet</SelectItem>
                   <SelectItem value="Disposition">Disposition Packet</SelectItem>
@@ -1305,52 +1610,53 @@ export default function DocumentsPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label>Packet Name</Label>
               <Input
                 placeholder="Enter packet name"
                 value={newPacket.name || ''}
                 onChange={(e) => setNewPacket({ ...newPacket, name: e.target.value })}
+                className="mt-1.5"
               />
             </div>
-            
+
             <div>
               <Label>Related Deal</Label>
               <Select>
-                <SelectTrigger>
+                <SelectTrigger className="mt-1.5">
                   <SelectValue placeholder="Select a deal" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white dark:bg-gray-900">
                   <SelectItem value="DEAL-001">123 Main St, Phoenix</SelectItem>
                   <SelectItem value="DEAL-002">456 Desert View, Scottsdale</SelectItem>
                   <SelectItem value="DEAL-003">789 University Dr, Tempe</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label>Documents</Label>
-              <div className="mt-2 space-y-2 border rounded-lg p-3">
+              <div className="mt-2 space-y-2 border rounded-lg p-3 bg-gray-50/50 dark:bg-gray-800/50">
                 {newPacket.packetType === 'Acquisition' && (
                   <>
-                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded border">
                       <div className="flex items-center gap-2">
-                        <FileSignature className="h-4 w-4" />
+                        <FileSignature className="h-4 w-4 text-blue-500" />
                         <span className="text-sm">LOI - Letter of Intent</span>
                       </div>
                       <Checkbox defaultChecked />
                     </div>
-                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded border">
                       <div className="flex items-center gap-2">
-                        <FileCheck className="h-4 w-4" />
+                        <FileCheck className="h-4 w-4 text-emerald-500" />
                         <span className="text-sm">PSA - Purchase Agreement</span>
                       </div>
                       <Checkbox defaultChecked />
                     </div>
-                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded border">
                       <div className="flex items-center gap-2">
-                        <Lock className="h-4 w-4" />
+                        <Lock className="h-4 w-4 text-amber-500" />
                         <span className="text-sm">NDA - Non-Disclosure</span>
                       </div>
                       <Checkbox />
@@ -1359,26 +1665,31 @@ export default function DocumentsPage() {
                 )}
                 {newPacket.packetType === 'Assignment' && (
                   <>
-                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded border">
                       <div className="flex items-center gap-2">
-                        <GitBranch className="h-4 w-4" />
+                        <GitBranch className="h-4 w-4 text-emerald-500" />
                         <span className="text-sm">Assignment Agreement</span>
                       </div>
                       <Checkbox defaultChecked />
                     </div>
-                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded border">
                       <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
+                        <FileText className="h-4 w-4 text-blue-500" />
                         <span className="text-sm">Notice to Seller</span>
                       </div>
                       <Checkbox defaultChecked />
                     </div>
                   </>
                 )}
+                {!['Acquisition', 'Assignment'].includes(newPacket.packetType || '') && (
+                  <div className="text-center py-4 text-sm text-muted-foreground">
+                    Select a packet type to see available documents
+                  </div>
+                )}
               </div>
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPacketBuilder(false)}>
               Cancel
@@ -1390,6 +1701,5 @@ export default function DocumentsPage() {
         </DialogContent>
       </Dialog>
     </div>
-    </PreviewModeWrapper>
   );
 }

@@ -1,4 +1,3 @@
-
 "use client";
 export const dynamic = 'force-dynamic';
 
@@ -16,14 +15,21 @@ import {
   MoreVertical,
   Eye,
   Edit,
-  FileText,
   AlertCircle,
   UserCheck,
   Hammer,
   Building2,
   Download,
+  ChevronRight,
+  TrendingUp,
+  CalendarDays,
+  ArrowRight,
+  LayoutList,
+  Columns3,
+  FileText,
+  MapPin,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -51,11 +57,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 import { exportToCSV, generateFilename, formatCurrencyForCSV, formatDateForCSV } from "@/lib/csv-export";
+import { cn } from "@/lib/utils";
 
 interface Contract {
   id: string;
@@ -129,13 +145,231 @@ interface Buyer {
   cashBuyer: boolean;
 }
 
+// Enhanced status configuration with comprehensive colors
 const STATUS_CONFIG = {
-  pending: { label: "Pending", icon: Clock, color: "bg-yellow-500" },
-  signed: { label: "Signed", icon: FileSignature, color: "bg-blue-500" },
-  escrow: { label: "In Escrow", icon: AlertCircle, color: "bg-purple-500" },
-  closed: { label: "Closed", icon: CheckCircle2, color: "bg-green-500" },
-  cancelled: { label: "Cancelled", icon: XCircle, color: "bg-red-500" },
+  pending: {
+    label: "Pending",
+    icon: Clock,
+    bg: "bg-amber-100 dark:bg-amber-900/20",
+    text: "text-amber-700 dark:text-amber-400",
+    iconColor: "text-amber-500",
+    border: "border-amber-200 dark:border-amber-800/50"
+  },
+  signed: {
+    label: "Signed",
+    icon: FileSignature,
+    bg: "bg-blue-100 dark:bg-blue-900/20",
+    text: "text-blue-700 dark:text-blue-400",
+    iconColor: "text-blue-500",
+    border: "border-blue-200 dark:border-blue-800/50"
+  },
+  escrow: {
+    label: "In Escrow",
+    icon: AlertCircle,
+    bg: "bg-purple-100 dark:bg-purple-900/20",
+    text: "text-purple-700 dark:text-purple-400",
+    iconColor: "text-purple-500",
+    border: "border-purple-200 dark:border-purple-800/50"
+  },
+  closed: {
+    label: "Closed",
+    icon: CheckCircle2,
+    bg: "bg-emerald-100 dark:bg-emerald-900/20",
+    text: "text-emerald-700 dark:text-emerald-400",
+    iconColor: "text-emerald-500",
+    border: "border-emerald-200 dark:border-emerald-800/50"
+  },
+  cancelled: {
+    label: "Cancelled",
+    icon: XCircle,
+    bg: "bg-red-100 dark:bg-red-900/20",
+    text: "text-red-700 dark:text-red-400",
+    iconColor: "text-red-500",
+    border: "border-red-200 dark:border-red-800/50"
+  },
 };
+
+const PIPELINE_STAGES = ["pending", "signed", "escrow", "closed"] as const;
+
+// Compact stat chip component
+function StatChip({
+  label,
+  value,
+  icon: Icon,
+  iconColor = "text-gray-500",
+  onClick,
+  active = false
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ElementType;
+  iconColor?: string;
+  onClick?: () => void;
+  active?: boolean;
+}) {
+  return (
+    <Card
+      className={cn(
+        "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transition-all",
+        onClick && "cursor-pointer hover:shadow-md hover:-translate-y-0.5",
+        active && "ring-2 ring-blue-500 ring-offset-1"
+      )}
+      onClick={onClick}
+    >
+      <CardContent className="px-2.5 py-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-[9px] text-gray-500 dark:text-gray-400 uppercase tracking-wider truncate">
+              {label}
+            </p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums leading-tight">
+              {value}
+            </p>
+          </div>
+          <Icon className={cn("h-4 w-4 flex-shrink-0", iconColor)} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Status pipeline visualization
+function StatusPipeline({
+  contracts,
+  activeStatus,
+  onStatusClick
+}: {
+  contracts: Contract[];
+  activeStatus: string;
+  onStatusClick: (status: string) => void;
+}) {
+  const counts = {
+    pending: contracts.filter(c => c.status === "pending").length,
+    signed: contracts.filter(c => c.status === "signed").length,
+    escrow: contracts.filter(c => c.status === "escrow").length,
+    closed: contracts.filter(c => c.status === "closed").length,
+  };
+
+  return (
+    <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+      {PIPELINE_STAGES.map((stage, index) => {
+        const config = STATUS_CONFIG[stage];
+        const Icon = config.icon;
+        const isActive = activeStatus === stage;
+        const count = counts[stage];
+
+        return (
+          <div key={stage} className="flex items-center flex-1">
+            <button
+              onClick={() => onStatusClick(isActive ? "all" : stage)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-md transition-all flex-1 justify-center",
+                isActive
+                  ? cn(config.bg, config.border, "border")
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
+              )}
+            >
+              <Icon className={cn("h-4 w-4", isActive ? config.iconColor : "text-gray-400")} />
+              <div className="text-center">
+                <p className={cn(
+                  "text-xl font-bold tabular-nums",
+                  isActive ? config.text : "text-gray-700 dark:text-gray-300"
+                )}>
+                  {count}
+                </p>
+                <p className={cn(
+                  "text-[10px] uppercase tracking-wider",
+                  isActive ? config.text : "text-gray-500 dark:text-gray-400"
+                )}>
+                  {config.label}
+                </p>
+              </div>
+            </button>
+            {index < PIPELINE_STAGES.length - 1 && (
+              <ArrowRight className="h-4 w-4 text-gray-300 dark:text-gray-600 mx-1 flex-shrink-0" />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Kanban card for pipeline board
+function ContractCard({
+  contract,
+  onClick,
+  formatCurrency,
+  formatDate
+}: {
+  contract: Contract;
+  onClick: () => void;
+  formatCurrency: (amount: number) => string;
+  formatDate: (date: string | null) => string;
+}) {
+  const config = STATUS_CONFIG[contract.status as keyof typeof STATUS_CONFIG];
+  const daysInStage = Math.floor((Date.now() - new Date(contract.updatedAt).getTime()) / (1000 * 60 * 60 * 24));
+
+  return (
+    <Card
+      className="bg-white dark:bg-gray-800 hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer border-gray-200 dark:border-gray-700"
+      onClick={onClick}
+    >
+      <CardContent className="p-3">
+        <div className="space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                {contract.property.address}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {contract.property.city}, {contract.property.state}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">
+              {formatCurrency(contract.purchasePrice)}
+            </span>
+            <span className="text-xs text-gray-500 tabular-nums">
+              {daysInStage}d in stage
+            </span>
+          </div>
+
+          {contract.closingDate && (
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <Calendar className="h-3 w-3" />
+              <span>Close: {formatDate(contract.closingDate)}</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {contract.assignment && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                <UserCheck className="h-3 w-3 mr-1" />
+                {contract.assignment.buyer.name}
+              </Badge>
+            )}
+            {contract.renovation && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-orange-300 text-orange-600">
+                <Hammer className="h-3 w-3 mr-1" />
+                Reno
+              </Badge>
+            )}
+            {contract.rental && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-blue-300 text-blue-600">
+                <Building2 className="h-3 w-3 mr-1" />
+                Rental
+              </Badge>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function ContractsPage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -145,12 +379,19 @@ export default function ContractsPage() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [filteredContracts, setFilteredContracts] = useState<Contract[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
+
+  // Detail panel state
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
+  const [detailTab, setDetailTab] = useState("overview");
+
+  // Dialog states
   const [updateStatusDialogOpen, setUpdateStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [closingDate, setClosingDate] = useState("");
@@ -185,10 +426,8 @@ export default function ContractsPage() {
 
   // Fetch contracts and buyers
   useEffect(() => {
-    if (true) {
-      fetchContracts();
-      fetchBuyers();
-    }
+    fetchContracts();
+    fetchBuyers();
   }, []);
 
   const fetchContracts = async () => {
@@ -226,12 +465,10 @@ export default function ContractsPage() {
   useEffect(() => {
     let filtered = contracts;
 
-    // Filter by status
     if (statusFilter !== "all") {
       filtered = filtered.filter((c) => c.status === statusFilter);
     }
 
-    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -249,13 +486,15 @@ export default function ContractsPage() {
     const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || {
       label: status,
       icon: Clock,
-      color: "bg-gray-500",
+      bg: "bg-gray-100 dark:bg-gray-800",
+      text: "text-gray-700 dark:text-gray-300",
+      iconColor: "text-gray-500"
     };
     const Icon = config.icon;
 
     return (
-      <Badge className={`${config.color} text-white`}>
-        <Icon className="mr-1 h-3 w-3" />
+      <Badge className={cn(config.bg, config.text, "border-0")}>
+        <Icon className={cn("mr-1 h-3 w-3", config.iconColor)} />
         {config.label}
       </Badge>
     );
@@ -279,9 +518,20 @@ export default function ContractsPage() {
     });
   };
 
+  const formatCompactCurrency = (amount: number) => {
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1)}M`;
+    }
+    if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(0)}K`;
+    }
+    return `$${amount}`;
+  };
+
   const handleViewDetails = (contract: Contract) => {
     setSelectedContract(contract);
-    setDetailsDialogOpen(true);
+    setDetailTab("overview");
+    setDetailPanelOpen(true);
   };
 
   const handleUpdateStatus = (contract: Contract) => {
@@ -304,7 +554,6 @@ export default function ContractsPage() {
           status: newStatus,
           closingDate: closingDate || null,
           notes: notes || null,
-          // Auto-set timestamps based on status
           ...(newStatus === "signed" && !selectedContract.signedAt && { signedAt: new Date().toISOString() }),
           ...(newStatus === "escrow" && !selectedContract.escrowOpenedAt && { escrowOpenedAt: new Date().toISOString() }),
           ...(newStatus === "closed" && !selectedContract.closedAt && { closedAt: new Date().toISOString() }),
@@ -313,17 +562,15 @@ export default function ContractsPage() {
 
       if (!response.ok) throw new Error("Failed to update contract");
 
-      const data = await response.json();
-
       toast({
         title: "Contract Updated",
         description: `Contract status updated to ${STATUS_CONFIG[newStatus as keyof typeof STATUS_CONFIG]?.label || newStatus}`,
       });
 
-      // Refresh contracts
       fetchContracts();
       setUpdateStatusDialogOpen(false);
       setSelectedContract(null);
+      setDetailPanelOpen(false);
     } catch (error) {
       console.error("Error updating contract:", error);
       toast({
@@ -541,10 +788,27 @@ export default function ContractsPage() {
   const stats = {
     total: contracts.length,
     pending: contracts.filter((c) => c.status === "pending").length,
+    signed: contracts.filter((c) => c.status === "signed").length,
     escrow: contracts.filter((c) => c.status === "escrow").length,
     closed: contracts.filter((c) => c.status === "closed").length,
+    cancelled: contracts.filter((c) => c.status === "cancelled").length,
     totalValue: contracts.reduce((sum, c) => sum + c.purchasePrice, 0),
+    closedThisMonth: contracts.filter((c) => {
+      if (c.status !== "closed" || !c.closedAt) return false;
+      const closedDate = new Date(c.closedAt);
+      const now = new Date();
+      return closedDate.getMonth() === now.getMonth() && closedDate.getFullYear() === now.getFullYear();
+    }).length,
   };
+
+  // Calculate average days to close
+  const closedContracts = contracts.filter(c => c.status === "closed" && c.closedAt && c.createdAt);
+  const avgDaysToClose = closedContracts.length > 0
+    ? Math.round(closedContracts.reduce((sum, c) => {
+        const days = (new Date(c.closedAt!).getTime() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+        return sum + days;
+      }, 0) / closedContracts.length)
+    : 0;
 
   if (!isMounted) {
     return <div>Loading...</div>;
@@ -562,86 +826,121 @@ export default function ContractsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Contracts</h1>
-          <p className="text-muted-foreground mt-1">Manage your property contracts and track closing progress</p>
+      <div className="flex-shrink-0 space-y-4 mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Contracts</h1>
+            <p className="text-sm text-muted-foreground">Manage property contracts and track closing progress</p>
+          </div>
+          <Button
+            onClick={handleExportCSV}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            disabled={filteredContracts.length === 0}
+          >
+            <Download className="h-4 w-4" />
+            Export
+          </Button>
         </div>
-        <Button
-          onClick={handleExportCSV}
-          variant="outline"
-          className="gap-2"
-          disabled={filteredContracts.length === 0}
-        >
-          <Download className="h-4 w-4" />
-          Export CSV
-        </Button>
+
+        {/* Compact Stats Bar */}
+        <div className="grid grid-cols-4 md:grid-cols-8 gap-1.5">
+          <StatChip
+            label="Total"
+            value={stats.total}
+            icon={FileSignature}
+            iconColor="text-gray-500"
+            onClick={() => setStatusFilter("all")}
+            active={statusFilter === "all"}
+          />
+          <StatChip
+            label="Pending"
+            value={stats.pending}
+            icon={Clock}
+            iconColor="text-amber-500"
+            onClick={() => setStatusFilter(statusFilter === "pending" ? "all" : "pending")}
+            active={statusFilter === "pending"}
+          />
+          <StatChip
+            label="Signed"
+            value={stats.signed}
+            icon={FileSignature}
+            iconColor="text-blue-500"
+            onClick={() => setStatusFilter(statusFilter === "signed" ? "all" : "signed")}
+            active={statusFilter === "signed"}
+          />
+          <StatChip
+            label="Escrow"
+            value={stats.escrow}
+            icon={AlertCircle}
+            iconColor="text-purple-500"
+            onClick={() => setStatusFilter(statusFilter === "escrow" ? "all" : "escrow")}
+            active={statusFilter === "escrow"}
+          />
+          <StatChip
+            label="Closed"
+            value={stats.closed}
+            icon={CheckCircle2}
+            iconColor="text-emerald-500"
+            onClick={() => setStatusFilter(statusFilter === "closed" ? "all" : "closed")}
+            active={statusFilter === "closed"}
+          />
+          <StatChip
+            label="Total Value"
+            value={formatCompactCurrency(stats.totalValue)}
+            icon={DollarSign}
+            iconColor="text-green-500"
+          />
+          <StatChip
+            label="Avg Days"
+            value={avgDaysToClose}
+            icon={TrendingUp}
+            iconColor="text-blue-500"
+          />
+          <StatChip
+            label="This Month"
+            value={stats.closedThisMonth}
+            icon={CalendarDays}
+            iconColor="text-indigo-500"
+          />
+        </div>
+
+        {/* Pipeline Visualization */}
+        <StatusPipeline
+          contracts={contracts}
+          activeStatus={statusFilter}
+          onStatusClick={setStatusFilter}
+        />
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Contracts</CardTitle>
-            <FileSignature className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Escrow</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.escrow}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Closed</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.closed}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalValue)}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search by address..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+      {/* Main Content */}
+      <Tabs
+        value={viewMode}
+        onValueChange={(v) => setViewMode(v as "table" | "kanban")}
+        className="flex-1 flex flex-col min-h-0"
+      >
+        {/* Toolbar */}
+        <div className="flex-shrink-0 flex items-center justify-between gap-4 mb-3">
+          <div className="flex items-center gap-2 flex-1">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search by address..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9"
+              />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectTrigger className="w-[140px] h-9">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Contracts</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="signed">Signed</SelectItem>
                 <SelectItem value="escrow">In Escrow</SelectItem>
@@ -650,182 +949,499 @@ export default function ContractsPage() {
               </SelectContent>
             </Select>
           </div>
-        </CardHeader>
-        <CardContent>
-          {filteredContracts.length === 0 ? (
-            <div className="text-center py-12">
-              <FileSignature className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">No contracts found</h3>
-              <p className="text-muted-foreground">
-                {contracts.length === 0
-                  ? "Create contracts from accepted offers to get started."
-                  : "Try adjusting your filters."}
-              </p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Property</TableHead>
-                  <TableHead>Purchase Price</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Closing Date</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredContracts.map((contract) => (
-                  <TableRow key={contract.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Home className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <div className="font-medium">{contract.property.address}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {contract.property.city}, {contract.property.state}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{formatCurrency(contract.purchasePrice)}</TableCell>
-                    <TableCell>{getStatusBadge(contract.status)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{formatDate(contract.closingDate)}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {formatDate(contract.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewDetails(contract)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleUpdateStatus(contract)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Update Status
-                          </DropdownMenuItem>
-                          {!contract.assignment && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleAssignContract(contract)}>
-                                <UserCheck className="mr-2 h-4 w-4" />
-                                Assign Contract
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {!contract.renovation && contract.status === "closed" && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleStartRenovation(contract)}>
-                                <Hammer className="mr-2 h-4 w-4" />
-                                Start Renovation
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {!contract.rental && contract.status === "closed" && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleStartRental(contract)}>
-                                <Building2 className="mr-2 h-4 w-4" />
-                                Start Rental
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link href={`/app/properties/${contract.propertyId}`}>
-                              <Home className="mr-2 h-4 w-4" />
-                              View Property
-                            </Link>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Details Dialog */}
-      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Contract Details</DialogTitle>
-            <DialogDescription>View contract information and timeline</DialogDescription>
-          </DialogHeader>
-          {selectedContract && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Property</h3>
-                <p className="text-sm">
-                  {selectedContract.property.address}
-                  <br />
-                  {selectedContract.property.city}, {selectedContract.property.state}{" "}
-                  {selectedContract.property.zip}
-                </p>
-              </div>
+          <TabsList className="h-9">
+            <TabsTrigger value="table" className="gap-1.5 px-3">
+              <LayoutList className="h-4 w-4" />
+              <span className="hidden sm:inline">List</span>
+            </TabsTrigger>
+            <TabsTrigger value="kanban" className="gap-1.5 px-3">
+              <Columns3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Board</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Purchase Price</h3>
-                  <p className="text-2xl font-bold">{formatCurrency(selectedContract.purchasePrice)}</p>
+        {/* Table View */}
+        <TabsContent value="table" className="flex-1 min-h-0 mt-0">
+          <Card className="h-full py-0 gap-0">
+            <ScrollArea className="h-full">
+              {filteredContracts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-[400px] gap-3">
+                  <FileSignature className="h-12 w-12 text-gray-400" />
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No contracts found</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {contracts.length === 0
+                        ? "Create contracts from accepted offers to get started."
+                        : "Try adjusting your filters."}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold mb-2">Status</h3>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="sticky top-0 bg-card z-10">Property</TableHead>
+                      <TableHead className="sticky top-0 bg-card z-10">Purchase Price</TableHead>
+                      <TableHead className="sticky top-0 bg-card z-10">Status</TableHead>
+                      <TableHead className="sticky top-0 bg-card z-10">Closing</TableHead>
+                      <TableHead className="sticky top-0 bg-card z-10">Workflows</TableHead>
+                      <TableHead className="sticky top-0 bg-card z-10 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredContracts.map((contract) => {
+                      const daysInStage = Math.floor((Date.now() - new Date(contract.updatedAt).getTime()) / (1000 * 60 * 60 * 24));
+
+                      return (
+                        <TableRow
+                          key={contract.id}
+                          className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                          onClick={() => handleViewDetails(contract)}
+                        >
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                                <Home className="h-5 w-5 text-gray-500" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-medium text-gray-900 dark:text-white truncate">
+                                  {contract.property.address}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {contract.property.city}, {contract.property.state} {contract.property.zip}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="font-semibold tabular-nums">{formatCurrency(contract.purchasePrice)}</span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              {getStatusBadge(contract.status)}
+                              <span className="text-[10px] text-muted-foreground">{daysInStage}d in stage</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">{formatDate(contract.closingDate)}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              {contract.assignment && (
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                  <UserCheck className="h-3 w-3 mr-1" />
+                                  Assigned
+                                </Badge>
+                              )}
+                              {contract.renovation && (
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-orange-300 text-orange-600">
+                                  <Hammer className="h-3 w-3" />
+                                </Badge>
+                              )}
+                              {contract.rental && (
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-blue-300 text-blue-600">
+                                  <Building2 className="h-3 w-3" />
+                                </Badge>
+                              )}
+                              {!contract.assignment && !contract.renovation && !contract.rental && (
+                                <span className="text-xs text-muted-foreground">—</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleViewDetails(contract); }}>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleUpdateStatus(contract); }}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Update Status
+                                </DropdownMenuItem>
+                                {!contract.assignment && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleAssignContract(contract); }}>
+                                      <UserCheck className="mr-2 h-4 w-4" />
+                                      Assign Contract
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                                {!contract.renovation && contract.status === "closed" && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleStartRenovation(contract); }}>
+                                      <Hammer className="mr-2 h-4 w-4" />
+                                      Start Renovation
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                                {!contract.rental && contract.status === "closed" && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleStartRental(contract); }}>
+                                      <Building2 className="mr-2 h-4 w-4" />
+                                      Start Rental
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/app/properties/${contract.propertyId}`} onClick={(e) => e.stopPropagation()}>
+                                    <Home className="mr-2 h-4 w-4" />
+                                    View Property
+                                  </Link>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </ScrollArea>
+          </Card>
+        </TabsContent>
+
+        {/* Kanban View */}
+        <TabsContent value="kanban" className="flex-1 min-h-0 mt-0">
+          <div className="h-full flex gap-3 overflow-x-auto pb-2">
+            {PIPELINE_STAGES.map((stage) => {
+              const config = STATUS_CONFIG[stage];
+              const stageContracts = filteredContracts.filter(c => c.status === stage);
+              const Icon = config.icon;
+
+              return (
+                <div key={stage} className="flex-shrink-0 w-72 flex flex-col h-full">
+                  <div className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-t-lg border border-b-0",
+                    config.bg, config.border
+                  )}>
+                    <Icon className={cn("h-4 w-4", config.iconColor)} />
+                    <span className={cn("font-medium text-sm", config.text)}>{config.label}</span>
+                    <Badge variant="secondary" className="ml-auto text-xs">
+                      {stageContracts.length}
+                    </Badge>
+                  </div>
+                  <Card className="flex-1 rounded-t-none py-0 gap-0 border-t-0 min-h-0">
+                    <ScrollArea className="h-full">
+                      <div className="p-2 space-y-2">
+                        {stageContracts.length === 0 ? (
+                          <div className="text-center py-8 text-sm text-muted-foreground">
+                            No contracts
+                          </div>
+                        ) : (
+                          stageContracts.map((contract) => (
+                            <ContractCard
+                              key={contract.id}
+                              contract={contract}
+                              onClick={() => handleViewDetails(contract)}
+                              formatCurrency={formatCurrency}
+                              formatDate={formatDate}
+                            />
+                          ))
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </Card>
+                </div>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Detail Panel (Sheet) */}
+      <Sheet open={detailPanelOpen} onOpenChange={setDetailPanelOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-[540px] p-0 flex flex-col">
+          {selectedContract && (
+            <>
+              <SheetHeader className="p-4 border-b flex-shrink-0">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <SheetTitle className="text-lg">{selectedContract.property.address}</SheetTitle>
+                    <SheetDescription>
+                      {selectedContract.property.city}, {selectedContract.property.state} {selectedContract.property.zip}
+                    </SheetDescription>
+                  </div>
                   {getStatusBadge(selectedContract.status)}
                 </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Timeline</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Contract Created:</span>
-                    <span>{formatDate(selectedContract.createdAt)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Signed:</span>
-                    <span>{formatDate(selectedContract.signedAt)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Escrow Opened:</span>
-                    <span>{formatDate(selectedContract.escrowOpenedAt)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Closing Date:</span>
-                    <span className="font-medium">{formatDate(selectedContract.closingDate)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Closed:</span>
-                    <span>{formatDate(selectedContract.closedAt)}</span>
-                  </div>
+                <div className="mt-3">
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {formatCurrency(selectedContract.purchasePrice)}
+                  </span>
                 </div>
-              </div>
+              </SheetHeader>
 
-              {selectedContract.notes && (
-                <div>
-                  <h3 className="font-semibold mb-2">Notes</h3>
-                  <p className="text-sm text-muted-foreground">{selectedContract.notes}</p>
-                </div>
-              )}
-            </div>
+              <Tabs value={detailTab} onValueChange={setDetailTab} className="flex-1 flex flex-col min-h-0">
+                <TabsList className="flex-shrink-0 grid w-full grid-cols-4 rounded-none border-b bg-transparent h-auto p-0">
+                  <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-transparent py-2.5">
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="timeline" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-transparent py-2.5">
+                    Timeline
+                  </TabsTrigger>
+                  <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-transparent py-2.5">
+                    Documents
+                  </TabsTrigger>
+                  <TabsTrigger value="actions" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-transparent py-2.5">
+                    Actions
+                  </TabsTrigger>
+                </TabsList>
+
+                <ScrollArea className="flex-1">
+                  <TabsContent value="overview" className="m-0 p-4 space-y-4">
+                    {/* Property Info */}
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Property</h4>
+                      <Card className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-12 w-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <Home className="h-6 w-6 text-gray-500" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{selectedContract.property.address}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {selectedContract.property.city}, {selectedContract.property.state} {selectedContract.property.zip}
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
+                    </div>
+
+                    {/* Key Dates */}
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Key Dates</h4>
+                      <Card className="py-0 gap-0">
+                        <div className="divide-y dark:divide-gray-800">
+                          <div className="flex justify-between py-2.5 px-4">
+                            <span className="text-sm text-muted-foreground">Created</span>
+                            <span className="text-sm font-medium">{formatDate(selectedContract.createdAt)}</span>
+                          </div>
+                          <div className="flex justify-between py-2.5 px-4">
+                            <span className="text-sm text-muted-foreground">Signed</span>
+                            <span className="text-sm font-medium">{formatDate(selectedContract.signedAt)}</span>
+                          </div>
+                          <div className="flex justify-between py-2.5 px-4">
+                            <span className="text-sm text-muted-foreground">Escrow Opened</span>
+                            <span className="text-sm font-medium">{formatDate(selectedContract.escrowOpenedAt)}</span>
+                          </div>
+                          <div className="flex justify-between py-2.5 px-4">
+                            <span className="text-sm text-muted-foreground">Closing Date</span>
+                            <span className="text-sm font-medium">{formatDate(selectedContract.closingDate)}</span>
+                          </div>
+                          <div className="flex justify-between py-2.5 px-4">
+                            <span className="text-sm text-muted-foreground">Closed</span>
+                            <span className="text-sm font-medium">{formatDate(selectedContract.closedAt)}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    </div>
+
+                    {/* Assignment Info */}
+                    {selectedContract.assignment && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Assignment</h4>
+                        <Card className="py-3 px-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
+                                <UserCheck className="h-5 w-5 text-emerald-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{selectedContract.assignment.buyer.name}</p>
+                                <p className="text-sm text-muted-foreground">{selectedContract.assignment.buyer.email}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-emerald-600">{formatCurrency(selectedContract.assignment.assignmentFee)}</p>
+                              <p className="text-xs text-muted-foreground">Assignment Fee</p>
+                            </div>
+                          </div>
+                        </Card>
+                      </div>
+                    )}
+
+                    {/* Workflows */}
+                    {(selectedContract.renovation || selectedContract.rental) && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Active Workflows</h4>
+                        <div className="space-y-2">
+                          {selectedContract.renovation && (
+                            <Card className="py-3 px-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 rounded-lg bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+                                    <Hammer className="h-5 w-5 text-orange-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">Renovation</p>
+                                    <p className="text-sm text-muted-foreground capitalize">{selectedContract.renovation.status}</p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-semibold">{formatCurrency(selectedContract.renovation.maxExposureUsd)}</p>
+                                  <p className="text-xs text-muted-foreground">Budget</p>
+                                </div>
+                              </div>
+                            </Card>
+                          )}
+                          {selectedContract.rental && (
+                            <Card className="py-3 px-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                                    <Building2 className="h-5 w-5 text-blue-600" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">Rental</p>
+                                    <p className="text-sm text-muted-foreground capitalize">{selectedContract.rental.status}</p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-semibold">{formatCurrency(selectedContract.rental.monthlyRent)}/mo</p>
+                                  <p className="text-xs text-muted-foreground">Rent</p>
+                                </div>
+                              </div>
+                            </Card>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Notes */}
+                    {selectedContract.notes && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Notes</h4>
+                        <Card className="py-3 px-4">
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedContract.notes}</p>
+                        </Card>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="timeline" className="m-0 p-4">
+                    <div className="relative">
+                      <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
+                      <div className="space-y-6">
+                        {[
+                          { label: "Contract Created", date: selectedContract.createdAt, icon: FileSignature, color: "bg-gray-500" },
+                          { label: "Contract Signed", date: selectedContract.signedAt, icon: FileSignature, color: "bg-blue-500" },
+                          { label: "Escrow Opened", date: selectedContract.escrowOpenedAt, icon: AlertCircle, color: "bg-purple-500" },
+                          { label: "Contract Closed", date: selectedContract.closedAt, icon: CheckCircle2, color: "bg-emerald-500" },
+                        ].map((event, index) => {
+                          const Icon = event.icon;
+                          const isComplete = !!event.date;
+
+                          return (
+                            <div key={index} className="relative flex items-start gap-4 pl-8">
+                              <div className={cn(
+                                "absolute left-2 -translate-x-1/2 w-5 h-5 rounded-full flex items-center justify-center",
+                                isComplete ? event.color : "bg-gray-200 dark:bg-gray-700"
+                              )}>
+                                <Icon className={cn("h-3 w-3", isComplete ? "text-white" : "text-gray-400")} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={cn(
+                                  "font-medium text-sm",
+                                  isComplete ? "text-gray-900 dark:text-white" : "text-gray-400"
+                                )}>
+                                  {event.label}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {isComplete ? formatDate(event.date) : "Pending"}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="documents" className="m-0 p-4">
+                    <div className="text-center py-12">
+                      <FileText className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                      <h4 className="font-medium text-gray-900 dark:text-white">No documents yet</h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Document management coming soon
+                      </p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="actions" className="m-0 p-4 space-y-3">
+                    <Button
+                      className="w-full justify-start"
+                      variant="outline"
+                      onClick={() => { setDetailPanelOpen(false); handleUpdateStatus(selectedContract); }}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Update Status
+                    </Button>
+
+                    {!selectedContract.assignment && (
+                      <Button
+                        className="w-full justify-start"
+                        variant="outline"
+                        onClick={() => { setDetailPanelOpen(false); handleAssignContract(selectedContract); }}
+                      >
+                        <UserCheck className="mr-2 h-4 w-4" />
+                        Assign to Buyer
+                      </Button>
+                    )}
+
+                    {!selectedContract.renovation && selectedContract.status === "closed" && (
+                      <Button
+                        className="w-full justify-start"
+                        variant="outline"
+                        onClick={() => { setDetailPanelOpen(false); handleStartRenovation(selectedContract); }}
+                      >
+                        <Hammer className="mr-2 h-4 w-4" />
+                        Start Renovation
+                      </Button>
+                    )}
+
+                    {!selectedContract.rental && selectedContract.status === "closed" && (
+                      <Button
+                        className="w-full justify-start"
+                        variant="outline"
+                        onClick={() => { setDetailPanelOpen(false); handleStartRental(selectedContract); }}
+                      >
+                        <Building2 className="mr-2 h-4 w-4" />
+                        Start Rental
+                      </Button>
+                    )}
+
+                    <Button
+                      className="w-full justify-start"
+                      variant="outline"
+                      asChild
+                    >
+                      <Link href={`/app/properties/${selectedContract.propertyId}`}>
+                        <Home className="mr-2 h-4 w-4" />
+                        View Property
+                      </Link>
+                    </Button>
+                  </TabsContent>
+                </ScrollArea>
+              </Tabs>
+            </>
           )}
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
       {/* Update Status Dialog */}
       <Dialog open={updateStatusDialogOpen} onOpenChange={setUpdateStatusDialogOpen}>

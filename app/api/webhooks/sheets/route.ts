@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * Verify API key for webhook authentication
+ */
+function verifyApiKey(req: NextRequest): boolean {
+  const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
+  const expectedKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
+  return !!(expectedKey && apiKey === expectedKey);
+}
+
 // Simple schema for Google Sheets data
 interface SheetProperty {
   address?: string;
@@ -16,6 +25,12 @@ interface SheetProperty {
 }
 
 export async function POST(request: NextRequest) {
+  // Verify API key authentication
+  if (!verifyApiKey(request)) {
+    console.warn('❌ Sheets webhook: Unauthorized request');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
 
@@ -81,8 +96,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Processing failed',
-        message: error.message,
-        details: error.stack
+        message: error.message || 'Unknown error'
+        // SECURITY: Do not expose error.stack in responses
       },
       { status: 500 }
     );

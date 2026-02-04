@@ -1,36 +1,48 @@
-
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react";
-import { 
-  Search, 
+import { useState, useEffect, useCallback } from "react";
+import {
+  Search,
   Home,
   DollarSign,
   Calculator,
   Wrench,
   TrendingUp,
   AlertTriangle,
-  History,
-  FileText,
   MapPin,
   ChevronRight,
   ChevronLeft,
   Plus,
   Save,
   Send,
-  Download,
   AlertCircle,
-  CheckCircle,
   Building,
-  Phone,
-  Mail,
-  Clock,
   Star,
   Trash2,
-  Copy
+  Zap,
+  Target,
+  ArrowRight,
+  Calendar,
+  Ruler,
+  BedDouble,
+  Bath,
+  SquareStack,
+  Sparkles,
+  BarChart3,
+  Layers,
+  Check,
+  Hammer,
+  PaintBucket,
+  Plug,
+  Droplets,
+  Wind,
+  Grid3X3,
+  Flame,
+  Minus,
+  Equal
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,14 +53,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { type RepairItem } from "./seed-data";
+import { seedProperties as leadsSeedProperties } from "../leads/seed-data";
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 interface Property {
   id: string;
@@ -56,57 +71,872 @@ interface Property {
   city: string;
   state: string;
   zip: string | null;
+  county: string | null;
   propertyType: string | null;
   bedrooms: number | null;
   bathrooms: number | null;
   squareFeet: number | null;
+  lotSize: number | null;
   yearBuilt: number | null;
   assessedValue: number | null;
   estimatedValue: number | null;
+  lastSaleDate: string | null;
+  lastSalePrice: number | null;
+  listingDate: Date | null;
+  daysOnMarket: number | null;
   score: number | null;
+  scoreBreakdown: string | null;
   dataSource: string | null;
   ownerName: string | null;
   enriched: boolean;
+  phoneNumbers: string | null;
+  emails: string | null;
+  foreclosure: boolean;
+  preForeclosure: boolean;
+  taxDelinquent: boolean;
+  vacant: boolean;
+  bankruptcy: boolean;
+  absenteeOwner: boolean;
+  metadata: string | null;
   createdAt: Date;
 }
 
-interface SavedAnalysis {
-  id: string;
-  arv: number;
-  arvMethod: string;
-  repairTotal: number;
-  maxOffer: number;
-  offerAmount: number | null;
-  name: string | null;
-  notes: string | null;
-  createdAt: Date;
+interface PropertyMetadata {
+  equityPercent?: number;
+  estimatedEquity?: number;
+  openMortgageBalance?: number;
+  yearsOwned?: number;
+  totalPropertiesOwned?: string;
+  inherited?: boolean;
+  death?: boolean;
+  taxLien?: boolean;
+  judgment?: boolean;
+  highEquity?: boolean;
+  freeClear?: boolean;
+  corporateOwned?: boolean;
+  outOfStateAbsenteeOwner?: boolean;
+  inStateAbsenteeOwner?: boolean;
+  distressScore?: number;
+  distressGrade?: string;
+  distressSignals?: string[];
 }
+
+interface Comp {
+  id: string;
+  address: string;
+  soldDate: string;
+  soldPrice: number;
+  beds: number;
+  baths: number;
+  sqft: number;
+  yearBuilt: number;
+  distance: number;
+  pricePerSqft: number;
+  similarity: number;
+  selected: boolean;
+  weight: number;
+}
+
+
+// ============================================================================
+// ANIMATED NUMBER COMPONENT
+// ============================================================================
+
+function AnimatedNumber({ value, prefix = "", suffix = "", decimals = 0 }: {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+}) {
+  const [displayValue, setDisplayValue] = useState(value);
+
+  useEffect(() => {
+    const duration = 500;
+    const steps = 20;
+    const stepValue = (value - displayValue) / steps;
+    let current = displayValue;
+    let step = 0;
+
+    const timer = setInterval(() => {
+      step++;
+      current += stepValue;
+      if (step >= steps) {
+        setDisplayValue(value);
+        clearInterval(timer);
+      } else {
+        setDisplayValue(current);
+      }
+    }, duration / steps);
+
+    return () => clearInterval(timer);
+  }, [value]);
+
+  const formatted = displayValue.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
+
+  return <span className="tabular-nums">{prefix}{formatted}{suffix}</span>;
+}
+
+// ============================================================================
+// DEAL GAUGE - Visual deal viability indicator
+// ============================================================================
+
+function DealGauge({
+  value,
+  maxValue,
+  label,
+  size = 160
+}: {
+  value: number;
+  maxValue: number;
+  label: string;
+  size?: number;
+}) {
+  const [animatedPercentage, setAnimatedPercentage] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  const rawPercentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
+  const percentage = Math.min(100, Math.max(0, isNaN(rawPercentage) ? 0 : rawPercentage));
+  const strokeWidth = size * 0.08;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * Math.PI; // Half circle
+
+  // Animate on mount and value change
+  useEffect(() => {
+    if (!hasAnimated) {
+      // Initial mount animation - start from 0
+      const timer = setTimeout(() => {
+        setAnimatedPercentage(percentage);
+        setHasAnimated(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      // Subsequent value changes - animate directly
+      setAnimatedPercentage(percentage);
+    }
+  }, [percentage, hasAnimated]);
+
+  const offset = circumference - (animatedPercentage / 100) * circumference;
+
+  // Color based on deal quality (higher = better deal)
+  const getStrokeColor = () => {
+    if (percentage >= 75) return "#10b981";
+    if (percentage >= 50) return "#f59e0b";
+    if (percentage >= 25) return "#f97316";
+    return "#ef4444";
+  };
+
+  const stroke = getStrokeColor();
+
+  return (
+    <div className="flex flex-col items-center">
+      <svg width={size} height={size / 2 + 20} viewBox={`0 0 ${size} ${size / 2 + 20}`}>
+        <defs>
+          <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ef4444" />
+            <stop offset="25%" stopColor="#f97316" />
+            <stop offset="50%" stopColor="#f59e0b" />
+            <stop offset="75%" stopColor="#84cc16" />
+            <stop offset="100%" stopColor="#10b981" />
+          </linearGradient>
+        </defs>
+
+        {/* Background arc */}
+        <path
+          d={`M ${strokeWidth / 2} ${size / 2} A ${radius} ${radius} 0 0 1 ${size - strokeWidth / 2} ${size / 2}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          className="text-gray-200 dark:text-gray-700"
+          strokeLinecap="round"
+        />
+
+        {/* Foreground arc */}
+        <path
+          d={`M ${strokeWidth / 2} ${size / 2} A ${radius} ${radius} 0 0 1 ${size - strokeWidth / 2} ${size / 2}`}
+          fill="none"
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          style={{
+            transition: 'stroke-dashoffset 0.8s ease-out, stroke 0.3s ease'
+          }}
+        />
+
+        {/* Center value */}
+        <text
+          x={size / 2}
+          y={size / 2 - 5}
+          textAnchor="middle"
+          className="fill-current text-gray-900 dark:text-white font-bold"
+          style={{ fontSize: size * 0.18 }}
+        >
+          {animatedPercentage.toFixed(0)}%
+        </text>
+
+        {/* Label */}
+        <text
+          x={size / 2}
+          y={size / 2 + 15}
+          textAnchor="middle"
+          className="fill-current text-gray-500 dark:text-gray-400"
+          style={{ fontSize: size * 0.08 }}
+        >
+          {label}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+// ============================================================================
+// SIMILARITY RING - Visual comp similarity indicator
+// ============================================================================
+
+function SimilarityRing({ similarity, size = 40 }: { similarity: number; size?: number }) {
+  const strokeWidth = 3;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (similarity / 100) * circumference;
+
+  const getColor = () => {
+    if (similarity >= 90) return "#10b981";
+    if (similarity >= 80) return "#84cc16";
+    if (similarity >= 70) return "#f59e0b";
+    return "#f97316";
+  };
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg className="transform -rotate-90" width={size} height={size}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          fill="none"
+          className="text-gray-200 dark:text-gray-700"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={getColor()}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeLinecap="round"
+          style={{
+            strokeDasharray: circumference,
+            strokeDashoffset: offset,
+            transition: 'stroke-dashoffset 0.5s ease-out'
+          }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-[10px] font-bold tabular-nums">{similarity}</span>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// REPAIR CATEGORY ICON
+// ============================================================================
+
+// Category display labels
+const categoryLabels: Record<string, string> = {
+  roof: "Roof",
+  kitchen: "Kitchen",
+  bath: "Bathroom",
+  flooring: "Flooring",
+  paint: "Paint",
+  hvac: "HVAC",
+  electrical: "Electrical",
+  plumbing: "Plumbing",
+  windows: "Windows",
+  exterior: "Exterior",
+  foundation: "Foundation",
+  landscaping: "Landscaping",
+  other: "Other"
+};
+
+function getCategoryLabel(category: string): string {
+  return categoryLabels[category] || category.charAt(0).toUpperCase() + category.slice(1);
+}
+
+function RepairCategoryIcon({ category }: { category: string }) {
+  const iconMap: Record<string, { icon: React.ReactNode; color: string }> = {
+    roof: { icon: <Home className="h-4 w-4" />, color: "text-amber-500 bg-amber-500/10" },
+    kitchen: { icon: <Grid3X3 className="h-4 w-4" />, color: "text-purple-500 bg-purple-500/10" },
+    bath: { icon: <Droplets className="h-4 w-4" />, color: "text-blue-500 bg-blue-500/10" },
+    flooring: { icon: <Layers className="h-4 w-4" />, color: "text-emerald-500 bg-emerald-500/10" },
+    paint: { icon: <PaintBucket className="h-4 w-4" />, color: "text-pink-500 bg-pink-500/10" },
+    hvac: { icon: <Wind className="h-4 w-4" />, color: "text-cyan-500 bg-cyan-500/10" },
+    electrical: { icon: <Plug className="h-4 w-4" />, color: "text-yellow-500 bg-yellow-500/10" },
+    plumbing: { icon: <Droplets className="h-4 w-4" />, color: "text-indigo-500 bg-indigo-500/10" },
+    windows: { icon: <SquareStack className="h-4 w-4" />, color: "text-sky-500 bg-sky-500/10" },
+    exterior: { icon: <Building className="h-4 w-4" />, color: "text-stone-500 bg-stone-500/10" },
+    foundation: { icon: <Hammer className="h-4 w-4" />, color: "text-red-500 bg-red-500/10" },
+    landscaping: { icon: <Sparkles className="h-4 w-4" />, color: "text-green-500 bg-green-500/10" },
+    other: { icon: <Wrench className="h-4 w-4" />, color: "text-gray-500 bg-gray-500/10" }
+  };
+
+  const config = iconMap[category] || iconMap.other;
+
+  return (
+    <div className={cn("p-2 rounded-lg", config.color)}>
+      {config.icon}
+    </div>
+  );
+}
+
+// ============================================================================
+// PROPERTY CARD - Left panel property selector
+// ============================================================================
+
+function PropertyCard({
+  property,
+  isSelected,
+  onClick
+}: {
+  property: Property;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const score = property.score || 0;
+  const isHot = score >= 85;
+
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        "group relative p-3 rounded-xl cursor-pointer transition-all duration-200",
+        "border border-transparent",
+        isSelected
+          ? "bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-blue-500/30 shadow-lg shadow-blue-500/10"
+          : "hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:border-gray-200 dark:hover:border-gray-700"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        {/* Score indicator with fire icon for hot leads */}
+        <div className={cn(
+          "relative flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm",
+          score >= 85 ? "bg-gradient-to-br from-red-500 to-orange-500 text-white" :
+          score >= 70 ? "bg-gradient-to-br from-amber-500 to-yellow-500 text-white" :
+          score >= 50 ? "bg-gradient-to-br from-blue-500 to-cyan-500 text-white" :
+          "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+        )}>
+          {score}
+          {/* Fire icon for hot leads */}
+          {isHot && (
+            <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
+              <Flame className="h-3 w-3 text-white" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <p className={cn(
+            "font-medium text-sm truncate",
+            isSelected ? "text-blue-600 dark:text-blue-400" : "text-gray-900 dark:text-white"
+          )}>
+            {property.address}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            {property.city}, {property.state}
+          </p>
+
+          {/* Quick stats */}
+          <div className="flex items-center gap-2 mt-2 text-[10px] text-gray-500 dark:text-gray-400">
+            {property.bedrooms && (
+              <span className="flex items-center gap-0.5">
+                <BedDouble className="h-3 w-3" />
+                {property.bedrooms}
+              </span>
+            )}
+            {property.bathrooms && (
+              <span className="flex items-center gap-0.5">
+                <Bath className="h-3 w-3" />
+                {property.bathrooms}
+              </span>
+            )}
+            {property.squareFeet && (
+              <span className="flex items-center gap-0.5">
+                <Ruler className="h-3 w-3" />
+                {property.squareFeet.toLocaleString()}
+              </span>
+            )}
+          </div>
+
+          {/* Badges */}
+          <div className="flex flex-wrap gap-1 mt-2">
+            {property.enriched && (
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800">
+                Skip Traced
+              </Badge>
+            )}
+            {property.preForeclosure && (
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">
+                Pre-FC
+              </Badge>
+            )}
+            {property.vacant && (
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
+                Vacant
+              </Badge>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// COMP CARD - Comparable property card
+// ============================================================================
+
+function CompCard({
+  comp,
+  isSelected,
+  isOutlier,
+  onToggle
+}: {
+  comp: Comp;
+  isSelected: boolean;
+  isOutlier: boolean;
+  onToggle: () => void;
+}) {
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  return (
+    <div
+      onClick={onToggle}
+      className={cn(
+        "group relative p-3 rounded-xl cursor-pointer transition-all duration-200",
+        "border",
+        isSelected
+          ? "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700"
+          : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600",
+        isOutlier && "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-gray-900"
+      )}
+    >
+      {/* Selection indicator */}
+      <div className={cn(
+        "absolute top-2 right-2 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+        isSelected
+          ? "bg-blue-500 border-blue-500"
+          : "border-gray-300 dark:border-gray-600"
+      )}>
+        {isSelected && <Check className="h-3 w-3 text-white" />}
+      </div>
+
+      {/* Outlier warning */}
+      {isOutlier && (
+        <div className="absolute -top-2 -left-2 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center">
+          <AlertTriangle className="h-3 w-3 text-amber-900" />
+        </div>
+      )}
+
+      <div className="flex items-start gap-3 pr-6">
+        {/* Similarity ring */}
+        <SimilarityRing similarity={comp.similarity} />
+
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
+            {comp.address}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            Sold {new Date(comp.soldDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          </p>
+
+          {/* Price and stats */}
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">
+              {formatCurrency(comp.soldPrice)}
+            </span>
+            <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 tabular-nums">
+              ${comp.pricePerSqft}/sf
+            </span>
+          </div>
+
+          {/* Property details */}
+          <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
+            <span>{comp.beds}bd / {comp.baths}ba</span>
+            <span>{comp.sqft.toLocaleString()} sf</span>
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {comp.distance.toFixed(2)}mi
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// NET SHEET SUMMARY - Sticky bottom bar
+// ============================================================================
+
+function NetSheetSummary({
+  arv,
+  repairs,
+  mao,
+  suggestedOffer,
+  arvSource,
+  onCreateOffer,
+  onSaveAnalysis,
+  saving
+}: {
+  arv: number;
+  repairs: number;
+  mao: number;
+  suggestedOffer: number;
+  arvSource: "comps" | "avm";
+  onCreateOffer: () => void;
+  onSaveAnalysis: () => void;
+  saving: boolean;
+}) {
+  const dealMargin = arv > 0 ? ((arv - suggestedOffer - repairs) / arv * 100) : 0;
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-lg border border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between gap-4">
+        {/* Key metrics - centered alignment */}
+        <div className="flex items-center gap-3">
+          {/* ARV */}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+              <BarChart3 className="h-3 w-3" />
+              ARV
+              <Badge variant="outline" className="ml-1 text-[8px] h-4 px-1 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+                {arvSource === "comps" ? "Comps" : "AVM"}
+              </Badge>
+            </div>
+            <div className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
+              <AnimatedNumber value={arv} prefix="$" />
+            </div>
+          </div>
+
+          {/* Minus sign */}
+          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 mt-5">
+            <Minus className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+          </div>
+
+          {/* Repairs */}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 text-[10px] uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-1">
+              <Wrench className="h-3 w-3" />
+              Repairs
+            </div>
+            <div className="text-xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">
+              <AnimatedNumber value={repairs} prefix="$" />
+            </div>
+          </div>
+
+          {/* Equals sign */}
+          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 mt-5">
+            <Equal className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+          </div>
+
+          {/* MAO */}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+              <Target className="h-3 w-3" />
+              MAO (70%)
+            </div>
+            <div className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
+              <AnimatedNumber value={mao} prefix="$" />
+            </div>
+          </div>
+
+          {/* Arrow */}
+          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/40 mt-5">
+            <ChevronRight className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          </div>
+
+          {/* Suggested Offer */}
+          <div className="text-center px-4 py-2 bg-emerald-100 dark:bg-emerald-500/20 rounded-xl border border-emerald-300 dark:border-emerald-500/30">
+            <div className="flex items-center justify-center gap-1 text-[10px] uppercase tracking-wider text-emerald-700 dark:text-emerald-300 mb-1">
+              <DollarSign className="h-3 w-3" />
+              Offer
+            </div>
+            <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 tabular-nums">
+              <AnimatedNumber value={suggestedOffer} prefix="$" />
+            </div>
+          </div>
+
+          {/* Deal Margin */}
+          <div className="text-center pl-4 border-l border-gray-300 dark:border-gray-700">
+            <div className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+              Margin
+            </div>
+            <div className={cn(
+              "text-lg font-bold tabular-nums",
+              dealMargin >= 20 ? "text-emerald-600 dark:text-emerald-400" :
+              dealMargin >= 10 ? "text-amber-600 dark:text-amber-400" :
+              "text-red-600 dark:text-red-400"
+            )}>
+              {dealMargin.toFixed(1)}%
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSaveAnalysis}
+            disabled={saving}
+            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
+          >
+            {saving ? (
+              <div className="h-4 w-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mr-2" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            Save
+          </Button>
+          <Button
+            onClick={onCreateOffer}
+            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/30"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            Create Offer
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// SCENARIO CARD
+// ============================================================================
+
+function ScenarioCard({
+  strategy,
+  purchasePrice,
+  arv,
+  repairs,
+  isRecommended
+}: {
+  strategy: "wholesale" | "flip" | "rental";
+  purchasePrice: number;
+  arv: number;
+  repairs: number;
+  isRecommended?: boolean;
+}) {
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  // Calculate values based on strategy
+  const getStrategyData = () => {
+    switch (strategy) {
+      case "wholesale":
+        return {
+          name: "Wholesale",
+          icon: <Zap className="h-5 w-5" />,
+          color: "from-blue-500 to-cyan-500",
+          profit: 10000,
+          roi: purchasePrice > 0 ? (10000 / purchasePrice * 100) : 0,
+          holdTime: "0-30 days"
+        };
+      case "flip":
+        const flipProfit = arv - purchasePrice - repairs - (arv * 0.09) - (50 * 90);
+        return {
+          name: "Fix & Flip",
+          icon: <Hammer className="h-5 w-5" />,
+          color: "from-amber-500 to-orange-500",
+          profit: flipProfit,
+          roi: purchasePrice > 0 ? (flipProfit / (purchasePrice + repairs) * 100) : 0,
+          holdTime: "90-180 days"
+        };
+      case "rental":
+        const cashFlow = Math.round((arv * 0.008) - 500);
+        const capRate = arv > 0 ? (((arv * 0.008 * 12) - 2000) / (purchasePrice + repairs) * 100) : 0;
+        return {
+          name: "Buy & Hold",
+          icon: <Building className="h-5 w-5" />,
+          color: "from-emerald-500 to-teal-500",
+          cashFlow,
+          capRate,
+          holdTime: "5+ years"
+        };
+    }
+  };
+
+  const config = getStrategyData();
+
+  return (
+    <Card className={cn(
+      "relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5",
+      isRecommended && "ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-gray-900"
+    )}>
+      {/* Gradient header */}
+      <div className={cn("h-1.5 bg-gradient-to-r", config.color)} />
+
+      {isRecommended && (
+        <div className="absolute top-3 right-3">
+          <Badge className="bg-emerald-500 text-white text-[10px]">
+            <Star className="h-3 w-3 mr-1" />
+            Best Fit
+          </Badge>
+        </div>
+      )}
+
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <div className={cn("p-2 rounded-lg bg-gradient-to-br text-white", config.color)}>
+            {config.icon}
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{config.name}</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{config.holdTime}</p>
+          </div>
+        </div>
+
+        {strategy === "rental" && "cashFlow" in config && config.cashFlow !== undefined && config.capRate !== undefined ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500 dark:text-gray-400">Est. Cash Flow</span>
+              <span className={cn(
+                "text-lg font-bold tabular-nums",
+                config.cashFlow > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+              )}>
+                ${config.cashFlow.toLocaleString()}/mo
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500 dark:text-gray-400">Cap Rate</span>
+              <span className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">
+                {config.capRate.toFixed(1)}%
+              </span>
+            </div>
+          </div>
+        ) : "profit" in config && config.profit !== undefined && config.roi !== undefined ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500 dark:text-gray-400">Est. Profit</span>
+              <span className={cn(
+                "text-lg font-bold tabular-nums",
+                config.profit > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+              )}>
+                {formatCurrency(Math.round(config.profit))}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500 dark:text-gray-400">ROI</span>
+              <span className={cn(
+                "text-lg font-bold tabular-nums",
+                config.roi > 15 ? "text-emerald-600 dark:text-emerald-400" :
+                config.roi > 5 ? "text-amber-600 dark:text-amber-400" :
+                "text-red-600 dark:text-red-400"
+              )}>
+                {config.roi.toFixed(1)}%
+              </span>
+            </div>
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ============================================================================
+// LOADING SKELETON
+// ============================================================================
+
+function UnderwritingSkeleton() {
+  return (
+    <div className="flex h-full gap-4 p-4">
+      {/* Left panel skeleton */}
+      <div className="w-80 flex-shrink-0 space-y-3">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+      </div>
+
+      {/* Main content skeleton */}
+      <div className="flex-1 space-y-4">
+        <div className="grid grid-cols-3 gap-4">
+          <Skeleton className="h-32 rounded-xl" />
+          <Skeleton className="h-32 rounded-xl" />
+          <Skeleton className="h-32 rounded-xl" />
+        </div>
+        <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-20 rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// EMPTY STATE
+// ============================================================================
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-center p-8">
+      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center mb-6">
+        <Calculator className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+      </div>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+        No Properties to Analyze
+      </h2>
+      <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
+        Properties will appear here once discovered by ATTOM or imported manually.
+        Use the Leads page to add properties to your pipeline.
+      </p>
+      <Button variant="outline" asChild>
+        <a href="/app/leads">
+          <Plus className="h-4 w-4 mr-2" />
+          Go to Leads
+        </a>
+      </Button>
+    </div>
+  );
+}
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
 
 export default function UnderwritingPage() {
   const { isLoaded, user } = useUser();
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // State management
   const [properties, setProperties] = useState<Property[]>([]);
   const [loadingProperties, setLoadingProperties] = useState(true);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
-  const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
-  const [selectedDealId, setSelectedDealId] = useState<string>("LEAD-001");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("summary");
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
-  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
   const [savingAnalysis, setSavingAnalysis] = useState(false);
 
   // API Comps state
-  const [apiComps, setApiComps] = useState<any[]>([]);
+  const [apiComps, setApiComps] = useState<Comp[]>([]);
   const [loadingComps, setLoadingComps] = useState(false);
-  const [compsStats, setCompsStats] = useState<{ avgPricePerSqft: number; medianPricePerSqft: number } | null>(null);
-  const [useApiComps, setUseApiComps] = useState(true);
 
   // Offer creation
   const [offerDialogOpen, setOfferDialogOpen] = useState(false);
@@ -122,21 +952,77 @@ export default function UnderwritingPage() {
   // What-if sliders
   const [arvAdjustment, setArvAdjustment] = useState(0);
   const [repairsAdjustment, setRepairsAdjustment] = useState(0);
-  const [daysHeldAdjustment, setDaysHeldAdjustment] = useState(0);
-  
+
   // Comps state
   const [selectedComps, setSelectedComps] = useState<string[]>([]);
   const [arvMethod, setArvMethod] = useState<"median" | "weighted" | "knn">("weighted");
-  
+
   // Repairs state
   const [repairItems, setRepairItems] = useState<RepairItem[]>([]);
+  const [showAddRepair, setShowAddRepair] = useState(false);
+  const [newRepairCategory, setNewRepairCategory] = useState("other");
+  const [newRepairDescription, setNewRepairDescription] = useState("");
+  const [newRepairCost, setNewRepairCost] = useState(0);
 
-  // Fetch properties from database
+  // Fetch properties
   useEffect(() => {
     if (isLoaded && user) {
       fetchProperties();
     }
   }, [isLoaded, user]);
+
+  // Convert leads seed data to underwriting Property format
+  const convertLeadsToProperties = (): Property[] => {
+    return leadsSeedProperties.map(lead => ({
+      id: lead.id,
+      address: lead.address,
+      city: lead.city,
+      state: lead.state,
+      zip: lead.zip,
+      county: lead.county || null,
+      propertyType: lead.propertyType || null,
+      bedrooms: lead.bedrooms || null,
+      bathrooms: lead.bathrooms || null,
+      squareFeet: lead.squareFeet || null,
+      lotSize: lead.lotSize || null,
+      yearBuilt: lead.yearBuilt || null,
+      assessedValue: lead.assessedValue || null,
+      estimatedValue: lead.estimatedValue || null,
+      lastSaleDate: lead.lastSaleDate || null,
+      lastSalePrice: lead.lastSalePrice || null,
+      listingDate: null,
+      daysOnMarket: null,
+      score: lead.score || null,
+      scoreBreakdown: null,
+      dataSource: lead.dataSource || null,
+      ownerName: lead.ownerName || null,
+      enriched: !!lead.phoneNumbers || !!lead.emails,
+      phoneNumbers: lead.phoneNumbers || null,
+      emails: lead.emails || null,
+      foreclosure: lead.foreclosure,
+      preForeclosure: lead.preForeclosure,
+      taxDelinquent: lead.taxDelinquent,
+      vacant: lead.vacant,
+      bankruptcy: false,
+      absenteeOwner: false,
+      metadata: JSON.stringify({
+        equityPercent: lead.equityPercent,
+        estimatedEquity: lead.estimatedValue && lead.mortgageBalance
+          ? lead.estimatedValue - lead.mortgageBalance
+          : undefined,
+        openMortgageBalance: lead.mortgageBalance,
+        highEquity: (lead.equityPercent || 0) >= 50,
+        freeClear: lead.mortgageBalance === 0,
+        distressSignals: [
+          lead.foreclosure && 'foreclosure',
+          lead.preForeclosure && 'pre-foreclosure',
+          lead.taxDelinquent && 'tax-delinquent',
+          lead.vacant && 'vacant',
+        ].filter(Boolean),
+      }),
+      createdAt: new Date(lead.createdAt),
+    }));
+  };
 
   const fetchProperties = async () => {
     try {
@@ -144,47 +1030,392 @@ export default function UnderwritingPage() {
       const response = await fetch('/api/properties?limit=50');
       if (response.ok) {
         const data = await response.json();
-        setProperties(data.properties || []);
-        // Auto-select first property if available
-        if (data.properties && data.properties.length > 0 && !selectedPropertyId) {
-          setSelectedPropertyId(data.properties[0].id);
+        if (data.properties && data.properties.length > 0) {
+          setProperties(data.properties);
+          if (!selectedPropertyId) {
+            setSelectedPropertyId(data.properties[0].id);
+          }
+        } else {
+          // Fallback to leads seed data when API returns empty
+          const seedData = convertLeadsToProperties();
+          setProperties(seedData);
+          if (seedData.length > 0 && !selectedPropertyId) {
+            setSelectedPropertyId(seedData[0].id);
+          }
+        }
+      } else {
+        // Fallback to leads seed data when API fails
+        const seedData = convertLeadsToProperties();
+        setProperties(seedData);
+        if (seedData.length > 0 && !selectedPropertyId) {
+          setSelectedPropertyId(seedData[0].id);
         }
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
-      toast.error('Failed to load properties');
+      // Fallback to leads seed data on error
+      const seedData = convertLeadsToProperties();
+      setProperties(seedData);
+      if (seedData.length > 0 && !selectedPropertyId) {
+        setSelectedPropertyId(seedData[0].id);
+      }
     } finally {
       setLoadingProperties(false);
     }
   };
 
-  // Fetch saved analyses for selected property
-  useEffect(() => {
-    if (selectedPropertyId) {
-      fetchAnalyses();
-      fetchComps();
-    }
-  }, [selectedPropertyId]);
+  // Generate seed repairs based on property characteristics
+  const generateSeedRepairs = (property: Property): RepairItem[] => {
+    const repairs: RepairItem[] = [];
+    const yearBuilt = property.yearBuilt || 1970;
+    const sqft = property.squareFeet || 1500;
+    const age = new Date().getFullYear() - yearBuilt;
 
-  const fetchAnalyses = async () => {
-    if (!selectedPropertyId) return;
-
-    try {
-      const response = await fetch(`/api/deal-analysis/${selectedPropertyId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSavedAnalyses(data.analyses || []);
-      }
-    } catch (error) {
-      console.error('Error fetching analyses:', error);
+    // Age-based repairs (older homes need more work)
+    if (age >= 40) {
+      repairs.push({
+        id: `REPAIR-${property.id}-roof`,
+        sessionId: "",
+        category: "roof",
+        description: "Roof replacement - 40+ year old structure",
+        qty: sqft,
+        uom: "sqft",
+        unitCost: 8,
+        totalCost: Math.round(sqft * 8),
+        confidence: "high"
+      });
     }
+
+    if (age >= 30) {
+      repairs.push({
+        id: `REPAIR-${property.id}-hvac`,
+        sessionId: "",
+        category: "hvac",
+        description: "HVAC system replacement",
+        qty: 1,
+        uom: "system",
+        unitCost: 6500,
+        totalCost: 6500,
+        confidence: "medium"
+      });
+    }
+
+    if (age >= 50) {
+      repairs.push({
+        id: `REPAIR-${property.id}-electrical`,
+        sessionId: "",
+        category: "electrical",
+        description: "Electrical panel upgrade and partial rewire",
+        qty: sqft,
+        uom: "sqft",
+        unitCost: 5,
+        totalCost: Math.round(sqft * 5),
+        confidence: "medium"
+      });
+    }
+
+    // Distress signal based repairs
+    if (property.vacant) {
+      repairs.push({
+        id: `REPAIR-${property.id}-paint`,
+        sessionId: "",
+        category: "paint",
+        description: "Full interior/exterior paint - vacant property",
+        qty: sqft * 1.5,
+        uom: "sqft",
+        unitCost: 3,
+        totalCost: Math.round(sqft * 1.5 * 3),
+        confidence: "high"
+      });
+      repairs.push({
+        id: `REPAIR-${property.id}-landscaping`,
+        sessionId: "",
+        category: "landscaping",
+        description: "Landscaping cleanup - overgrown yard",
+        qty: 1,
+        uom: "lot",
+        unitCost: 2500,
+        totalCost: 2500,
+        confidence: "medium"
+      });
+    }
+
+    if (property.taxDelinquent || property.preForeclosure) {
+      repairs.push({
+        id: `REPAIR-${property.id}-flooring`,
+        sessionId: "",
+        category: "flooring",
+        description: "LVP flooring throughout - deferred maintenance",
+        qty: sqft,
+        uom: "sqft",
+        unitCost: 5,
+        totalCost: Math.round(sqft * 5),
+        confidence: "medium"
+      });
+    }
+
+    if (property.foreclosure) {
+      repairs.push({
+        id: `REPAIR-${property.id}-windows`,
+        sessionId: "",
+        category: "windows",
+        description: "Window replacements - foreclosure damage",
+        qty: 8,
+        uom: "each",
+        unitCost: 450,
+        totalCost: 3600,
+        confidence: "medium"
+      });
+      repairs.push({
+        id: `REPAIR-${property.id}-exterior`,
+        sessionId: "",
+        category: "exterior",
+        description: "Exterior repairs and cleanup",
+        qty: sqft * 0.3,
+        uom: "sqft",
+        unitCost: 6,
+        totalCost: Math.round(sqft * 0.3 * 6),
+        confidence: "low"
+      });
+    }
+
+    // Standard cosmetic updates for any property
+    const baths = property.bathrooms || 2;
+    repairs.push({
+      id: `REPAIR-${property.id}-bath`,
+      sessionId: "",
+      category: "bath",
+      description: `Update ${baths} bathroom(s) - fixtures and vanities`,
+      qty: baths,
+      uom: "each",
+      unitCost: 3500,
+      totalCost: Math.round(baths * 3500),
+      confidence: "medium"
+    });
+
+    // Kitchen update for all properties
+    repairs.push({
+      id: `REPAIR-${property.id}-kitchen`,
+      sessionId: "",
+      category: "kitchen",
+      description: "Kitchen refresh - cabinets, counters, appliances",
+      qty: 1,
+      uom: "complete",
+      unitCost: age >= 40 ? 18000 : 12000,
+      totalCost: age >= 40 ? 18000 : 12000,
+      confidence: "medium"
+    });
+
+    return repairs;
   };
 
-  // Fetch comparable properties from API
+  // Fetch comps when property changes
+  useEffect(() => {
+    if (selectedPropertyId) {
+      fetchComps();
+      // Generate seed repairs based on property
+      const selectedProp = properties.find(p => p.id === selectedPropertyId);
+      if (selectedProp) {
+        const seedRepairs = generateSeedRepairs(selectedProp);
+        setRepairItems(seedRepairs);
+      } else {
+        setRepairItems([]);
+      }
+      setArvAdjustment(0);
+      setRepairsAdjustment(0);
+    }
+  }, [selectedPropertyId, properties]);
+
+  // Generate seed comps based on property characteristics
+  const generateSeedComps = (property: Property): Comp[] => {
+    // Specific comps for 1234 Oak Street (prop-001) - Jacksonville, FL
+    if (property.id === "prop-001") {
+      return [
+        {
+          id: "comp-oak-1",
+          address: "792 Oak Street",
+          soldDate: "2025-12-14",
+          soldPrice: 281644,
+          beds: 3,
+          baths: 2,
+          sqft: 1520,
+          yearBuilt: 1962,
+          distance: 0.18,
+          pricePerSqft: 185,
+          similarity: 94,
+          selected: true,
+          weight: 0.25,
+        },
+        {
+          id: "comp-oak-2",
+          address: "1456 Riverside Avenue",
+          soldDate: "2025-11-28",
+          soldPrice: 295000,
+          beds: 3,
+          baths: 2,
+          sqft: 1580,
+          yearBuilt: 1968,
+          distance: 0.24,
+          pricePerSqft: 187,
+          similarity: 91,
+          selected: true,
+          weight: 0.22,
+        },
+        {
+          id: "comp-oak-3",
+          address: "910 Elm Court",
+          soldDate: "2025-11-15",
+          soldPrice: 268500,
+          beds: 3,
+          baths: 2,
+          sqft: 1380,
+          yearBuilt: 1970,
+          distance: 0.31,
+          pricePerSqft: 195,
+          similarity: 87,
+          selected: true,
+          weight: 0.20,
+        },
+        {
+          id: "comp-oak-4",
+          address: "2105 Willow Lane",
+          soldDate: "2025-10-22",
+          soldPrice: 305000,
+          beds: 4,
+          baths: 2,
+          sqft: 1650,
+          yearBuilt: 1958,
+          distance: 0.42,
+          pricePerSqft: 185,
+          similarity: 82,
+          selected: true,
+          weight: 0.18,
+        },
+        {
+          id: "comp-oak-5",
+          address: "833 Pine Street",
+          soldDate: "2025-10-08",
+          soldPrice: 252000,
+          beds: 3,
+          baths: 1.5,
+          sqft: 1320,
+          yearBuilt: 1972,
+          distance: 0.55,
+          pricePerSqft: 191,
+          similarity: 76,
+          selected: false,
+          weight: 0.15,
+        },
+        {
+          id: "comp-oak-6",
+          address: "1678 Cedar Boulevard",
+          soldDate: "2025-09-30",
+          soldPrice: 318500,
+          beds: 4,
+          baths: 2.5,
+          sqft: 1780,
+          yearBuilt: 1960,
+          distance: 0.68,
+          pricePerSqft: 179,
+          similarity: 71,
+          selected: false,
+          weight: 0.10,
+        },
+      ];
+    }
+
+    const basePrice = property.estimatedValue || 250000;
+    const baseSqft = property.squareFeet || 1500;
+    const baseBeds = property.bedrooms || 3;
+    const baseBaths = property.bathrooms || 2;
+    const baseYear = property.yearBuilt || 1975;
+    const pricePerSqft = Math.round(basePrice / baseSqft);
+
+    // Generate 5 realistic comps with variations
+    const comps: Comp[] = [
+      {
+        id: `comp-${property.id}-1`,
+        address: `${Math.floor(Math.random() * 900) + 100} ${property.address.split(' ').slice(1).join(' ')}`,
+        soldDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        soldPrice: Math.round(basePrice * (0.95 + Math.random() * 0.1)),
+        beds: baseBeds,
+        baths: baseBaths,
+        sqft: Math.round(baseSqft * (0.95 + Math.random() * 0.1)),
+        yearBuilt: baseYear + Math.floor(Math.random() * 6) - 3,
+        distance: 0.1 + Math.random() * 0.2,
+        pricePerSqft: pricePerSqft + Math.floor(Math.random() * 20) - 10,
+        similarity: 92 + Math.floor(Math.random() * 6),
+        selected: true,
+        weight: 0.3,
+      },
+      {
+        id: `comp-${property.id}-2`,
+        address: `${Math.floor(Math.random() * 900) + 100} Oak Street`,
+        soldDate: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        soldPrice: Math.round(basePrice * (0.92 + Math.random() * 0.15)),
+        beds: baseBeds,
+        baths: baseBaths,
+        sqft: Math.round(baseSqft * (0.9 + Math.random() * 0.15)),
+        yearBuilt: baseYear + Math.floor(Math.random() * 8) - 4,
+        distance: 0.2 + Math.random() * 0.3,
+        pricePerSqft: pricePerSqft + Math.floor(Math.random() * 30) - 15,
+        similarity: 85 + Math.floor(Math.random() * 8),
+        selected: true,
+        weight: 0.25,
+      },
+      {
+        id: `comp-${property.id}-3`,
+        address: `${Math.floor(Math.random() * 900) + 100} Pine Avenue`,
+        soldDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        soldPrice: Math.round(basePrice * (0.88 + Math.random() * 0.2)),
+        beds: baseBeds + (Math.random() > 0.5 ? 1 : 0),
+        baths: baseBaths,
+        sqft: Math.round(baseSqft * (0.85 + Math.random() * 0.25)),
+        yearBuilt: baseYear + Math.floor(Math.random() * 10) - 5,
+        distance: 0.3 + Math.random() * 0.4,
+        pricePerSqft: pricePerSqft + Math.floor(Math.random() * 40) - 20,
+        similarity: 78 + Math.floor(Math.random() * 10),
+        selected: true,
+        weight: 0.25,
+      },
+      {
+        id: `comp-${property.id}-4`,
+        address: `${Math.floor(Math.random() * 900) + 100} Elm Court`,
+        soldDate: new Date(Date.now() - 75 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        soldPrice: Math.round(basePrice * (0.85 + Math.random() * 0.25)),
+        beds: baseBeds - (Math.random() > 0.7 ? 1 : 0),
+        baths: baseBaths - (Math.random() > 0.8 ? 0.5 : 0),
+        sqft: Math.round(baseSqft * (0.8 + Math.random() * 0.3)),
+        yearBuilt: baseYear + Math.floor(Math.random() * 12) - 6,
+        distance: 0.4 + Math.random() * 0.5,
+        pricePerSqft: pricePerSqft + Math.floor(Math.random() * 50) - 25,
+        similarity: 70 + Math.floor(Math.random() * 12),
+        selected: false,
+        weight: 0.2,
+      },
+      {
+        id: `comp-${property.id}-5`,
+        address: `${Math.floor(Math.random() * 900) + 100} Maple Drive`,
+        soldDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        soldPrice: Math.round(basePrice * (0.8 + Math.random() * 0.35)),
+        beds: baseBeds + (Math.random() > 0.6 ? 1 : -1),
+        baths: baseBaths + (Math.random() > 0.5 ? 0.5 : 0),
+        sqft: Math.round(baseSqft * (0.75 + Math.random() * 0.4)),
+        yearBuilt: baseYear + Math.floor(Math.random() * 15) - 8,
+        distance: 0.5 + Math.random() * 0.6,
+        pricePerSqft: pricePerSqft + Math.floor(Math.random() * 60) - 30,
+        similarity: 65 + Math.floor(Math.random() * 15),
+        selected: false,
+        weight: 0,
+      },
+    ];
+
+    return comps.sort((a, b) => b.similarity - a.similarity);
+  };
+
   const fetchComps = async () => {
     if (!selectedPropertyId) return;
 
-    // Get the selected property details
     const selectedProperty = properties.find(p => p.id === selectedPropertyId);
     if (!selectedProperty) return;
 
@@ -197,38 +1428,178 @@ export default function UnderwritingPage() {
         limit: '10',
       });
 
-      // Add optional filters
       if (selectedProperty.propertyType) params.set('propertyType', selectedProperty.propertyType);
       if (selectedProperty.bedrooms) params.set('beds', String(selectedProperty.bedrooms));
       if (selectedProperty.bathrooms) params.set('baths', String(selectedProperty.bathrooms));
       if (selectedProperty.squareFeet) params.set('sqft', String(selectedProperty.squareFeet));
-      if (selectedProperty.yearBuilt) params.set('yearBuilt', String(selectedProperty.yearBuilt));
 
       const response = await fetch(`/api/comps?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
         if (data.comps && data.comps.length > 0) {
           setApiComps(data.comps);
-          setCompsStats(data.stats);
-          setUseApiComps(true);
-          // Auto-select comps that are already marked as selected from API
-          setSelectedComps(data.comps.filter((c: any) => c.selected).map((c: any) => c.id));
+          setSelectedComps(data.comps.filter((c: Comp) => c.selected).map((c: Comp) => c.id));
         } else {
-          // Fall back to seed data if no API comps found
-          setUseApiComps(false);
+          // Fallback to generated seed comps
+          const seedComps = generateSeedComps(selectedProperty);
+          setApiComps(seedComps);
+          setSelectedComps(seedComps.filter(c => c.selected).map(c => c.id));
         }
       } else {
-        setUseApiComps(false);
+        // Fallback to generated seed comps
+        const seedComps = generateSeedComps(selectedProperty);
+        setApiComps(seedComps);
+        setSelectedComps(seedComps.filter(c => c.selected).map(c => c.id));
       }
     } catch (error) {
       console.error('Error fetching comps:', error);
-      setUseApiComps(false);
+      // Fallback to generated seed comps
+      const seedComps = generateSeedComps(selectedProperty);
+      setApiComps(seedComps);
+      setSelectedComps(seedComps.filter(c => c.selected).map(c => c.id));
     } finally {
       setLoadingComps(false);
     }
   };
 
-  // Save analysis to database
+  // Get selected property
+  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+
+  // Parse metadata
+  const parseMetadata = (metadata: string | null): PropertyMetadata => {
+    if (!metadata) return {};
+    try {
+      return JSON.parse(metadata) as PropertyMetadata;
+    } catch {
+      return {};
+    }
+  };
+
+  const selectedPropertyMetadata = selectedProperty ? parseMetadata(selectedProperty.metadata) : {};
+
+  // Calculate ARV
+  const calculateARV = useCallback(() => {
+    const selected = apiComps.filter(c => selectedComps.includes(c.id));
+    const subjectSqft = selectedProperty?.squareFeet || 0;
+    const attomAVM = selectedProperty?.estimatedValue || 0;
+
+    if (selected.length === 0 || subjectSqft === 0) {
+      return attomAVM;
+    }
+
+    switch (arvMethod) {
+      case "median": {
+        const prices = selected.map(c => c.pricePerSqft).sort((a, b) => a - b);
+        const median = prices[Math.floor(prices.length / 2)];
+        return median * subjectSqft;
+      }
+      case "weighted": {
+        let totalWeight = 0;
+        let weightedSum = 0;
+        selected.forEach(comp => {
+          const distanceWeight = 1 / (1 + comp.distance);
+          const similarityWeight = comp.similarity / 100;
+          const weight = (distanceWeight * 0.4 + similarityWeight * 0.6);
+          totalWeight += weight;
+          weightedSum += comp.pricePerSqft * weight;
+        });
+        return (weightedSum / totalWeight) * subjectSqft;
+      }
+      case "knn": {
+        const top3 = [...selected].sort((a, b) => b.similarity - a.similarity).slice(0, 3);
+        const avgPricePerSqft = top3.reduce((sum, c) => sum + c.pricePerSqft, 0) / top3.length;
+        return avgPricePerSqft * subjectSqft;
+      }
+      default:
+        return attomAVM;
+    }
+  }, [apiComps, selectedComps, selectedProperty, arvMethod]);
+
+  // Calculate values
+  const baseARV = calculateARV();
+  const adjustedARV = baseARV * (1 + arvAdjustment / 100);
+  const baseRepairs = repairItems.reduce((sum, item) => sum + item.totalCost, 0);
+  const adjustedRepairs = baseRepairs * (1 + repairsAdjustment / 100);
+
+  // ARV source
+  const arvSource = (selectedComps.length === 0 || (selectedProperty?.squareFeet || 0) === 0) ? "avm" : "comps";
+
+  // Calculate MAO
+  const defaultAssumptions = {
+    realtorPct: 0.06,
+    closingPct: 0.03,
+    holdingPerDay: 50,
+    rehabDays: 90,
+    profitTargetPct: 0.15,
+  };
+
+  const calculateMAO = useCallback(() => {
+    if (adjustedARV === 0) return 0;
+
+    const realtorFees = adjustedARV * defaultAssumptions.realtorPct;
+    const closingCosts = adjustedARV * defaultAssumptions.closingPct;
+    const holdingCosts = defaultAssumptions.holdingPerDay * defaultAssumptions.rehabDays;
+    const desiredProfit = adjustedARV * defaultAssumptions.profitTargetPct;
+
+    const calculatedMAO = adjustedARV - adjustedRepairs - realtorFees - closingCosts - holdingCosts - desiredProfit;
+    return Math.max(0, calculatedMAO);
+  }, [adjustedARV, adjustedRepairs]);
+
+  const mao = calculateMAO();
+  const suggestedOffer = Math.max(0, mao * 0.95);
+
+  // Outlier detection
+  const compPricesPerSqft = apiComps.filter(c => selectedComps.includes(c.id)).map(c => c.pricePerSqft).filter(p => p > 0);
+  const medianPricePerSqft = compPricesPerSqft.length > 0
+    ? compPricesPerSqft.sort((a, b) => a - b)[Math.floor(compPricesPerSqft.length / 2)]
+    : 0;
+  const outlierCompIds = medianPricePerSqft > 0
+    ? apiComps
+        .filter(c => selectedComps.includes(c.id))
+        .filter(c => c.pricePerSqft > medianPricePerSqft * 2 || c.pricePerSqft < medianPricePerSqft * 0.5)
+        .map(c => c.id)
+    : [];
+
+  // Toggle comp selection
+  const toggleCompSelection = (compId: string) => {
+    setSelectedComps(prev =>
+      prev.includes(compId)
+        ? prev.filter(id => id !== compId)
+        : [...prev, compId]
+    );
+  };
+
+  // Add repair item
+  const addRepairItem = () => {
+    if (!newRepairDescription || newRepairCost <= 0) {
+      toast.error('Please enter description and cost');
+      return;
+    }
+
+    const newItem: RepairItem = {
+      id: `REPAIR-${Date.now()}`,
+      sessionId: "",
+      category: newRepairCategory,
+      description: newRepairDescription,
+      qty: 1,
+      uom: "each",
+      unitCost: newRepairCost,
+      totalCost: newRepairCost,
+      confidence: "medium"
+    };
+
+    setRepairItems(prev => [...prev, newItem]);
+    setNewRepairDescription("");
+    setNewRepairCost(0);
+    setShowAddRepair(false);
+  };
+
+  // Remove repair item
+  const removeRepairItem = (itemId: string) => {
+    setRepairItems(prev => prev.filter(item => item.id !== itemId));
+  };
+
+  // Save analysis
   const handleSaveAnalysis = async () => {
     if (!selectedPropertyId) {
       toast.error('Please select a property first');
@@ -242,15 +1613,13 @@ export default function UnderwritingPage() {
         propertyId: selectedPropertyId,
         arv: adjustedARV,
         arvMethod: arvMethod,
-        compsUsed: selectedComps.map(compId =>
-          currentComps.find(c => c.id === compId)
-        ).filter(Boolean),
+        compsUsed: apiComps.filter(c => selectedComps.includes(c.id)),
         repairTotal: adjustedRepairs,
         repairItems: repairItems,
         maxOffer: mao,
         offerAmount: suggestedOffer,
-        rule: '70%', // Could be dynamic based on UI
-        notes: '', // Could add notes field in UI
+        rule: '70%',
+        notes: '',
       };
 
       const response = await fetch('/api/deal-analysis', {
@@ -260,10 +1629,7 @@ export default function UnderwritingPage() {
       });
 
       if (response.ok) {
-        const data = await response.json();
         toast.success('Analysis saved successfully!');
-        // Reload analyses
-        await fetchAnalyses();
       } else {
         throw new Error('Failed to save analysis');
       }
@@ -275,27 +1641,23 @@ export default function UnderwritingPage() {
     }
   };
 
-  // Open offer dialog with pre-filled amount
+  // Open offer dialog
   const handleOpenOfferDialog = () => {
     if (!selectedPropertyId) {
       toast.error('Please select a property first');
       return;
     }
 
-    // Pre-fill with suggested offer amount
     setOfferAmount(Math.round(suggestedOffer));
 
-    // Set default closing date (45 days from now)
     const closingDate = new Date();
     closingDate.setDate(closingDate.getDate() + 45);
     setOfferClosingDate(closingDate.toISOString().split('T')[0]);
 
-    // Set default expiration (7 days from now)
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
     setOfferExpiresAt(expiresAt.toISOString().split('T')[0]);
 
-    // Set default earnest money (1% of offer)
     setOfferEarnestMoney(Math.round(suggestedOffer * 0.01));
 
     setOfferDialogOpen(true);
@@ -303,12 +1665,7 @@ export default function UnderwritingPage() {
 
   // Create offer
   const handleCreateOffer = async () => {
-    if (!selectedPropertyId) {
-      toast.error('Please select a property first');
-      return;
-    }
-
-    if (!offerAmount || offerAmount <= 0) {
+    if (!selectedPropertyId || !offerAmount || offerAmount <= 0) {
       toast.error('Please enter a valid offer amount');
       return;
     }
@@ -334,10 +1691,8 @@ export default function UnderwritingPage() {
       });
 
       if (response.ok) {
-        const data = await response.json();
         toast.success('Offer created successfully!');
         setOfferDialogOpen(false);
-        // Reset form
         setOfferNotes("");
         setOfferContingencies(["inspection"]);
         setOfferTerms("cash");
@@ -352,1270 +1707,659 @@ export default function UnderwritingPage() {
     }
   };
 
-  // Load a previous analysis
-  const loadAnalysis = (analysis: SavedAnalysis) => {
-    // This would populate the form with saved values
-    // For now, just show a toast
-    toast.success(`Loaded analysis from ${new Date(analysis.createdAt).toLocaleDateString()}`);
-    // TODO: Populate ARV, repairs, etc. from saved analysis
+  // Format currency helper
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
   };
 
-  // Get the selected property for API-based underwriting
-  const selectedProperty = properties.find(p => p.id === selectedPropertyId);
+  // Filter properties
+  const filteredProperties = properties.filter(property =>
+    property.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (property.ownerName && property.ownerName.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
-  // Determine if we have a real property selected
-  const hasRealProperty = selectedProperty !== undefined;
+  // Loading state
+  if (!isLoaded || loadingProperties) {
+    return <UnderwritingSkeleton />;
+  }
 
-  // Create property object only from real data - NO seed data fallback
-  const currentDeal = hasRealProperty ? {
-    id: selectedProperty.id,
-    address: selectedProperty.address,
-    city: selectedProperty.city,
-    state: selectedProperty.state,
-    zip: selectedProperty.zip || '',
-    owner: selectedProperty.ownerName || 'Unknown Owner',
-    beds: selectedProperty.bedrooms || 0,
-    baths: selectedProperty.bathrooms || 0,
-    sqft: selectedProperty.squareFeet || 0,
-    yearBuilt: selectedProperty.yearBuilt || 0,
-    listPrice: selectedProperty.estimatedValue || undefined,
-    dom: undefined,
-    status: 'review' as const,
-    signals: [] as string[],
-  } : null;
-
-  // Use API comps only - no seed data fallback
-  const currentComps = apiComps;
-  
-  // Reset state when switching properties
-  useEffect(() => {
-    // Reset comps selection when API comps change
-    if (apiComps.length > 0) {
-      setSelectedComps(apiComps.filter(c => c.selected).map(c => c.id));
-    } else {
-      setSelectedComps([]);
-    }
-
-    // Start with empty repair items - user will add their own
-    setRepairItems([]);
-
-    // Reset sliders
-    setArvAdjustment(0);
-    setRepairsAdjustment(0);
-    setDaysHeldAdjustment(0);
-  }, [selectedPropertyId, apiComps]);
-  
-  // Calculate ARV based on method
-  const calculateARV = () => {
-    const selected = currentComps.filter(c => selectedComps.includes(c.id));
-    if (selected.length === 0) return 0;
-
-    // Use selected property's sqft - no fallback
-    const subjectSqft = selectedProperty?.squareFeet || 0;
-    if (subjectSqft === 0) return 0;
-
-    switch (arvMethod) {
-      case "median": {
-        const prices = selected.map(c => c.pricePerSqft).sort((a, b) => a - b);
-        const median = prices[Math.floor(prices.length / 2)];
-        return median * subjectSqft;
-      }
-      case "weighted": {
-        let totalWeight = 0;
-        let weightedSum = 0;
-        selected.forEach(comp => {
-          const distanceWeight = 1 / (1 + comp.distance);
-          const similarityWeight = comp.similarity / 100;
-          const weight = (distanceWeight * 0.4 + similarityWeight * 0.6);
-          totalWeight += weight;
-          weightedSum += comp.pricePerSqft * weight;
-        });
-        return (weightedSum / totalWeight) * subjectSqft;
-      }
-      case "knn": {
-        // Simplified kNN - just use top 3 by similarity
-        const top3 = [...selected].sort((a, b) => b.similarity - a.similarity).slice(0, 3);
-        const avgPricePerSqft = top3.reduce((sum, c) => sum + c.pricePerSqft, 0) / top3.length;
-        return avgPricePerSqft * subjectSqft;
-      }
-      default:
-        return 0;
-    }
-  };
-  
-  // Calculate adjusted values
-  const baseARV = calculateARV();
-  const adjustedARV = baseARV * (1 + arvAdjustment / 100);
-  const baseRepairs = repairItems.reduce((sum, item) => sum + item.totalCost, 0);
-  const adjustedRepairs = baseRepairs * (1 + repairsAdjustment / 100);
-  
-  // Default assumptions for calculations (can be made user-configurable later)
-  const defaultAssumptions = {
-    realtorPct: 0.06,
-    closingPct: 0.03,
-    holdingPerDay: 50,
-    rehabDays: 90,
-    profitTargetPct: 0.15,
-  };
-
-  // Calculate MAO
-  const calculateMAO = () => {
-    if (adjustedARV === 0) return 0;
-
-    const realtorFees = adjustedARV * defaultAssumptions.realtorPct;
-    const closingCosts = adjustedARV * defaultAssumptions.closingPct;
-    const holdingCosts = defaultAssumptions.holdingPerDay * (defaultAssumptions.rehabDays + daysHeldAdjustment);
-    const desiredProfit = adjustedARV * defaultAssumptions.profitTargetPct;
-    
-    const calculatedMAO = adjustedARV - adjustedRepairs - realtorFees - closingCosts - holdingCosts - desiredProfit;
-    return Math.max(0, calculatedMAO); // Never return negative MAO
-  };
-  
-  const mao = calculateMAO();
-  const suggestedOffer = Math.max(0, mao * 0.95); // 95% of MAO as suggested offer, never negative
-
-  // Toggle comp selection
-  const toggleCompSelection = (compId: string) => {
-    setSelectedComps(prev => 
-      prev.includes(compId) 
-        ? prev.filter(id => id !== compId)
-        : [...prev, compId]
-    );
-  };
-
-  // Update repair item
-  const updateRepairItem = (itemId: string, field: keyof RepairItem, value: string | number) => {
-    setRepairItems(prev => prev.map(item => 
-      item.id === itemId 
-        ? { ...item, [field]: value, totalCost: field === 'qty' || field === 'unitCost' 
-            ? (field === 'qty' ? Number(value) : item.qty) * (field === 'unitCost' ? Number(value) : item.unitCost)
-            : item.totalCost }
-        : item
-    ));
-  };
-
-  // Add repair item
-  const addRepairItem = () => {
-    const newItem: RepairItem = {
-      id: `REPAIR-NEW-${Date.now()}`,
-      sessionId: currentSession?.id || "",
-      category: "other",
-      description: "New repair item",
-      qty: 1,
-      uom: "each",
-      unitCost: 1000,
-      totalCost: 1000,
-      confidence: "low"
-    };
-    setRepairItems(prev => [...prev, newItem]);
-  };
-
-  // Remove repair item
-  const removeRepairItem = (itemId: string) => {
-    setRepairItems(prev => prev.filter(item => item.id !== itemId));
-  };
-
-  if (!isMounted) {
-    return <div>Loading...</div>;
+  // Empty state
+  if (properties.length === 0) {
+    return <EmptyState />;
   }
 
   return (
-    <div className="flex h-[calc(100vh-6.5rem)] bg-gray-50 dark:bg-gray-950 p-2 gap-3 overflow-hidden">
-      {/* Left Rail - Deal Selector */}
+    <div className="flex h-full min-h-0 gap-4">
+      {/* Left Panel - Property Selector */}
       <div className={cn(
-        "border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg transition-all duration-300 flex flex-col h-full",
-        leftPanelCollapsed ? "w-16" : "w-80"
+        "flex-shrink-0 flex flex-col h-full transition-all duration-300 ease-out",
+        leftPanelCollapsed ? "w-14" : "w-80"
       )}>
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            {!leftPanelCollapsed && (
-              <>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Deals</h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setLeftPanelCollapsed(true)}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-            {leftPanelCollapsed && (
+        <Card className="flex flex-col h-full border-0 shadow-lg py-0 gap-0">
+          {/* Header */}
+          <div className="flex-shrink-0 p-3 border-b border-gray-100 dark:border-gray-800">
+            <div className="flex items-center justify-between">
+              {!leftPanelCollapsed && (
+                <h2 className="font-semibold text-gray-900 dark:text-white">Properties</h2>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setLeftPanelCollapsed(false)}
-                className="mx-auto"
+                onClick={() => setLeftPanelCollapsed(!leftPanelCollapsed)}
+                className={cn("h-8 w-8", leftPanelCollapsed && "mx-auto")}
               >
-                <ChevronRight className="h-4 w-4" />
+                {leftPanelCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
               </Button>
+            </div>
+
+            {!leftPanelCollapsed && (
+              <div className="relative mt-3">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search properties..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-9 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                />
+              </div>
             )}
           </div>
+
+          {/* Property List */}
           {!leftPanelCollapsed && (
-            <div className="relative mt-3">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Search deals..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-2 space-y-2">
+                {filteredProperties.map((property) => (
+                  <PropertyCard
+                    key={property.id}
+                    property={property}
+                    isSelected={selectedPropertyId === property.id}
+                    onClick={() => setSelectedPropertyId(property.id)}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+
+          {/* Collapsed state - show property count */}
+          {leftPanelCollapsed && (
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-2">
+                <Home className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{properties.length}</span>
             </div>
           )}
-        </div>
-        
-        {!leftPanelCollapsed && (
-          <div className="flex-1 overflow-y-auto">
-            {loadingProperties ? (
-              <div className="flex items-center justify-center h-32">
-                <p className="text-sm text-gray-500">Loading properties...</p>
-              </div>
-            ) : properties.length === 0 ? (
-              <div className="flex items-center justify-center h-32 p-4">
-                <p className="text-sm text-gray-500 text-center">
-                  No properties found. Properties will appear here once discovered by ATTOM.
-                </p>
-              </div>
-            ) : (
-              <div className="p-3 space-y-2">
-                {properties
-                  .filter(property =>
-                    property.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    (property.ownerName && property.ownerName.toLowerCase().includes(searchQuery.toLowerCase()))
-                  )
-                  .map((property) => (
-                  <Card
-                    key={property.id}
-                    className={cn(
-                      "cursor-pointer transition-all border-gray-200 dark:border-gray-800",
-                      selectedPropertyId === property.id
-                        ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/30"
-                        : "hover:shadow-sm hover:border-gray-300 dark:hover:border-gray-700"
-                    )}
-                    onClick={() => setSelectedPropertyId(property.id)}
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
-                            {property.address}
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-h-0 gap-4">
+        {selectedProperty ? (
+          <>
+            {/* Property Hero + Deal Gauge + Net Sheet Summary */}
+            <div className="flex-shrink-0 space-y-4">
+              {/* Property Hero Card with Deal Gauge */}
+              <Card className="border-0 shadow-lg overflow-hidden">
+                <div className="flex">
+                  {/* Property photo */}
+                  <div className="w-48 flex-shrink-0 m-3 mr-0">
+                    <div className="relative h-full rounded-xl overflow-hidden shadow-md ring-1 ring-black/5">
+                      <img
+                        src="/property-placeholder.jpg"
+                        alt={`${selectedProperty.address} exterior`}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Subtle gradient overlay for depth */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                    </div>
+                  </div>
+
+                  <CardContent className="flex-1 p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                            {selectedProperty.address}
+                          </h2>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
+                            <MapPin className="h-3.5 w-3.5" />
+                            {selectedProperty.city}, {selectedProperty.state} {selectedProperty.zip}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {property.city}, {property.state}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            {property.score && property.score >= 85 && (
-                              <Badge variant="destructive" className="text-xs">
-                                Hot
-                              </Badge>
-                            )}
-                            {property.enriched && (
-                              <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                                Skip Traced
-                              </Badge>
-                            )}
-                            {property.score && (
-                              <Badge variant="secondary" className="text-xs">
-                                Score: {property.score}
-                              </Badge>
-                            )}
-                          </div>
                         </div>
-                        {property.score && property.score >= 85 && (
-                          <Star className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+
+                        {/* Score badge */}
+                        {selectedProperty.score && (
+                          <div className={cn(
+                            "px-3 py-1.5 rounded-lg font-bold text-sm",
+                            selectedProperty.score >= 85 ? "bg-gradient-to-r from-red-500 to-orange-500 text-white" :
+                            selectedProperty.score >= 70 ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white" :
+                            "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                          )}>
+                            Score: {selectedProperty.score}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Property details grid */}
+                      <div className="grid grid-cols-4 gap-4 mb-3">
+                        <div className="text-center p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                          <div className="flex items-center justify-center gap-1 text-gray-500 dark:text-gray-400 mb-1">
+                            <BedDouble className="h-4 w-4" />
+                          </div>
+                          <span className="text-lg font-bold text-gray-900 dark:text-white">{selectedProperty.bedrooms || '-'}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 block">Beds</span>
+                        </div>
+                        <div className="text-center p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                          <div className="flex items-center justify-center gap-1 text-gray-500 dark:text-gray-400 mb-1">
+                            <Bath className="h-4 w-4" />
+                          </div>
+                          <span className="text-lg font-bold text-gray-900 dark:text-white">{selectedProperty.bathrooms || '-'}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 block">Baths</span>
+                        </div>
+                        <div className="text-center p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                          <div className="flex items-center justify-center gap-1 text-gray-500 dark:text-gray-400 mb-1">
+                            <Ruler className="h-4 w-4" />
+                          </div>
+                          <span className="text-lg font-bold text-gray-900 dark:text-white">{selectedProperty.squareFeet?.toLocaleString() || '-'}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 block">Sq Ft</span>
+                        </div>
+                        <div className="text-center p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                          <div className="flex items-center justify-center gap-1 text-gray-500 dark:text-gray-400 mb-1">
+                            <Calendar className="h-4 w-4" />
+                          </div>
+                          <span className="text-lg font-bold text-gray-900 dark:text-white">{selectedProperty.yearBuilt || '-'}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400 block">Built</span>
+                        </div>
+                      </div>
+
+                      {/* Distress signals */}
+                      <div className="flex flex-wrap gap-1.5">
+                        {selectedProperty.preForeclosure && (
+                          <Badge className="bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Pre-Foreclosure
+                          </Badge>
+                        )}
+                        {selectedProperty.foreclosure && (
+                          <Badge className="bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Foreclosure
+                          </Badge>
+                        )}
+                        {selectedProperty.vacant && (
+                          <Badge className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800">
+                            <Building className="h-3 w-3 mr-1" />
+                            Vacant
+                          </Badge>
+                        )}
+                        {selectedProperty.taxDelinquent && (
+                          <Badge className="bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800">
+                            <DollarSign className="h-3 w-3 mr-1" />
+                            Tax Delinquent
+                          </Badge>
+                        )}
+                        {selectedProperty.absenteeOwner && (
+                          <Badge className="bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            Absentee Owner
+                          </Badge>
+                        )}
+                        {selectedPropertyMetadata.highEquity && (
+                          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800">
+                            <TrendingUp className="h-3 w-3 mr-1" />
+                            High Equity
+                          </Badge>
                         )}
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
 
-      {/* Main Canvas */}
-      <div className="flex-1 flex flex-col border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg h-full overflow-hidden">
-        {/* Sticky Net Sheet Bar */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2">
-                <Badge variant={hasRealProperty ? "default" : "secondary"} className="text-[10px]">
-                  {hasRealProperty ? "Live Data" : "Demo Data"}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">After Repair Value</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">${Math.round(adjustedARV).toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Est. Repairs</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">${Math.round(adjustedRepairs).toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Maximum Allowable Offer</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">${Math.round(mao).toLocaleString()}</p>
-              </div>
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-4 py-2">
-                <p className="text-xs text-gray-600 dark:text-gray-400">Suggested Offer</p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">${Math.round(suggestedOffer).toLocaleString()}</p>
-              </div>
+                  {/* Deal Gauge - inside the same card */}
+                  <div className="flex flex-col items-center justify-center px-6 border-l border-gray-100 dark:border-gray-800">
+                    <DealGauge
+                      value={adjustedARV > 0 ? Math.max(0, adjustedARV - suggestedOffer - adjustedRepairs) : 0}
+                      maxValue={adjustedARV * 0.30}
+                      label="Deal Score"
+                      size={140}
+                    />
+                    <div className="mt-2 text-center">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {(() => {
+                          const profitMargin = adjustedARV > 0 ? ((adjustedARV - suggestedOffer - adjustedRepairs) / adjustedARV * 100) : 0;
+                          if (profitMargin >= 25) return "Excellent Deal";
+                          if (profitMargin >= 20) return "Strong Deal";
+                          if (profitMargin >= 15) return "Good Deal";
+                          if (profitMargin >= 10) return "Fair Deal";
+                          return "Needs Work";
+                        })()}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {adjustedARV > 0 ? `${((adjustedARV - suggestedOffer - adjustedRepairs) / adjustedARV * 100).toFixed(1)}% profit margin` : "Add comps to calculate"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Net Sheet Summary - directly under property details */}
+              <NetSheetSummary
+                arv={adjustedARV}
+                repairs={adjustedRepairs}
+                mao={mao}
+                suggestedOffer={suggestedOffer}
+                arvSource={arvSource as "comps" | "avm"}
+                onCreateOffer={handleOpenOfferDialog}
+                onSaveAnalysis={handleSaveAnalysis}
+                saving={savingAnalysis}
+              />
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSaveAnalysis}
-                disabled={savingAnalysis || !selectedPropertyId}
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {savingAnalysis ? 'Saving...' : 'Save Analysis'}
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleOpenOfferDialog}
-                disabled={!selectedPropertyId}
-              >
-                <Send className="h-4 w-4 mr-2" />
-                Create Offer
-              </Button>
-            </div>
-          </div>
-        </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsList className="w-full justify-start rounded-none border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 px-4 h-10">
-            <TabsTrigger value="summary" className="gap-2">
-              <Home className="h-4 w-4" />
-              Summary
-            </TabsTrigger>
-            <TabsTrigger value="comps" className="gap-2">
-              <MapPin className="h-4 w-4" />
-              Comps
-            </TabsTrigger>
-            <TabsTrigger value="repairs" className="gap-2">
-              <Wrench className="h-4 w-4" />
-              Repairs
-            </TabsTrigger>
-            <TabsTrigger value="scenarios" className="gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Scenarios
-            </TabsTrigger>
-            <TabsTrigger value="risks" className="gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Risks & Records
-            </TabsTrigger>
-            <TabsTrigger value="history" className="gap-2">
-              <History className="h-4 w-4" />
-              History
-            </TabsTrigger>
-          </TabsList>
+            {/* Analysis Tabs */}
+            <Card className="flex-1 min-h-0 border-0 shadow-lg overflow-hidden py-0 gap-0">
+              <Tabs defaultValue="comps" className="flex flex-col h-full">
+                <TabsList className="flex-shrink-0 w-full justify-start rounded-none border-b border-gray-200 dark:border-gray-700 bg-transparent p-0 px-2">
+                  <TabsTrigger
+                    value="comps"
+                    className="rounded-t-lg border-0 px-5 py-2.5 text-gray-500 dark:text-gray-400 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600 dark:data-[state=active]:bg-blue-900/30 dark:data-[state=active]:text-blue-400 transition-colors"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Comps & ARV
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="repairs"
+                    className="rounded-t-lg border-0 px-5 py-2.5 text-gray-500 dark:text-gray-400 data-[state=active]:bg-amber-50 data-[state=active]:text-amber-600 dark:data-[state=active]:bg-amber-900/30 dark:data-[state=active]:text-amber-400 transition-colors"
+                  >
+                    <Wrench className="h-4 w-4 mr-2" />
+                    Repairs
+                    {repairItems.length > 0 && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-1.5">
+                        {formatCurrency(baseRepairs)}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="scenarios"
+                    className="rounded-t-lg border-0 px-5 py-2.5 text-gray-500 dark:text-gray-400 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-600 dark:data-[state=active]:bg-emerald-900/30 dark:data-[state=active]:text-emerald-400 transition-colors"
+                  >
+                    <Layers className="h-4 w-4 mr-2" />
+                    Exit Scenarios
+                  </TabsTrigger>
+                </TabsList>
 
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-4">
-              {/* Summary Tab */}
-              <TabsContent value="summary" className="mt-0">
-                <div className="space-y-6">
-                  {/* What-if Sliders */}
-                  <Card className="border-gray-200 dark:border-gray-800">
-                    <CardHeader className="pb-3 pt-4">
-                      <CardTitle className="text-sm">Sensitivity Analysis</CardTitle>
-                      <CardDescription className="text-xs">Adjust values to see impact on MAO</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div>
+                {/* Comps Tab */}
+                <TabsContent value="comps" className="flex-1 min-h-0 m-0 p-0">
+                  <ScrollArea className="h-full">
+                    <div className="p-4 space-y-4">
+                      {/* ARV Method selector */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">Comparable Sales</h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {selectedComps.length} of {apiComps.length} comps selected
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <Label className="text-sm text-gray-500">ARV Method:</Label>
+                            <Select value={arvMethod} onValueChange={(v) => setArvMethod(v as typeof arvMethod)}>
+                              <SelectTrigger className="w-32 h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="weighted">Weighted</SelectItem>
+                                <SelectItem value="median">Median</SelectItem>
+                                <SelectItem value="knn">k-NN (Top 3)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Separator orientation="vertical" className="h-6" />
+                          <div className="text-right">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Calculated ARV</p>
+                            <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
+                              {formatCurrency(adjustedARV)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ARV Adjustment slider */}
+                      <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                         <div className="flex items-center justify-between mb-2">
-                          <Label>ARV Adjustment</Label>
-                          <span className="text-sm font-medium">{arvAdjustment > 0 ? '+' : ''}{arvAdjustment}%</span>
+                          <Label className="text-sm">ARV Adjustment</Label>
+                          <span className={cn(
+                            "text-sm font-medium tabular-nums",
+                            arvAdjustment > 0 ? "text-emerald-600" : arvAdjustment < 0 ? "text-red-600" : "text-gray-600"
+                          )}>
+                            {arvAdjustment > 0 ? "+" : ""}{arvAdjustment}%
+                          </span>
                         </div>
                         <Slider
                           value={[arvAdjustment]}
-                          onValueChange={([value]) => setArvAdjustment(value)}
+                          onValueChange={([v]) => setArvAdjustment(v)}
                           min={-20}
                           max={20}
                           step={1}
                           className="w-full"
                         />
                       </div>
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label>Repairs Adjustment</Label>
-                          <span className="text-sm font-medium">{repairsAdjustment > 0 ? '+' : ''}{repairsAdjustment}%</span>
-                        </div>
-                        <Slider
-                          value={[repairsAdjustment]}
-                          onValueChange={([value]) => setRepairsAdjustment(value)}
-                          min={-20}
-                          max={20}
-                          step={1}
-                          className="w-full"
-                        />
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label>Days Held Adjustment</Label>
-                          <span className="text-sm font-medium">{daysHeldAdjustment > 0 ? '+' : ''}{daysHeldAdjustment} days</span>
-                        </div>
-                        <Slider
-                          value={[daysHeldAdjustment]}
-                          onValueChange={([value]) => setDaysHeldAdjustment(value)}
-                          min={-30}
-                          max={30}
-                          step={1}
-                          className="w-full"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
 
-                  {/* Exit Strategy Comparison */}
-                  <Card className="border-gray-200 dark:border-gray-800">
-                    <CardHeader className="pb-2 pt-3">
-                      <CardTitle className="text-sm">Exit Strategy Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="grid grid-cols-4 gap-2">
-                        <div className="p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-900">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium">Wholesale</span>
-                            <span className="text-xs text-blue-600 dark:text-blue-400">Quick</span>
-                          </div>
-                          <p className="text-sm font-bold">${Math.round(Math.max(0, (mao * 0.15))).toLocaleString()}</p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">Assignment</p>
-                        </div>
-                        
-                        <div className="p-2 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium">Fix & Flip</span>
-                            <span className="text-xs text-green-600 dark:text-green-400">90d</span>
-                          </div>
-                          <p className="text-sm font-bold">${Math.round(Math.max(0, (adjustedARV - suggestedOffer - adjustedRepairs - (adjustedARV * 0.08)))).toLocaleString()}</p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">Net Profit</p>
-                        </div>
-                        
-                        <div className="p-2 bg-purple-50 dark:bg-purple-950/30 rounded-lg border border-purple-200 dark:border-purple-900">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium">Wholetail</span>
-                            <span className="text-xs text-purple-600 dark:text-purple-400">30d</span>
-                          </div>
-                          <p className="text-sm font-bold">${Math.round(Math.max(0, (adjustedARV * 0.85 - suggestedOffer - 5000))).toLocaleString()}</p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">Light Rehab</p>
-                        </div>
-                        
-                        <div className="p-2 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-900">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium">Rental</span>
-                            <span className="text-xs text-orange-600 dark:text-orange-400">Hold</span>
-                          </div>
-                          <p className="text-sm font-bold">${Math.round(Math.max(0, adjustedARV * 0.01)).toLocaleString()}/mo</p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">Est. Rent</p>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-2 p-1.5 bg-gray-50 dark:bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-600 dark:text-gray-400">Best Strategy:</span>
-                          <span className="text-xs font-bold text-green-600 dark:text-green-400">
-                            {adjustedARV - suggestedOffer - adjustedRepairs > 50000 ? "Fix & Flip" : 
-                             mao < 50000 ? "Wholesale" : "Wholetail"}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Property Details */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Property Details</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {currentDeal ? (
-                        <div className="grid grid-cols-2 gap-6">
-                          <div className="space-y-3">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Address</span>
-                              <span className="text-sm font-medium">{currentDeal.address}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Beds / Baths</span>
-                              <span className="text-sm font-medium">{currentDeal.beds || '-'} / {currentDeal.baths || '-'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Square Feet</span>
-                              <span className="text-sm font-medium">{currentDeal.sqft ? currentDeal.sqft.toLocaleString() : '-'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Year Built</span>
-                              <span className="text-sm font-medium">{currentDeal.yearBuilt || '-'}</span>
-                            </div>
-                          </div>
-                          <div className="space-y-3">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Owner</span>
-                              <span className="text-sm font-medium">{currentDeal.owner || '-'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">List Price</span>
-                              <span className="text-sm font-medium">
-                                {currentDeal.listPrice ? `$${Math.round(currentDeal.listPrice).toLocaleString()}` : '-'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Days on Market</span>
-                              <span className="text-sm font-medium">{currentDeal.dom || '-'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-gray-600">Property Type</span>
-                              <span className="text-sm font-medium">Single Family</span>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-8 text-center">
-                          <Home className="h-8 w-8 text-gray-400 mb-2" />
-                          <p className="text-sm text-gray-500">Select a property to view details</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              {/* Comps Tab */}
-              <TabsContent value="comps" className="mt-0">
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle>Comparable Properties</CardTitle>
-                          <CardDescription>Select and weight comps to calculate ARV</CardDescription>
-                        </div>
-                        <Select value={arvMethod} onValueChange={(value) => setArvMethod(value as "median" | "weighted" | "knn")}>
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="median">Median Method</SelectItem>
-                            <SelectItem value="weighted">Weighted Method</SelectItem>
-                            <SelectItem value="knn">kNN Method</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {/* Show data source indicator */}
-                      {selectedPropertyId && (
-                        <div className="mb-4 flex items-center gap-2">
-                          <Badge variant={useApiComps && apiComps.length > 0 ? "default" : "secondary"}>
-                            {useApiComps && apiComps.length > 0 ? "Live Data" : "Demo Data"}
-                          </Badge>
-                          {compsStats && (
-                            <span className="text-xs text-gray-500">
-                              Avg: ${compsStats.avgPricePerSqft}/sqft | Median: ${compsStats.medianPricePerSqft}/sqft
-                            </span>
-                          )}
-                        </div>
-                      )}
-
+                      {/* Comps grid */}
                       {loadingComps ? (
-                        <div className="flex items-center justify-center py-8">
-                          <p className="text-sm text-gray-500">Loading comparable properties...</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[1, 2, 3, 4].map(i => (
+                            <Skeleton key={i} className="h-32 rounded-xl" />
+                          ))}
                         </div>
-                      ) : currentComps.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-8 text-center">
-                          <MapPin className="h-8 w-8 text-gray-400 mb-2" />
-                          <p className="text-sm text-gray-500">
-                            {selectedPropertyId
-                              ? "No comparable properties found. Try selecting a different property or adjusting filters."
-                              : "Select a property to find comparable properties."}
+                      ) : apiComps.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <BarChart3 className="h-6 w-6 text-gray-400" />
+                          </div>
+                          <p className="text-gray-500 dark:text-gray-400">No comparable properties found</p>
+                          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                            Using AVM estimate: {formatCurrency(selectedProperty.estimatedValue || 0)}
                           </p>
                         </div>
                       ) : (
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-12">Select</TableHead>
-                              <TableHead>Address</TableHead>
-                              <TableHead>Sold Date</TableHead>
-                              <TableHead>Sold Price</TableHead>
-                              <TableHead>Beds/Baths</TableHead>
-                              <TableHead>Sqft</TableHead>
-                              <TableHead>$/Sqft</TableHead>
-                              <TableHead>Distance</TableHead>
-                              <TableHead>Similarity</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {currentComps.map((comp) => (
-                              <TableRow key={comp.id}>
-                                <TableCell>
-                                  <Checkbox
-                                    checked={selectedComps.includes(comp.id)}
-                                    onCheckedChange={() => toggleCompSelection(comp.id)}
-                                  />
-                                </TableCell>
-                                <TableCell className="font-medium">{comp.address}</TableCell>
-                                <TableCell>{comp.soldDate ? new Date(comp.soldDate).toLocaleDateString() : 'N/A'}</TableCell>
-                                <TableCell>${Math.round(comp.soldPrice).toLocaleString()}</TableCell>
-                                <TableCell>{comp.beds}/{comp.baths}</TableCell>
-                                <TableCell>{comp.sqft?.toLocaleString() || 'N/A'}</TableCell>
-                                <TableCell>${Math.round(comp.pricePerSqft)}</TableCell>
-                                <TableCell>{typeof comp.distance === 'number' ? comp.distance.toFixed(2) : comp.distance} mi</TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    <Progress value={comp.similarity} className="w-16 h-2" />
-                                    <span className="text-xs">{comp.similarity}%</span>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                        <div className="grid grid-cols-2 gap-3">
+                          {apiComps.map(comp => (
+                            <CompCard
+                              key={comp.id}
+                              comp={comp}
+                              isSelected={selectedComps.includes(comp.id)}
+                              isOutlier={outlierCompIds.includes(comp.id)}
+                              onToggle={() => toggleCompSelection(comp.id)}
+                            />
+                          ))}
+                        </div>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
 
-                  {/* Comps Quality Check */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Quality Checks</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          {selectedComps.length >= 3 ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <AlertCircle className="h-4 w-4 text-yellow-500" />
-                          )}
-                          <span className="text-sm">
-                            {selectedComps.length} comps selected (minimum 3 recommended)
+                {/* Repairs Tab */}
+                <TabsContent value="repairs" className="flex-1 min-h-0 m-0 p-0">
+                  <ScrollArea className="h-full">
+                    <div className="p-4 space-y-4">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">Repair Estimate</h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {repairItems.length} items totaling {formatCurrency(baseRepairs)}
+                          </p>
+                        </div>
+                        <Button onClick={() => setShowAddRepair(true)} size="sm">
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Item
+                        </Button>
+                      </div>
+
+                      {/* Repairs adjustment slider */}
+                      <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-sm">Contingency Buffer</Label>
+                          <span className={cn(
+                            "text-sm font-medium tabular-nums",
+                            repairsAdjustment > 0 ? "text-amber-600" : "text-gray-600"
+                          )}>
+                            +{repairsAdjustment}%
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span className="text-sm">All comps within 0.75 miles</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span className="text-sm">All comps sold within last 12 months</span>
-                        </div>
+                        <Slider
+                          value={[repairsAdjustment]}
+                          onValueChange={([v]) => setRepairsAdjustment(v)}
+                          min={0}
+                          max={30}
+                          step={5}
+                          className="w-full"
+                        />
                       </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
 
-              {/* Repairs Tab */}
-              <TabsContent value="repairs" className="mt-0">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>Repair Estimates</CardTitle>
-                        <CardDescription>Detailed breakdown of repair costs</CardDescription>
-                      </div>
-                      <Button onClick={addRepairItem}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Item
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Qty</TableHead>
-                          <TableHead>Unit</TableHead>
-                          <TableHead>Unit Cost</TableHead>
-                          <TableHead>Total</TableHead>
-                          <TableHead>Confidence</TableHead>
-                          <TableHead></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {repairItems.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell>
-                              <Badge variant="outline">{item.category}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                value={item.description}
-                                onChange={(e) => updateRepairItem(item.id, 'description', e.target.value)}
-                                className="w-full"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                type="number"
-                                value={item.qty}
-                                onChange={(e) => updateRepairItem(item.id, 'qty', Number(e.target.value))}
-                                className="w-20"
-                              />
-                            </TableCell>
-                            <TableCell>{item.uom}</TableCell>
-                            <TableCell>
-                              <Input
-                                type="number"
-                                value={item.unitCost}
-                                onChange={(e) => updateRepairItem(item.id, 'unitCost', Number(e.target.value))}
-                                className="w-24"
-                              />
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              ${Math.round(item.totalCost).toLocaleString()}
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant={
-                                  item.confidence === "high" ? "default" :
-                                  item.confidence === "medium" ? "secondary" :
-                                  "outline"
-                                }
-                              >
-                                {item.confidence}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
+                      {/* Repair items list */}
+                      {repairItems.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <Wrench className="h-6 w-6 text-gray-400" />
+                          </div>
+                          <p className="text-gray-500 dark:text-gray-400">No repair items added</p>
+                          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                            Click "Add Item" to start building your repair estimate
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {repairItems.map(item => (
+                            <div
+                              key={item.id}
+                              className="flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700"
+                            >
+                              <RepairCategoryIcon category={item.category} />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                                  {item.description}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {getCategoryLabel(item.category)}
+                                </p>
+                              </div>
+                              <span className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">
+                                {formatCurrency(item.totalCost)}
+                              </span>
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="h-8 w-8 text-gray-400 hover:text-red-500"
                                 onClick={() => removeRepairItem(item.id)}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    
-                    <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-semibold">Total Repairs:</span>
-                        <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                          ${Math.round(baseRepairs).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Scenarios Tab */}
-              <TabsContent value="scenarios" className="mt-0">
-                <div className="grid grid-cols-3 gap-6">
-                  {/* Wholesale Scenario */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <DollarSign className="h-5 w-5" />
-                        Wholesale
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Purchase Price</span>
-                          <span className="font-medium">${Math.round(suggestedOffer).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Assignment Fee</span>
-                          <span className="font-medium">$10,000</span>
-                        </div>
-                        <Separator />
-                        <div className="flex justify-between">
-                          <span className="font-semibold">Net Profit</span>
-                          <span className="font-bold text-green-600">$10,000</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">ROI</span>
-                          <span className="font-medium">6.1%</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Fix & Flip Scenario */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5" />
-                        Fix & Flip
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Purchase Price</span>
-                          <span className="font-medium">${Math.round(suggestedOffer).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Repair Costs</span>
-                          <span className="font-medium">${Math.round(adjustedRepairs).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Holding Costs</span>
-                          <span className="font-medium">$4,500</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Selling Costs</span>
-                          <span className="font-medium">${Math.round(adjustedARV * 0.08).toLocaleString()}</span>
-                        </div>
-                        <Separator />
-                        <div className="flex justify-between">
-                          <span className="font-semibold">Net Profit</span>
-                          <span className="font-bold text-green-600">
-                            ${Math.round(adjustedARV - suggestedOffer - adjustedRepairs - 4500 - (adjustedARV * 0.08)).toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">ROI</span>
-                          <span className="font-medium">16.5%</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Rental Scenario */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Building className="h-5 w-5" />
-                        Buy & Hold (Rental)
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">All-in Cost</span>
-                          <span className="font-medium">
-                            ${Math.round(suggestedOffer + adjustedRepairs).toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Monthly Rent</span>
-                          <span className="font-medium">$2,100</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Monthly Cash Flow</span>
-                          <span className="font-medium">$450</span>
-                        </div>
-                        <Separator />
-                        <div className="flex justify-between">
-                          <span className="font-semibold">Cap Rate</span>
-                          <span className="font-bold text-blue-600">8.2%</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">DSCR</span>
-                          <span className="font-medium">1.35</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Cash-on-Cash</span>
-                          <span className="font-medium">12.1%</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              {/* Risks Tab */}
-              <TabsContent value="risks" className="mt-0">
-                <div className="space-y-4">
-                  {underwritingSeedData.risks.map((risk, idx) => (
-                    <Card key={idx}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <AlertTriangle className={cn(
-                            "h-5 w-5 mt-0.5",
-                            risk.severity === "high" ? "text-red-500" :
-                            risk.severity === "medium" ? "text-yellow-500" :
-                            "text-gray-500"
-                          )} />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant={
-                                risk.severity === "high" ? "destructive" :
-                                risk.severity === "medium" ? "secondary" :
-                                "outline"
-                              }>
-                                {risk.type}
-                              </Badge>
-                              <Badge variant="outline">{risk.severity} risk</Badge>
                             </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300">{risk.description}</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Source: {risk.source} • Found: {risk.dateFound}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
+                          ))}
 
-              {/* History Tab */}
-              <TabsContent value="history" className="mt-0">
-                <div className="space-y-4">
-                  {/* Show saved analyses from API if property is selected */}
-                  {selectedPropertyId && savedAnalyses.length > 0 && (
-                    <>
-                      <div className="mb-4">
-                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Saved Analyses</h4>
-                        {savedAnalyses.map((analysis) => (
-                          <Card key={analysis.id} className="mb-2">
-                            <CardContent className="p-4">
-                              <div className="flex items-start gap-4">
-                                <Calculator className="h-5 w-5 text-blue-500 mt-0.5" />
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <div>
-                                      <span className="font-medium text-sm">{analysis.name || 'Analysis'}</span>
-                                      <span className="text-sm text-gray-500 ml-2">
-                                        {new Date(analysis.createdAt).toLocaleString()}
-                                      </span>
-                                    </div>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => loadAnalysis(analysis)}
-                                    >
-                                      Load
-                                    </Button>
-                                  </div>
-                                  <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs space-y-1">
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">ARV:</span>
-                                      <span className="font-medium">${Math.round(analysis.arv).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">Repairs:</span>
-                                      <span className="font-medium">${Math.round(analysis.repairTotal).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">MAO:</span>
-                                      <span className="font-medium">${Math.round(analysis.maxOffer).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">Method:</span>
-                                      <span className="font-medium capitalize">{analysis.arvMethod}</span>
-                                    </div>
-                                  </div>
-                                  {analysis.notes && (
-                                    <p className="text-xs text-gray-500 mt-2">{analysis.notes}</p>
-                                  )}
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {/* Show seed data history as demo */}
-                  {(!selectedPropertyId || savedAnalyses.length === 0) && (
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-500 mb-2">
-                        {selectedPropertyId
-                          ? "No saved analyses yet. Save an analysis to see it here."
-                          : "Select a property to see saved analyses."}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Always show seed data history for demo */}
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Demo History</h4>
-                  {currentHistory.map((entry) => (
-                    <Card key={entry.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-2">
-                              <div>
-                                <span className="font-medium text-sm">{entry.user}</span>
-                                <span className="text-sm text-gray-500 ml-2">
-                                  {new Date(entry.timestamp).toLocaleString()}
-                                </span>
-                              </div>
+                          {/* Total with contingency */}
+                          {repairsAdjustment > 0 && (
+                            <div className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                              <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                                Total with {repairsAdjustment}% contingency
+                              </span>
+                              <span className="text-lg font-bold text-amber-700 dark:text-amber-400 tabular-nums">
+                                {formatCurrency(adjustedRepairs)}
+                              </span>
                             </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300">{entry.action}</p>
-                            <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs space-y-1">
-                              {Object.entries(entry.changes).map(([key, value]) => (
-                                <div key={key} className="flex justify-between">
-                                  <span className="text-gray-600">{key}:</span>
-                                  <span className="font-medium">${value.toLocaleString()}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-            </div>
-          </div>
-        </Tabs>
-      </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
 
-      {/* Right Rail - Property Context */}
-      <div className={cn(
-        "border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-lg transition-all duration-300 flex flex-col h-full",
-        rightPanelCollapsed ? "w-16" : "w-80"
-      )}>
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            {!rightPanelCollapsed && (
-              <>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Context</h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setRightPanelCollapsed(true)}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-            {rightPanelCollapsed && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setRightPanelCollapsed(false)}
-                className="mx-auto"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {!rightPanelCollapsed && (
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-3 space-y-3">
-              {/* Lead Info */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Lead Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {currentDeal ? (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback>{currentDeal.owner ? currentDeal.owner.split(' ').map(n => n[0]).join('') : '?'}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">{currentDeal.owner || 'Unknown'}</p>
-                          <p className="text-xs text-gray-500">Property Owner</p>
-                        </div>
+                {/* Scenarios Tab */}
+                <TabsContent value="scenarios" className="flex-1 min-h-0 m-0 p-0">
+                  <ScrollArea className="h-full">
+                    <div className="p-4 space-y-4">
+                      <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">Exit Strategy Comparison</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Compare potential returns across different strategies
+                        </p>
                       </div>
-                      <div className="space-y-2 text-sm text-gray-500">
-                        <p className="text-xs italic">Contact info will appear once skip traced</p>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        <ScenarioCard
+                          strategy="wholesale"
+                          purchasePrice={suggestedOffer}
+                          arv={adjustedARV}
+                          repairs={adjustedRepairs}
+                        />
+                        <ScenarioCard
+                          strategy="flip"
+                          purchasePrice={suggestedOffer}
+                          arv={adjustedARV}
+                          repairs={adjustedRepairs}
+                          isRecommended={adjustedRepairs > 0}
+                        />
+                        <ScenarioCard
+                          strategy="rental"
+                          purchasePrice={suggestedOffer}
+                          arv={adjustedARV}
+                          repairs={adjustedRepairs}
+                        />
                       </div>
-                    </>
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-gray-500">Select a property to view lead info</p>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Signals */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Property Signals</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {currentDeal && currentDeal.signals.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {currentDeal.signals.map((signal, idx) => (
-                        <Badge key={idx} variant="outline">
-                          {signal}
-                        </Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 text-center py-2">No signals detected</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
-                    size="sm"
-                    onClick={() => toast.success("Packet generated!")}
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    Generate Packet
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
-                    size="sm"
-                    onClick={() => toast.success("LOI generated!")}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Generate LOI
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
-                    size="sm"
-                    onClick={() => toast.success("Sent to buyers!")}
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    Send to Buyers
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
-                    size="sm"
-                    onClick={() => toast.success("Analysis duplicated!")}
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Duplicate Analysis
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Tasks */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Tasks</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <Checkbox className="mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm">Verify comps accuracy</p>
-                      <p className="text-xs text-gray-500">Due today</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Checkbox className="mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm">Get contractor quotes</p>
-                      <p className="text-xs text-gray-500">Due tomorrow</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Checkbox className="mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm">Schedule property visit</p>
-                      <p className="text-xs text-gray-500">Due in 3 days</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
+            </Card>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-gray-500 dark:text-gray-400">Select a property to begin analysis</p>
           </div>
         )}
       </div>
 
-      {/* Offer Creation Dialog */}
-      <Dialog open={offerDialogOpen} onOpenChange={setOfferDialogOpen}>
-        <DialogContent className="max-w-2xl">
+      {/* Add Repair Dialog */}
+      <Dialog open={showAddRepair} onOpenChange={setShowAddRepair}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create Offer</DialogTitle>
+            <DialogTitle>Add Repair Item</DialogTitle>
             <DialogDescription>
-              Create and track an offer for this property. You can send it as draft or mark it as sent later.
+              Enter the repair details below
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            {/* Offer Amount */}
             <div className="space-y-2">
-              <Label htmlFor="offer-amount">Offer Amount *</Label>
-              <Input
-                id="offer-amount"
-                type="number"
-                value={offerAmount}
-                onChange={(e) => setOfferAmount(parseFloat(e.target.value) || 0)}
-                placeholder="Enter offer amount"
-              />
-              <p className="text-xs text-gray-500">
-                Based on analysis: ${Math.round(suggestedOffer).toLocaleString()} (95% of MAO)
-              </p>
-            </div>
-
-            {/* Terms */}
-            <div className="space-y-2">
-              <Label htmlFor="offer-terms">Terms</Label>
-              <Select value={offerTerms} onValueChange={setOfferTerms}>
-                <SelectTrigger id="offer-terms">
+              <Label>Category</Label>
+              <Select value={newRepairCategory} onValueChange={setNewRepairCategory}>
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="financing">Financing</SelectItem>
-                  <SelectItem value="seller_financing">Seller Financing</SelectItem>
-                  <SelectItem value="subject_to">Subject To</SelectItem>
+                  <SelectItem value="roof">Roof</SelectItem>
+                  <SelectItem value="kitchen">Kitchen</SelectItem>
+                  <SelectItem value="bath">Bathroom</SelectItem>
+                  <SelectItem value="flooring">Flooring</SelectItem>
+                  <SelectItem value="paint">Paint</SelectItem>
+                  <SelectItem value="hvac">HVAC</SelectItem>
+                  <SelectItem value="electrical">Electrical</SelectItem>
+                  <SelectItem value="plumbing">Plumbing</SelectItem>
+                  <SelectItem value="windows">Windows</SelectItem>
+                  <SelectItem value="exterior">Exterior</SelectItem>
+                  <SelectItem value="foundation">Foundation</SelectItem>
+                  <SelectItem value="landscaping">Landscaping</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Contingencies */}
             <div className="space-y-2">
-              <Label>Contingencies</Label>
-              <div className="flex flex-wrap gap-2">
-                {["inspection", "financing", "appraisal", "sale_of_home"].map((cont) => (
-                  <div key={cont} className="flex items-center gap-2">
-                    <Checkbox
-                      id={`cont-${cont}`}
-                      checked={offerContingencies.includes(cont)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setOfferContingencies([...offerContingencies, cont]);
-                        } else {
-                          setOfferContingencies(offerContingencies.filter((c) => c !== cont));
-                        }
-                      }}
-                    />
-                    <Label htmlFor={`cont-${cont}`} className="text-sm font-normal capitalize">
-                      {cont.replace(/_/g, " ")}
-                    </Label>
-                  </div>
-                ))}
+              <Label>Description</Label>
+              <Input
+                placeholder="e.g., Replace shingle roof"
+                value={newRepairDescription}
+                onChange={(e) => setNewRepairDescription(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Estimated Cost</Label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={newRepairCost || ""}
+                  onChange={(e) => setNewRepairCost(Number(e.target.value))}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddRepair(false)}>
+              Cancel
+            </Button>
+            <Button onClick={addRepairItem}>
+              Add Item
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Offer Dialog */}
+      <Dialog open={offerDialogOpen} onOpenChange={setOfferDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create Offer</DialogTitle>
+            <DialogDescription>
+              Submit an offer for {selectedProperty?.address}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Offer Amount</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="number"
+                    value={offerAmount || ""}
+                    onChange={(e) => setOfferAmount(Number(e.target.value))}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Earnest Money</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="number"
+                    value={offerEarnestMoney || ""}
+                    onChange={(e) => setOfferEarnestMoney(Number(e.target.value))}
+                    className="pl-9"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Dates */}
+            <div className="space-y-2">
+              <Label>Terms</Label>
+              <Select value={offerTerms} onValueChange={setOfferTerms}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="conventional">Conventional Financing</SelectItem>
+                  <SelectItem value="hard_money">Hard Money</SelectItem>
+                  <SelectItem value="seller_financing">Seller Financing</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="closing-date">Closing Date</Label>
+                <Label>Closing Date</Label>
                 <Input
-                  id="closing-date"
                   type="date"
                   value={offerClosingDate}
                   onChange={(e) => setOfferClosingDate(e.target.value)}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="expires-at">Offer Expires</Label>
+                <Label>Offer Expires</Label>
                 <Input
-                  id="expires-at"
                   type="date"
                   value={offerExpiresAt}
                   onChange={(e) => setOfferExpiresAt(e.target.value)}
@@ -1623,39 +2367,61 @@ export default function UnderwritingPage() {
               </div>
             </div>
 
-            {/* Earnest Money */}
             <div className="space-y-2">
-              <Label htmlFor="earnest-money">Earnest Money Deposit</Label>
-              <Input
-                id="earnest-money"
-                type="number"
-                value={offerEarnestMoney}
-                onChange={(e) => setOfferEarnestMoney(parseFloat(e.target.value) || 0)}
-                placeholder="Enter earnest money amount"
-              />
-              <p className="text-xs text-gray-500">
-                Recommended: 1-3% of offer amount (${Math.round(offerAmount * 0.01).toLocaleString()} - ${Math.round(offerAmount * 0.03).toLocaleString()})
-              </p>
+              <Label>Contingencies</Label>
+              <div className="flex flex-wrap gap-2">
+                {["inspection", "appraisal", "financing", "title"].map(contingency => (
+                  <label
+                    key={contingency}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border cursor-pointer transition-colors",
+                      offerContingencies.includes(contingency)
+                        ? "bg-blue-50 border-blue-300 dark:bg-blue-900/30 dark:border-blue-700"
+                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                    )}
+                  >
+                    <Checkbox
+                      checked={offerContingencies.includes(contingency)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setOfferContingencies([...offerContingencies, contingency]);
+                        } else {
+                          setOfferContingencies(offerContingencies.filter(c => c !== contingency));
+                        }
+                      }}
+                    />
+                    <span className="text-sm capitalize">{contingency}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
-            {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="offer-notes">Internal Notes</Label>
+              <Label>Notes</Label>
               <Input
-                id="offer-notes"
+                placeholder="Additional terms or notes..."
                 value={offerNotes}
                 onChange={(e) => setOfferNotes(e.target.value)}
-                placeholder="Add any notes about this offer..."
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOfferDialogOpen(false)} disabled={creatingOffer}>
+            <Button variant="outline" onClick={() => setOfferDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateOffer} disabled={creatingOffer || !offerAmount}>
-              {creatingOffer ? 'Creating...' : 'Create Offer'}
+            <Button onClick={handleCreateOffer} disabled={creatingOffer}>
+              {creatingOffer ? (
+                <>
+                  <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Create Offer
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

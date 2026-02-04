@@ -46,6 +46,16 @@ model User {
   // Platform settings
   onboarded       Boolean   @default(false)
   onboardedAt     DateTime?
+  currency        String    @default("USD")
+
+  // Email signature settings
+  emailSignatureEnabled Boolean @default(false)
+  emailSenderName       String?
+  emailCompanyName      String?
+  emailSignature        String?
+
+  // Team settings
+  currentTeamId   String?   // Currently active team for this user
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -55,17 +65,25 @@ model User {
   properties      Property[]
   deals           DealSpec[]
   policies        Policy[]
-  vendors         Vendor[]
+  vendors         Vendor[]        // Legacy vendor model (to be deprecated)
   tasks           Task[]
   dealAnalyses    DealAnalysis[]
   offers          Offer[]
   contracts       Contract[]
   buyers          Buyer[]
   rentals         Rental[]
+  buyerOffers     BuyerOffer[]
+  campaigns       Campaign[]
+
+  // New Vendor Network System relations
+  userVendors           UserVendor[]              // User's private vendors
+  vendorRelationships   UserVendorRelationship[]  // User's relationships with platform vendors
+  vendorJobs            VendorJob[]               // User's job history with vendors
 
   @@index([email])
   @@index([clerkId])
   @@index([tier])
+  @@index([currentTeamId])
 }
 
 // Core deal specification
@@ -99,6 +117,7 @@ model DealSpec {
   events          Event[]
   budgetLedger    BudgetLedger?
   tasks           Task[]
+  vendorJobs      VendorJob[] // Jobs assigned to vendors for this renovation
 
   @@index([userId])
   @@index([propertyId])
@@ -230,7 +249,9 @@ model Event {
   @@index([ts])
 }
 
-// Vendor management
+// LEGACY: Vendor management (being replaced by Vendor Network System below)
+// Migration: Data will move to UserVendor (for user-created vendors)
+// Keep for now to maintain Bid/Invoice relations during transition
 model Vendor {
   id              String    @id @default(cuid())
   userId          String?   // Multi-tenant: user-specific vendor, null = shared/platform vendor
@@ -327,6 +348,10 @@ model Property {
   lastSaleDate     String?
   lastSalePrice    Float?
   estimatedValue   Float?
+
+  // Listing/Market info
+  listingDate      DateTime?  // When property was listed
+  daysOnMarket     Int?       // Calculated or provided DOM
 
   // Scoring (optional until calculated)
   score            Int?
@@ -541,6 +566,8 @@ model Contract {
   assignment      ContractAssignment?
   renovation      DealSpec?           // Renovation project for this contract (flippers)
   rental          Rental?             // Rental property for this contract (buy-and-hold)
+  buyerOffers     BuyerOffer[]        // Offers from buyers on this contract
+  campaigns       Campaign[]          // Marketing campaigns for this contract
 
   @@index([userId, status])
   @@index([propertyId])
@@ -581,6 +608,7 @@ model Buyer {
   // Relations
   user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignments     ContractAssignment[]
+  buyerOffers     BuyerOffer[]
 
   @@index([userId])
   @@index([email])
@@ -615,6 +643,94 @@ model ContractAssignment {
   buyer           Buyer     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
 
   @@index([buyerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Buyer offers on wholesale deals/contracts
+model BuyerOffer {
+  id              String    @id @default(cuid())
+  userId          String    // Multi-tenant: which investor (wholesaler) owns this
+  contractId      String    // Contract being offered on
+  buyerId         String    // Buyer making the offer
+
+  // Offer details
+  offerPrice      Float     // Buyer's offer price
+  terms           String?   // Cash, financing, etc.
+  earnestMoney    Float?    // EMD amount
+  closingDays     Int?      // Days to close
+  contingencies   String?   // JSON array of contingencies
+  expiresAt       DateTime? // When offer expires
+
+  // Status tracking
+  status          String    @default("submitted") // "submitted", "countered", "accepted", "rejected", "expired"
+  submittedAt     DateTime  @default(now())
+  responseAt      DateTime?
+  responseNotes   String?
+
+  // Counter-offer tracking
+  counterAmount   Float?
+  counterTerms    String?   // JSON with counter details
+
+  // Notes
+  notes           String?
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contract        Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  buyer           Buyer     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([contractId])
+  @@index([buyerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Marketing campaigns for wholesalers to blast listings to buyers
+model Campaign {
+  id              String    @id @default(cuid())
+  userId          String    // Multi-tenant: which investor owns this campaign
+  contractId      String?   // Optional link to a specific contract/listing
+
+  // Campaign details
+  name            String
+  subject         String?   // Email subject line
+  message         String    // Campaign message content
+  method          String    @default("email") // "email", "sms", "both"
+
+  // Recipient tracking
+  buyerIds        String?   // JSON array of buyer IDs
+  recipientCount  Int       @default(0)
+
+  // Delivery tracking
+  status          String    @default("draft") // "draft", "scheduled", "sent", "cancelled"
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+
+  // Performance metrics
+  openCount       Int       @default(0)
+  clickCount      Int       @default(0)
+  replyCount      Int       @default(0)
+  offerCount      Int       @default(0)
+
+  // Notes
+  notes           String?
+
+  // Metadata
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contract        Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([contractId])
   @@index([status])
   @@index([createdAt])
 }
@@ -791,4 +907,482 @@ model Notification {
   @@index([type, occurredAt])
   @@index([dealId])
   @@index([processed])
+}
+
+// =============================================================================
+// VENDOR NETWORK SYSTEM
+// =============================================================================
+// Architecture:
+// - PlatformVendor: Shared vendors sourced from APIs (Google Places), associated with markets
+// - UserVendor: Private vendors created by individual users
+// - UserVendorRelationship: Junction linking users to platform vendors with user-specific data
+// - VendorJob: Track work history with both vendor types
+// =============================================================================
+
+// Vendor trade categories - comprehensive list for real estate renovation
+enum VendorCategory {
+  GENERAL_CONTRACTOR
+  ROOFER
+  PLUMBER
+  ELECTRICIAN
+  HVAC
+  FLOORING
+  PAINTER
+  LANDSCAPER
+  DUMPSTER_RENTAL
+  LOCKSMITH
+  CLEANING_SERVICE
+  HOME_INSPECTOR
+  APPRAISER
+  DEMOLITION
+  FRAMING
+  SIDING
+  WINDOWS
+  INSULATION
+  DRYWALL
+  KITCHEN
+  BATHROOM
+  FENCING
+  CONCRETE
+  POOL
+  PEST_CONTROL
+  GARAGE_DOOR
+  APPLIANCE_REPAIR
+  OTHER
+}
+
+// Source of vendor data for attribution and refresh tracking
+enum VendorSource {
+  GOOGLE_PLACES   // Primary source: Google Places API
+  YELP            // Alternative: Yelp API
+  MANUAL          // Manually entered by admin
+  PARTNER         // Future: verified partner vendors
+}
+
+// Vendor operational status
+enum VendorStatus {
+  ACTIVE          // Currently operating
+  INACTIVE        // Temporarily not operating
+  CLOSED          // Permanently closed
+  UNVERIFIED      // Needs verification
+}
+
+// Market/Metro area for geographic vendor grouping
+// Platform vendors are associated with markets, shared across all users in that market
+model Market {
+  id          String   @id @default(cuid())
+  name        String   // Display name: "Jacksonville, FL"
+  city        String   // City name for matching
+  state       String   // State code (FL, AZ, etc.)
+  country     String   @default("US")
+
+  // Geographic center for radius-based queries
+  latitude    Float?
+  longitude   Float?
+  radiusMiles Int      @default(50) // Default search radius
+
+  // Market status
+  isActive    Boolean  @default(true) // Whether we're actively sourcing vendors here
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  platformVendors PlatformVendor[]
+
+  @@unique([city, state, country])
+  @@index([state])
+  @@index([isActive])
+}
+
+// Platform-sourced vendors (shared across all users in a market)
+// These are pre-populated from public data sources (Google Places API)
+// No duplication per user - users create relationships to add to their list
+model PlatformVendor {
+  id              String           @id @default(cuid())
+
+  // === Basic Business Info ===
+  name            String
+  description     String?          // Business description from source
+
+  // === Location ===
+  address         String?          // Full street address
+  city            String
+  state           String
+  zip             String?
+  latitude        Float?           // For map display and distance calculations
+  longitude       Float?
+
+  // === Contact Info ===
+  phone           String?
+  email           String?          // Often not available from Google
+  website         String?
+
+  // === Categorization ===
+  // Using array of enums for multi-trade vendors (e.g., GC who does plumbing)
+  categories      VendorCategory[]
+
+  // === Source & External IDs ===
+  source          VendorSource     @default(GOOGLE_PLACES)
+  googlePlaceId   String?          @unique // Google Places unique ID
+  yelpId          String?          @unique // Yelp business ID
+
+  // === Public Ratings (from source) ===
+  sourceRating      Float?         // e.g., Google rating 4.5 (1-5 scale)
+  sourceReviewCount Int?           // e.g., 127 reviews
+  priceLevel        Int?           // Google price level 1-4 ($ to $$$$)
+
+  // === Business Details ===
+  licenseNumber     String?        // Contractor license if available
+  insuranceVerified Boolean        @default(false)
+  yearsInBusiness   Int?
+
+  // === Status & Verification ===
+  status          VendorStatus     @default(ACTIVE)
+  isVerified      Boolean          @default(false) // FlipOps manual verification
+  isPartner       Boolean          @default(false) // Future: partner program
+  partnerDiscount Float?           // Future: discount percentage for FlipOps users
+
+  // === Data Freshness ===
+  lastRefreshedAt DateTime?        // When data was last pulled from source
+  refreshFailCount Int             @default(0) // Track consecutive refresh failures
+
+  // === Soft Delete ===
+  deletedAt       DateTime?        // Soft delete - don't hard delete if has job history
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // === Relations ===
+  marketId        String
+  market          Market           @relation(fields: [marketId], references: [id])
+
+  userRelationships UserVendorRelationship[]
+
+  // Indexes for common queries
+  @@index([marketId])
+  @@index([marketId, status])
+  @@index([categories])
+  @@index([googlePlaceId])
+  @@index([city, state])
+  @@index([sourceRating])
+  @@index([deletedAt])
+}
+
+// User-created private vendors (not from platform, user's personal contacts)
+// These belong to a single user and are not shared
+model UserVendor {
+  id              String           @id @default(cuid())
+
+  // === Owner ===
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // === Basic Business Info ===
+  name            String
+  description     String?
+  contactName     String?          // Primary contact person at the company
+
+  // === Location (optional for private vendors) ===
+  address         String?
+  city            String?
+  state           String?
+  zip             String?
+
+  // === Contact Info ===
+  phone           String?
+  email           String?
+  website         String?
+
+  // === Categorization ===
+  categories      VendorCategory[]
+  tags            String[]         // Custom user tags (e.g., "reliable", "cheap", "fast")
+
+  // === Business Details ===
+  licenseNumber     String?
+  insuranceVerified Boolean        @default(false)
+
+  // === User's Assessment ===
+  personalRating    Float?         // User's rating 1-5 (separate from any public rating)
+  notes             String?        // User's private notes
+  isFavorite        Boolean        @default(false)
+  isPreferred       Boolean        @default(false) // Preferred vendor for their category
+
+  // === Availability ===
+  availabilityStatus String?       // "available", "busy", "unavailable", "unknown"
+
+  // === Soft Delete ===
+  deletedAt       DateTime?        // Soft delete - preserve job history
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // === Relations ===
+  jobs            VendorJob[]
+
+  @@index([userId])
+  @@index([userId, deletedAt])
+  @@index([categories])
+  @@index([isFavorite])
+}
+
+// Junction table: User's relationship with a platform vendor
+// This is created when a user "adds" a platform vendor to their personal list
+// Stores user-specific data (notes, personal rating, etc.) without duplicating vendor data
+model UserVendorRelationship {
+  id                String         @id @default(cuid())
+
+  // === User ===
+  userId            String
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // === Platform Vendor ===
+  platformVendorId  String
+  platformVendor    PlatformVendor @relation(fields: [platformVendorId], references: [id])
+
+  // === User-Specific Data ===
+  personalRating    Float?         // User's rating 1-5 (separate from Google rating)
+  notes             String?        // User's private notes about this vendor
+  tags              String[]       // User's custom tags for this vendor
+  isFavorite        Boolean        @default(false)
+  isPreferred       Boolean        @default(false) // Preferred vendor for this category
+
+  // === Contact Override ===
+  // If user has different/better contact info than what's in platform data
+  contactName       String?        // Specific person the user works with
+  contactPhone      String?        // Direct line vs main business number
+  contactEmail      String?
+
+  // === Relationship Tracking ===
+  addedAt           DateTime       @default(now()) // When user added this vendor
+  lastContactedAt   DateTime?      // Last time user contacted this vendor
+  lastUsedAt        DateTime?      // Last time vendor was assigned a job
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  // === Relations ===
+  jobs              VendorJob[]
+
+  // Composite unique: one relationship per user per platform vendor
+  @@unique([userId, platformVendorId])
+  @@index([userId])
+  @@index([platformVendorId])
+  @@index([userId, isFavorite])
+  @@index([userId, isPreferred])
+}
+
+// Track jobs/projects with vendors (works with both user vendors and platform relationships)
+// This enables job history tracking for future features
+model VendorJob {
+  id              String         @id @default(cuid())
+
+  // === Owner ===
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // === Vendor Link (one of these will be set) ===
+  userVendorId              String?
+  userVendor                UserVendor?              @relation(fields: [userVendorId], references: [id])
+
+  userVendorRelationshipId  String?
+  userVendorRelationship    UserVendorRelationship?  @relation(fields: [userVendorRelationshipId], references: [id])
+
+  // === Link to Deal/Renovation (optional) ===
+  dealId          String?
+  deal            DealSpec?      @relation(fields: [dealId], references: [id])
+
+  // === Job Details ===
+  title           String         // Job title/description
+  description     String?        // Detailed description
+  category        VendorCategory? // Trade category for this job
+
+  // === Financials ===
+  quotedAmount    Float?         // Original quote
+  finalAmount     Float?         // Final amount paid
+
+  // === Timeline ===
+  scheduledDate   DateTime?      // When job is scheduled
+  startDate       DateTime?      // When work started
+  completedDate   DateTime?      // When work completed
+
+  // === Assessment (after completion) ===
+  qualityRating       Int?       // 1-5 rating for work quality
+  timelinessRating    Int?       // 1-5 rating for meeting schedule
+  communicationRating Int?       // 1-5 rating for communication
+  wouldRecommend      Boolean?   // Would user recommend this vendor?
+  reviewNotes         String?    // User's review/notes about the job
+
+  // === Status ===
+  status          String         @default("pending") // pending, scheduled, in_progress, completed, cancelled
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([userVendorId])
+  @@index([userVendorRelationshipId])
+  @@index([dealId])
+  @@index([status])
+  @@index([completedDate])
+}
+
+// =============================================================================
+// TEAM MANAGEMENT SYSTEM
+// =============================================================================
+// Architecture:
+// - Team: An organization/company with multiple members
+// - TeamMember: Links users to teams with roles and permissions
+// - TeamInvite: Pending invitations to join a team
+// - Activity: Tracks team member activities for performance analytics
+// =============================================================================
+
+// Team roles for access control
+enum TeamRole {
+  OWNER       // Full admin rights, can delete team
+  ADMIN       // Can manage members, settings
+  MANAGER     // Can view all deals, assign work
+  MEMBER      // Standard access to own work
+  VIEWER      // Read-only access
+}
+
+// Team/Organization
+model Team {
+  id              String       @id @default(cuid())
+  name            String       // Team/Company name
+  slug            String       @unique // URL-friendly identifier
+  description     String?      // Team description
+  logo            String?      // Logo URL
+
+  // Billing
+  tier            String       @default("pro") // free, pro, enterprise
+  subscriptionId  String?      // Stripe subscription ID
+
+  // Settings (JSON for flexibility)
+  settings        String?      // JSON: { timezone, workingHours, notifications, etc. }
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  members         TeamMember[]
+  invites         TeamInvite[]
+  activities      Activity[]
+
+  @@index([slug])
+}
+
+// Team membership - links users to teams
+model TeamMember {
+  id              String       @id @default(cuid())
+  teamId          String
+  userId          String       // Links to User model (via clerkId or id)
+
+  // Member info (cached from User for display)
+  name            String
+  email           String
+  avatar          String?      // Profile picture URL
+
+  // Role and permissions
+  role            TeamRole     @default(MEMBER)
+  department      String?      // "Acquisition", "Disposition", "Account Manager", etc.
+  title           String?      // Job title
+
+  // Status
+  isActive        Boolean      @default(true)
+  joinedAt        DateTime     @default(now())
+  lastActiveAt    DateTime?
+
+  // Performance targets (optional)
+  dailyTouchTarget    Int?     // Target calls/touches per day
+  monthlyDealTarget   Int?     // Target deals per month
+  responseTimeTarget  Int?     // Target response time in minutes
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  team            Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  activities      Activity[]
+
+  @@unique([teamId, userId])
+  @@unique([teamId, email])
+  @@index([teamId])
+  @@index([userId])
+  @@index([teamId, role])
+  @@index([teamId, isActive])
+}
+
+// Pending team invitations
+model TeamInvite {
+  id              String       @id @default(cuid())
+  teamId          String
+  email           String       // Invited email address
+
+  // Invite details
+  role            TeamRole     @default(MEMBER)
+  department      String?
+  title           String?
+
+  // Invite tracking
+  invitedBy       String       // User ID who sent invite
+  invitedAt       DateTime     @default(now())
+  expiresAt       DateTime     // Invite expiration
+
+  // Status
+  status          String       @default("pending") // pending, accepted, expired, cancelled
+  acceptedAt      DateTime?
+
+  // Token for secure invite link
+  token           String       @unique @default(cuid())
+
+  // Relations
+  team            Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, email, status]) // One pending invite per email per team
+  @@index([teamId])
+  @@index([email])
+  @@index([token])
+  @@index([status])
+}
+
+// Activity tracking for team performance analytics
+model Activity {
+  id              String       @id @default(cuid())
+  teamId          String
+  memberId        String       // TeamMember ID
+
+  // Activity details
+  type            String       // "call", "sms", "email", "appointment", "offer", "note", "task"
+  outcome         String?      // "connected", "no_answer", "left_vm", "wrong_number", "scheduled", "completed"
+
+  // Related entities (optional links)
+  propertyId      String?      // If activity is on a property/lead
+  dealId          String?      // If activity is on a deal
+  contractId      String?      // If activity is on a contract
+
+  // Activity metadata
+  duration        Int?         // Duration in seconds (for calls)
+  notes           String?      // Activity notes
+  sentiment       String?      // "positive", "neutral", "negative"
+
+  // Response tracking
+  isFirstContact  Boolean      @default(false) // Was this the first contact?
+  responseTime    Int?         // Time to respond in minutes (from lead creation)
+
+  // Timestamps
+  occurredAt      DateTime     @default(now()) // When activity happened
+  createdAt       DateTime     @default(now())
+
+  // Relations
+  team            Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  member          TeamMember   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@index([memberId])
+  @@index([teamId, occurredAt])
+  @@index([memberId, occurredAt])
+  @@index([type])
+  @@index([propertyId])
+  @@index([dealId])
 }

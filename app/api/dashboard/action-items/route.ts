@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
+import { getAuthenticatedUserId } from '@/lib/auth-helpers';
 
 /**
  * GET /api/dashboard/action-items
  * Get today's action items for authenticated user
- * Includes:
- * - Properties needing first contact (skip traced but not contacted)
- * - Follow-ups due today (nextFollowUpDate = today)
- * - Tasks due today
  */
 export async function GET() {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const authResult = await getAuthenticatedUserId();
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    }
+    const userId = authResult.userId!;
 
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -36,7 +35,7 @@ export async function GET() {
         ownerName: true,
       },
       orderBy: { updatedAt: 'desc' },
-      take: 3, // Limit to top 3
+      take: 3,
     });
 
     needsFirstContact.forEach((property) => {
@@ -67,7 +66,7 @@ export async function GET() {
         sentiment: true,
       },
       orderBy: { nextFollowUpDate: 'asc' },
-      take: 3, // Limit to top 3
+      take: 3,
     });
 
     followUpsDue.forEach((property) => {
@@ -80,7 +79,7 @@ export async function GET() {
       });
     });
 
-    // 3. Tasks due today (not overdue)
+    // 3. Tasks due today
     const tasksDueToday = await prisma.task.findMany({
       where: {
         userId,
@@ -103,7 +102,7 @@ export async function GET() {
         { priority: 'desc' },
         { dueDate: 'asc' },
       ],
-      take: 3, // Limit to top 3
+      take: 3,
     });
 
     tasksDueToday.forEach((task) => {
@@ -120,21 +119,15 @@ export async function GET() {
       });
     });
 
-    // Sort action items: high priority tasks first, then by type
+    // Sort and limit
     const sortedItems = actionItems.sort((a, b) => {
-      // High priority tasks first
       if (a.priority === 'high' && b.priority !== 'high') return -1;
       if (b.priority === 'high' && a.priority !== 'high') return 1;
-
-      // Then by type: first_contact > follow_up > tasks
       const typeOrder = { first_contact: 1, follow_up: 2, overdue_task: 3 };
-      return typeOrder[a.type] - typeOrder[b.type];
+      return (typeOrder[a.type] || 3) - (typeOrder[b.type] || 3);
     });
 
-    // Limit to top 5 total
-    const limitedItems = sortedItems.slice(0, 5);
-
-    return NextResponse.json({ actionItems: limitedItems });
+    return NextResponse.json({ actionItems: sortedItems.slice(0, 5) });
   } catch (error) {
     console.error('Error fetching action items:', error);
     return NextResponse.json(

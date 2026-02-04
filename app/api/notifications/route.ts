@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
 
 // Schema for notification data
 const NotificationSchema = z.object({
-  type: z.enum(['success', 'error', 'warning', 'info', 'webhook_success', 'webhook_error', 'batch_complete']).optional().default('info'),
+  type: z.enum(['success', 'error', 'warning', 'info', 'webhook_success', 'webhook_error', 'batch_complete', 'g1.denied', 'g2.denied', 'g3.denied', 'g4.denied', 'property.alert']).optional().default('info'),
   source: z.string().optional().default('n8n'),
   workflow: z.string().optional(),
   message: z.string().optional(),
+  dealId: z.string().optional(),
   data: z.any().optional(),
   metadata: z.record(z.any()).optional(),
   stats: z.object({
@@ -19,17 +21,13 @@ const NotificationSchema = z.object({
   timestamp: z.string().optional(),
 });
 
-// Store notifications in memory
-const recentNotifications: any[] = [];
-const MAX_NOTIFICATIONS = 100;
-
 export async function POST(req: NextRequest) {
   try {
-    // Basic API key authentication
-    const apiKey = req.headers.get('x-api-key');
+    // API key authentication
+    const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
     const expectedApiKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
 
-    if (expectedApiKey && apiKey !== expectedApiKey) {
+    if (!expectedApiKey || apiKey !== expectedApiKey) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -38,32 +36,51 @@ export async function POST(req: NextRequest) {
 
     // Parse request body
     const body = await req.json();
-    const notification = NotificationSchema.parse({
+    const parsed = NotificationSchema.parse({
       ...body,
       timestamp: body.timestamp || new Date().toISOString(),
     });
 
-    // Store in memory
-    recentNotifications.push(notification);
-    if (recentNotifications.length > MAX_NOTIFICATIONS) {
-      recentNotifications.shift();
-    }
+    // Generate unique eventId
+    const eventId = crypto.randomUUID();
 
-    // Log to console
-    console.log('[Notification]', {
-      type: notification.type,
-      source: notification.source,
-      workflow: notification.workflow,
-      message: notification.message,
-      stats: notification.stats,
+    // Combine metadata with stats and data
+    const metadata = JSON.stringify({
+      source: parsed.source,
+      stats: parsed.stats,
+      data: parsed.data,
+      ...parsed.metadata,
     });
 
-    // Return success response
+    // Store in database
+    const notification = await prisma.notification.create({
+      data: {
+        eventId,
+        type: parsed.type || 'info',
+        dealId: parsed.dealId || null,
+        message: parsed.message || `${parsed.type} notification from ${parsed.source}`,
+        metadata,
+        occurredAt: parsed.timestamp ? new Date(parsed.timestamp) : new Date(),
+        n8nWorkflow: parsed.workflow || null,
+        processed: false,
+      },
+    });
+
+    // Log to console for debugging
+    console.log('[Notification]', {
+      id: notification.id,
+      type: parsed.type,
+      source: parsed.source,
+      workflow: parsed.workflow,
+      message: parsed.message,
+    });
+
     return NextResponse.json({
       success: true,
-      message: 'Notification logged',
-      id: crypto.randomUUID(),
-      timestamp: notification.timestamp,
+      message: 'Notification stored',
+      id: notification.id,
+      eventId: notification.eventId,
+      timestamp: notification.occurredAt.toISOString(),
     }, { status: 200 });
 
   } catch (error) {
@@ -86,11 +103,11 @@ export async function POST(req: NextRequest) {
 // GET endpoint to retrieve recent notifications
 export async function GET(req: NextRequest) {
   try {
-    // Basic API key authentication
-    const apiKey = req.headers.get('x-api-key');
+    // API key authentication
+    const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
     const expectedApiKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
 
-    if (expectedApiKey && apiKey !== expectedApiKey) {
+    if (!expectedApiKey || apiKey !== expectedApiKey) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -100,32 +117,91 @@ export async function GET(req: NextRequest) {
     // Get query parameters
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const dealId = searchParams.get('dealId');
+    const processed = searchParams.get('processed');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
 
-    // Filter notifications
-    let filtered = [...recentNotifications];
+    // Build query
+    const where: any = {};
+    if (type) where.type = type;
+    if (dealId) where.dealId = dealId;
+    if (processed !== null) where.processed = processed === 'true';
 
-    if (type) {
-      filtered = filtered.filter((n: any) => n.type === type);
-    }
+    // Query database
+    const [notifications, total] = await Promise.all([
+      prisma.notification.findMany({
+        where,
+        orderBy: { occurredAt: 'desc' },
+        take: limit,
+      }),
+      prisma.notification.count({ where }),
+    ]);
 
-    // Sort by timestamp (newest first) and limit
-    filtered.sort((a: any, b: any) => {
-      const aTime = new Date(a.timestamp || 0).getTime();
-      const bTime = new Date(b.timestamp || 0).getTime();
-      return bTime - aTime;
-    });
-    filtered = filtered.slice(0, limit);
+    // Format response
+    const formatted = notifications.map(n => ({
+      id: n.id,
+      eventId: n.eventId,
+      type: n.type,
+      dealId: n.dealId,
+      message: n.message,
+      metadata: n.metadata ? JSON.parse(n.metadata) : null,
+      occurredAt: n.occurredAt.toISOString(),
+      workflow: n.n8nWorkflow,
+      processed: n.processed,
+    }));
 
     return NextResponse.json({
       success: true,
-      count: filtered.length,
-      total: recentNotifications.length,
-      notifications: filtered,
+      count: formatted.length,
+      total,
+      notifications: formatted,
     }, { status: 200 });
 
   } catch (error) {
     console.error('[Notification GET Error]', error);
+
+    return NextResponse.json({
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    }, { status: 500 });
+  }
+}
+
+// PATCH endpoint to mark notifications as processed
+export async function PATCH(req: NextRequest) {
+  try {
+    // API key authentication
+    const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
+    const expectedApiKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
+
+    if (!expectedApiKey || apiKey !== expectedApiKey) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+    const { ids, processed } = body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({
+        error: 'ids array is required',
+      }, { status: 400 });
+    }
+
+    const updated = await prisma.notification.updateMany({
+      where: { id: { in: ids } },
+      data: { processed: processed !== false },
+    });
+
+    return NextResponse.json({
+      success: true,
+      updated: updated.count,
+    }, { status: 200 });
+
+  } catch (error) {
+    console.error('[Notification PATCH Error]', error);
 
     return NextResponse.json({
       error: 'Internal server error',

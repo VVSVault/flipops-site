@@ -13,11 +13,12 @@ export async function POST(
   { params }: { params: Promise<{ dealId: string }> }
 ) {
   try {
-    // Optional API key authentication
-    const apiKey = req.headers.get('x-api-key');
+    // API key authentication (required)
+    const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
     const expectedApiKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
 
-    if (expectedApiKey && apiKey && apiKey !== expectedApiKey) {
+    // SECURITY: Check BOTH that expectedKey exists AND matches
+    if (!expectedApiKey || apiKey !== expectedApiKey) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -87,7 +88,6 @@ export async function POST(
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error',
     }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
+  // NOTE: Do not call prisma.$disconnect() - uses shared singleton
 }

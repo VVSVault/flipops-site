@@ -25,9 +25,12 @@ export async function GET(req: NextRequest) {
     return res;
   } catch (error: any) {
     console.error("Motion panel error:", error);
+
+    // Return 404 for "not found" errors, 500 for others
+    const isNotFound = error.message?.includes("not found") || error.message?.includes("missing");
     return NextResponse.json(
       { error: error.message || "Internal error" },
-      { status: 500 }
+      { status: isNotFound ? 404 : 500 }
     );
   }
 }

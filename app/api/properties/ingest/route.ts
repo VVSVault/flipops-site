@@ -2,8 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
+import { skipTraceProperty, isBatchDataConfigured } from '@/lib/batchdata';
 
 const log = logger.child({ endpoint: '/api/properties/ingest' });
+
+// API key for service-level access (scripts, cron jobs)
+const SERVICE_API_KEY = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
+
+/**
+ * Validate service API key from header
+ */
+function validateServiceKey(req: NextRequest): boolean {
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader) return false;
+
+  // Support both "Bearer <key>" and just "<key>"
+  const key = authHeader.startsWith('Bearer ')
+    ? authHeader.slice(7)
+    : authHeader;
+
+  return key === SERVICE_API_KEY;
+}
 
 /**
  * Property ingest schema - accepts data from ATTOM, BatchData, or manual sources
@@ -36,6 +55,10 @@ const PropertyIngestSchema = z.object({
     lastSalePrice: z.number().nullable().optional(),
     estimatedValue: z.number().nullable().optional(),
 
+    // Listing/Market info
+    listingDate: z.string().nullable().optional(),  // ISO date string
+    daysOnMarket: z.number().int().nullable().optional(),
+
     // Distress flags
     foreclosure: z.boolean().default(false),
     preForeclosure: z.boolean().default(false),
@@ -62,6 +85,15 @@ export async function POST(req: NextRequest) {
   const reqLog = log.child({ requestId });
 
   try {
+    // Validate service API key for automated ingestion
+    if (!validateServiceKey(req)) {
+      reqLog.warn('Invalid or missing API key');
+      return NextResponse.json(
+        { error: 'Unauthorized - valid API key required', requestId },
+        { status: 401 }
+      );
+    }
+
     // Parse and validate request body
     const body = await req.json();
     const validationResult = PropertyIngestSchema.safeParse(body);
@@ -104,8 +136,11 @@ export async function POST(req: NextRequest) {
       created: 0,
       updated: 0,
       skipped: 0,
+      enriched: 0,
       errors: [] as string[]
     };
+
+    const skipTraceEnabled = isBatchDataConfigured();
 
     for (const property of properties) {
       try {
@@ -163,7 +198,39 @@ export async function POST(req: NextRequest) {
 
           results.updated++;
         } else {
-          // Create new property
+          // Skip trace the property before creating (if BatchData is configured)
+          let skipTraceData: {
+            ownerName?: string | null;
+            phoneNumbers?: string;
+            emails?: string;
+            enriched: boolean;
+          } = { enriched: false };
+
+          if (isBatchDataConfigured()) {
+            try {
+              const skipResult = await skipTraceProperty({
+                address: property.address,
+                city: property.city,
+                state: property.state,
+                zip: property.zip,
+              });
+
+              if (skipResult.success) {
+                skipTraceData = {
+                  ownerName: skipResult.ownerName || property.ownerName,
+                  phoneNumbers: skipResult.phoneNumbers?.length ? JSON.stringify(skipResult.phoneNumbers) : undefined,
+                  emails: skipResult.emails?.length ? JSON.stringify(skipResult.emails) : undefined,
+                  enriched: true,
+                };
+                results.enriched++;
+                reqLog.info({ address: property.address }, 'Skip traced successfully');
+              }
+            } catch (skipError) {
+              reqLog.warn({ skipError, address: property.address }, 'Skip trace failed, continuing without enrichment');
+            }
+          }
+
+          // Create new property with skip trace data
           await prisma.property.create({
             data: {
               userId,
@@ -174,7 +241,7 @@ export async function POST(req: NextRequest) {
 
               county: property.county,
               apn: property.apn,
-              ownerName: property.ownerName,
+              ownerName: skipTraceData.ownerName || property.ownerName,
               propertyType: property.propertyType,
               bedrooms: property.bedrooms,
               bathrooms: property.bathrooms,
@@ -188,6 +255,9 @@ export async function POST(req: NextRequest) {
               lastSalePrice: property.lastSalePrice,
               estimatedValue: property.estimatedValue,
 
+              listingDate: property.listingDate ? new Date(property.listingDate) : null,
+              daysOnMarket: property.daysOnMarket,
+
               foreclosure: property.foreclosure,
               preForeclosure: property.preForeclosure,
               taxDelinquent: property.taxDelinquent,
@@ -198,7 +268,9 @@ export async function POST(req: NextRequest) {
               dataSource: source,
               sourceId: property.sourceId,
               metadata: property.metadata ? JSON.stringify(property.metadata) : null,
-              enriched: false,
+              enriched: skipTraceData.enriched,
+              phoneNumbers: skipTraceData.phoneNumbers,
+              emails: skipTraceData.emails,
             }
           });
 
@@ -225,10 +297,14 @@ export async function POST(req: NextRequest) {
       userId,
       source,
       results,
+      skipTraceEnabled,
       duration,
       nextSteps: {
         scoring: results.created > 0 ? `Trigger scoring for ${results.created} new properties` : 'No new properties to score',
-        notification: results.created > 0 ? `Consider sending digest to user` : null
+        notification: results.created > 0 ? `Consider sending digest to user` : null,
+        skipTrace: skipTraceEnabled
+          ? `${results.enriched} of ${results.created} properties enriched with contact info`
+          : 'Configure BATCHDATA_API_KEY to enable automatic skip tracing'
       },
       requestId
     }, { status: 200 });
@@ -255,7 +331,6 @@ export async function POST(req: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
+  // NOTE: Do not call prisma.$disconnect() - uses shared singleton
 }

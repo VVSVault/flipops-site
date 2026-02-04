@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/properties
@@ -11,7 +10,23 @@ const prisma = new PrismaClient();
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = "mock-user-id"; // Temporary for CSS debugging
+    const { userId: clerkId } = await auth();
+
+    if (!clerkId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Look up the database user by clerkId
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkId },
+      select: { id: true },
+    });
+
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const userId = dbUser.id;
 
     const searchParams = request.nextUrl.searchParams;
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
@@ -24,17 +39,35 @@ export async function GET(request: NextRequest) {
         city: true,
         state: true,
         zip: true,
+        county: true,
         propertyType: true,
         bedrooms: true,
         bathrooms: true,
         squareFeet: true,
+        lotSize: true,
         yearBuilt: true,
         assessedValue: true,
         estimatedValue: true,
+        lastSaleDate: true,
+        lastSalePrice: true,
+        listingDate: true,
+        daysOnMarket: true,
         score: true,
+        scoreBreakdown: true,
         dataSource: true,
         ownerName: true,
         enriched: true,
+        phoneNumbers: true,
+        emails: true,
+        // Distress flags
+        foreclosure: true,
+        preForeclosure: true,
+        taxDelinquent: true,
+        vacant: true,
+        bankruptcy: true,
+        absenteeOwner: true,
+        // Metadata (contains REAPI-specific data like equity, yearsOwned, etc.)
+        metadata: true,
         createdAt: true,
       },
       orderBy: [

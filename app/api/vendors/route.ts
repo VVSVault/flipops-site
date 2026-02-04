@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
+import { getAuthenticatedUserId } from '@/lib/auth-helpers';
 
 /**
  * POST /api/vendors
@@ -16,7 +15,11 @@ const prisma = new PrismaClient();
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = "mock-user-id"; // Temporary for development
+    const authResult = await getAuthenticatedUserId();
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    }
+    const userId = authResult.userId!;
 
     const body = await request.json();
 
@@ -43,10 +46,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Parse trade for response
+    // Parse trade for response - handle both JSON arrays and plain strings
+    let trade: string[] = [];
+    if (vendor.trade) {
+      try {
+        const parsed = JSON.parse(vendor.trade);
+        trade = Array.isArray(parsed) ? parsed : [vendor.trade];
+      } catch {
+        trade = [vendor.trade];
+      }
+    }
     const formattedVendor = {
       ...vendor,
-      trade: vendor.trade ? JSON.parse(vendor.trade) : [],
+      trade,
     };
 
     return NextResponse.json({ vendor: formattedVendor }, { status: 201 });
@@ -69,7 +81,11 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = "mock-user-id"; // Temporary for development
+    const authResult = await getAuthenticatedUserId();
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+    }
+    const userId = authResult.userId!;
 
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search');
@@ -77,10 +93,7 @@ export async function GET(request: NextRequest) {
     const regionFilter = searchParams.get('region');
 
     const where: any = {
-      OR: [
-        { userId },
-        { userId: null }, // Include platform/shared vendors
-      ],
+      userId, // Only return vendors owned by the current user
     };
 
     // Add search filter
@@ -129,11 +142,29 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Parse trade for each vendor
-    const formattedVendors = vendors.map((vendor) => ({
-      ...vendor,
-      trade: vendor.trade ? JSON.parse(vendor.trade) : [],
-    }));
+    // Parse trade for each vendor - handle both JSON arrays and plain strings
+    const formattedVendors = vendors.map((vendor) => {
+      let trade: string[] = [];
+      try {
+        if (vendor.trade) {
+          // First check if it looks like JSON (starts with [ or ")
+          if (vendor.trade.startsWith('[') || vendor.trade.startsWith('"')) {
+            const parsed = JSON.parse(vendor.trade);
+            trade = Array.isArray(parsed) ? parsed : [String(parsed)];
+          } else {
+            // Plain string - treat as single trade
+            trade = [vendor.trade];
+          }
+        }
+      } catch {
+        // If anything fails, treat as single trade string
+        trade = vendor.trade ? [vendor.trade] : [];
+      }
+      return {
+        ...vendor,
+        trade,
+      };
+    });
 
     return NextResponse.json({ vendors: formattedVendors });
   } catch (error) {

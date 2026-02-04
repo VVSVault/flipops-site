@@ -21,6 +21,16 @@ export async function POST(request: NextRequest) {
   const log = logger.child({ requestId, endpoint: '/api/change-orders/submit' });
 
   try {
+    // API key authentication (required)
+    const apiKey = request.headers.get('x-api-key') || request.headers.get('authorization')?.replace('Bearer ', '');
+    const expectedApiKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
+
+    // SECURITY: Check BOTH that expectedKey exists AND matches
+    if (!expectedApiKey || apiKey !== expectedApiKey) {
+      log.warn({ apiKey: apiKey ? '[redacted]' : 'none' }, 'Unauthorized request');
+      return NextResponse.json({ error: 'Unauthorized', requestId }, { status: 401 });
+    }
+
     // Parse and validate request
     const body = await request.json();
     const validation = ChangeOrderSubmitSchema.safeParse(body);

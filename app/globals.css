@@ -10,6 +10,9 @@
  * Theme colors - static values for utility generation
  */
 @theme {
+  /* Font family */
+  --font-sans: "TikTok Sans", ui-sans-serif, system-ui, sans-serif;
+
   /* Primary teal */
   --color-primary: oklch(0.596 0.154 162.243);
   --color-primary-foreground: oklch(0.985 0 0);
@@ -134,5 +137,110 @@
   }
   .dark .text-card-foreground {
     color: oklch(0.95 0 0) !important;
+  }
+
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Always show ScrollArea scrollbar */
+  [data-slot="scroll-area-scrollbar"] {
+    opacity: 1 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  [data-slot="scroll-area-thumb"] {
+    background-color: oklch(0.8 0 0) !important;
+    margin: 0 !important;
+  }
+  .dark [data-slot="scroll-area-thumb"] {
+    background-color: oklch(0.35 0 0) !important;
+  }
+  /* Hide ScrollArea corner */
+  [data-radix-scroll-area-corner] {
+    display: none !important;
+  }
+  /* Remove extra space from ScrollArea viewport - fix Radix display:table issue */
+  [data-slot="scroll-area-viewport"] > div {
+    display: block !important;
+    min-height: 0 !important;
+    background: transparent !important;
+  }
+  /* Remove table container extra space */
+  [data-slot="table-container"] {
+    overflow-x: visible !important;
+  }
+  /* Ensure no margin/padding on table elements */
+  [data-slot="scroll-area-viewport"] [data-slot="table-container"],
+  [data-slot="scroll-area-viewport"] table {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* Sparkline - show by default, animate on hover */
+.sparkline-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.sparkline-fill {
+  opacity: 1;
+}
+
+/* Progress ring - show by default */
+.progress-ring-circle {
+  stroke-dashoffset: var(--target-offset);
+}
+
+/* On hover: reset and re-animate */
+.group:hover .sparkline-line {
+  animation: drawSparkline 0.8s ease-out forwards;
+}
+
+.group:hover .sparkline-fill {
+  animation: fadeInFill 0.8s ease-out forwards;
+}
+
+.group:hover .progress-ring-circle {
+  animation: drawProgress 1s ease-in-out forwards;
+}
+
+@keyframes drawSparkline {
+  0% {
+    stroke-dashoffset: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeInFill {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes drawProgress {
+  0% {
+    stroke-dashoffset: var(--target-offset);  /* start at current value */
+  }
+  49% {
+    stroke-dashoffset: 0;  /* fill to 100% */
+  }
+  50% {
+    stroke-dashoffset: 140;  /* instant snap to empty (12 o'clock reset) */
+  }
+  100% {
+    stroke-dashoffset: var(--target-offset);  /* fill back to original */
   }
 }

@@ -8,13 +8,22 @@ const log = logger.child({ endpoint: '/api/users' });
  * GET /api/users
  *
  * Fetch all users (for workflow automation)
- * In production, this should be authenticated and rate-limited
+ * Requires API key authentication
  */
 export async function GET(req: NextRequest) {
   const requestId = crypto.randomUUID();
   const reqLog = log.child({ requestId });
 
   try {
+    // API key authentication
+    const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
+    const expectedKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
+
+    if (!expectedKey || apiKey !== expectedKey) {
+      reqLog.warn({ apiKey: apiKey ? '[redacted]' : 'none' }, 'Unauthorized request');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     // Get query params
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status'); // e.g., "active"
@@ -69,7 +78,6 @@ export async function GET(req: NextRequest) {
       message: error instanceof Error ? error.message : 'Unknown error',
       requestId
     }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
+  // NOTE: Do not call prisma.$disconnect() - uses shared singleton
 }

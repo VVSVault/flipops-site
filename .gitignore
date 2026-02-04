@@ -38,8 +38,12 @@ yarn-error.log*
 
 # Google OAuth and service account credentials
 google-service-account.json
+google-oauth2-web-credentials.json
+google-sheet-config.json
 oauth-token.json
+oauth-credentials.json
 *-service-account.json
+*-credentials.json
 
 # wrangler
 .wrangler/

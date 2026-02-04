@@ -34,10 +34,9 @@ const isPublicRoute = createRouteMatcher([
   "/api/panels/truth",           // Panel endpoint
   "/api/panels/money",           // Panel endpoint
   "/api/panels/motion",          // Panel endpoint
-  "/api/test",                   // Test endpoint
-  "/api/debug/(.*)",             // Debug endpoints
   "/not-authorized",
   "/api/dashboard/(.*)",         // Dashboard API endpoints
+  // REMOVED: /api/test and /api/debug/(.*) - these should require auth
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

@@ -24,6 +24,13 @@ export interface Vendor {
   licenseExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
+  // Extended properties for new vendor network system
+  isFavorite?: boolean;
+  isPreferred?: boolean;
+  vendorType?: 'user_vendor' | 'platform_vendor';
+  isInMyList?: boolean;
+  googlePlaceId?: string | null;
+  isDemo?: boolean;
 }
 
 export interface VendorCategory {

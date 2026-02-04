@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { prisma } from '@/lib/prisma';
 
 // Schema for property data from n8n
 const PropertySchema = z.object({
@@ -120,11 +121,12 @@ export async function POST(req: NextRequest) {
     // Get webhook secret from environment (using existing FO_WEBHOOK_SECRET from Railway setup)
     const webhookSecret = process.env.FO_WEBHOOK_SECRET;
 
-    // Basic authentication via API key in header (using existing FO_API_KEY)
-    const apiKey = req.headers.get('x-api-key');
+    // API key authentication (required)
+    const apiKey = req.headers.get('x-api-key') || req.headers.get('authorization')?.replace('Bearer ', '');
     const expectedApiKey = process.env.FO_API_KEY || process.env.FLIPOPS_API_KEY;
 
-    if (expectedApiKey && apiKey !== expectedApiKey) {
+    // SECURITY: Check BOTH that expectedKey exists AND matches
+    if (!expectedApiKey || apiKey !== expectedApiKey) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -160,10 +162,7 @@ export async function POST(req: NextRequest) {
         try {
           const processed = await processProperty(property);
 
-          // Save to database via Prisma
-          const { PrismaClient } = await import('@prisma/client');
-          const prisma = new PrismaClient();
-
+          // Save to database via Prisma (use shared singleton)
           try {
             await prisma.property.upsert({
               where: {
@@ -232,7 +231,7 @@ export async function POST(req: NextRequest) {
                 updatedAt: new Date(),
               },
             });
-            await prisma.$disconnect();
+            // NOTE: Do not call prisma.$disconnect() - uses shared singleton
 
             results.push({
               success: true,
@@ -242,7 +241,6 @@ export async function POST(req: NextRequest) {
             });
           } catch (dbError) {
             console.error('Failed to save property to database:', dbError);
-            await prisma.$disconnect();
             throw dbError;
           }
 

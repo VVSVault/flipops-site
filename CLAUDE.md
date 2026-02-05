@@ -1103,6 +1103,42 @@ npm run cron:skip-trace     # Skip Tracing & Enrichment
 npm run cron:all            # Run all cron jobs sequentially
 ```
 
+## Known Issues
+
+### Railway Deployment - Height Constraint Issue (2026-02-04)
+
+**Status**: UNRESOLVED - Railway-specific deployment issue
+
+**Symptom**: Overview, Analytics, and Settings pages have full-page scrolling on Railway deployment, but work correctly locally (both dev and production builds).
+
+**What works locally**:
+- `npm run dev` - Pages fit viewport, internal scrolling only ✅
+- `npm run build && npm run start` - Same, works correctly ✅
+
+**What's broken on Railway**:
+- Pages extend past viewport, causing full page scroll
+- Version badge confirms code IS deployed (v2.5.0 visible)
+- Issue persists despite NO_CACHE=1 environment variable
+
+**Investigation done**:
+1. Verified git repo matches local codebase
+2. Confirmed production build works locally
+3. Code follows correct viewport-fitting pattern (same as working pages like Tasks, Vendors)
+4. Version badge updates confirm deployments are happening
+
+**Suspected causes**:
+- Railway build cache not fully clearing despite NO_CACHE=1
+- Static asset caching at CDN/edge level
+- Different build behavior on Railway vs local
+
+**To try next**:
+1. Clear Railway's build cache via dashboard (Settings → Clear Build Cache)
+2. Delete and recreate Railway service
+3. Check Railway build logs for any differences
+4. Use `railway up --force` if using CLI
+
+**Code is correct** - this is a deployment infrastructure issue, not a code fix.
+
 ## Don't Do
 
 - Don't create new PrismaClient instances in API routes

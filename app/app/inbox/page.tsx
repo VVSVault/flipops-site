@@ -361,7 +361,7 @@ function MessagesSkeleton() {
         >
           <Skeleton className={cn(
             "rounded-2xl",
-            i % 2 === 0 ? "w-[280px] h-20" : "w-[320px] h-16"
+            i % 2 === 0 ? "w-[252px] h-20" : "w-[288px] h-16"
           )} />
         </div>
       ))}
@@ -711,7 +711,7 @@ export default function InboxPage() {
   return (
     <div className="flex h-full gap-4">
       {/* Left Panel - Thread List */}
-      <div className="w-[340px] flex flex-col rounded-2xl border border-gray-200/80 dark:border-gray-800/80 bg-white dark:bg-gray-950 shadow-sm flex-shrink-0 min-h-0 overflow-hidden">
+      <div className="w-[306px] flex flex-col rounded-2xl border border-gray-200/80 dark:border-gray-800/80 bg-white dark:bg-gray-950 shadow-sm flex-shrink-0 min-h-0 overflow-hidden">
         {/* Search Header */}
         <div className="p-4 border-b border-gray-100 dark:border-gray-800/80 bg-gray-50/50 dark:bg-gray-900/50 flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -1149,7 +1149,7 @@ export default function InboxPage() {
                   placeholder="Type a message..."
                   value={messageBody}
                   onChange={(e) => setMessageBody(e.target.value)}
-                  className="flex-1 min-h-[52px] max-h-[120px] resize-none text-sm rounded-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 focus-visible:ring-blue-500/20 focus-visible:ring-offset-0"
+                  className="flex-1 min-h-[47px] max-h-[108px] resize-none text-sm rounded-xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 focus-visible:ring-blue-500/20 focus-visible:ring-offset-0"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                       sendMessage();
@@ -1159,7 +1159,7 @@ export default function InboxPage() {
                 <Button
                   onClick={sendMessage}
                   disabled={!messageBody.trim() && attachments.length === 0}
-                  className="self-end h-[52px] w-[52px] rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-sm shadow-blue-500/25"
+                  className="self-end h-[47px] w-[47px] rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-sm shadow-blue-500/25"
                   size="icon"
                 >
                   <Send className="h-5 w-5" />
@@ -1182,7 +1182,7 @@ export default function InboxPage() {
 
       {/* Right Panel - Lead Details */}
       {selectedThread && (
-        <div className="w-[280px] flex flex-col gap-4 flex-shrink-0 overflow-y-auto min-h-0">
+        <div className="w-[252px] flex flex-col gap-4 flex-shrink-0 overflow-y-auto min-h-0">
           {/* Score Card */}
           <Card className="rounded-2xl border-gray-200/80 dark:border-gray-800/80 shadow-sm overflow-hidden">
             <CardContent className="p-5">

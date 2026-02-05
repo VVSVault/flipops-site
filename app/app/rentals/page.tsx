@@ -792,7 +792,7 @@ function RentalDetailSheet({
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[540px] p-0 flex flex-col bg-background"
+        className="w-full sm:max-w-[486px] p-0 flex flex-col bg-background"
       >
         <VisuallyHidden>
           <SheetTitle>Property Details: {rental.address}</SheetTitle>
@@ -1261,7 +1261,7 @@ export default function RentalsPage() {
           </div>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[144px]">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>

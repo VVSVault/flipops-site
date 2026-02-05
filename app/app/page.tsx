@@ -1053,7 +1053,7 @@ export default function DashboardPage() {
       {/* Main grid - Hot leads, Actions, Pipeline */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Hot Leads */}
-        <Card className="lg:col-span-1 flex flex-col h-[510px]">
+        <Card className="lg:col-span-1 flex flex-col h-[459px]">
           <CardHeader className="pb-2 flex-shrink-0">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium flex items-center gap-2">
@@ -1139,7 +1139,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Today's Actions */}
-        <Card className="flex flex-col h-[510px]">
+        <Card className="flex flex-col h-[459px]">
           <CardHeader className="pb-2 flex-shrink-0">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium flex items-center gap-2">

@@ -867,7 +867,7 @@ export default function CampaignsPage() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[90px] sm:w-[130px] bg-white dark:bg-gray-900 flex-shrink-0">
+              <SelectTrigger className="w-[81px] sm:w-[117px] bg-white dark:bg-gray-900 flex-shrink-0">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -879,7 +879,7 @@ export default function CampaignsPage() {
               </SelectContent>
             </Select>
             <Select value={objectiveFilter} onValueChange={setObjectiveFilter}>
-              <SelectTrigger className="w-[150px] bg-white dark:bg-gray-900 hidden sm:flex flex-shrink-0">
+              <SelectTrigger className="w-[135px] bg-white dark:bg-gray-900 hidden sm:flex flex-shrink-0">
                 <SelectValue placeholder="Objective" />
               </SelectTrigger>
               <SelectContent>

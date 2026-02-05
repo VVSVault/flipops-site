@@ -964,7 +964,7 @@ export default function OffersPage() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[100px] sm:w-[140px] bg-white dark:bg-gray-900 flex-shrink-0">
+              <SelectTrigger className="w-[90px] sm:w-[126px] bg-white dark:bg-gray-900 flex-shrink-0">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>

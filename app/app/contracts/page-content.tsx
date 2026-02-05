@@ -1074,7 +1074,7 @@ export default function ContractsPage() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[140px] h-9">
+              <SelectTrigger className="w-[126px] h-9">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -1106,7 +1106,7 @@ export default function ContractsPage() {
           <Card className="h-full py-0 gap-0">
             <ScrollArea className="h-full">
               {filteredContracts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-[400px] gap-3">
+                <div className="flex flex-col items-center justify-center h-[360px] gap-3">
                   <FileSignature className="h-12 w-12 text-gray-400" />
                   <div className="text-center">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No contracts found</h3>
@@ -1305,7 +1305,7 @@ export default function ContractsPage() {
 
       {/* Detail Panel (Sheet) */}
       <Sheet open={detailPanelOpen} onOpenChange={setDetailPanelOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-[540px] p-0 flex flex-col">
+        <SheetContent side="right" className="w-full sm:max-w-[486px] p-0 flex flex-col">
           {selectedContract && (
             <>
               <SheetHeader className="p-4 border-b flex-shrink-0">

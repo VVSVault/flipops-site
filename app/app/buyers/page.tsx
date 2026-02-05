@@ -1175,7 +1175,7 @@ export default function BuyersPage() {
                       <CardDescription>Based on volume, speed, and reliability</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
-                      <ScrollArea className="h-[400px]">
+                      <ScrollArea className="h-[360px]">
                         <div className="space-y-2 p-6 pt-0">
                           {effectiveBuyers
                             .filter(b => b.status === 'vip' || b.score >= 85)
@@ -1226,7 +1226,7 @@ export default function BuyersPage() {
                       <CardDescription>Latest buyer activity on your listings</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
-                      <ScrollArea className="h-[400px]">
+                      <ScrollArea className="h-[360px]">
                         <div className="space-y-2 p-6 pt-0">
                           {apiBuyerOffers.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -1312,7 +1312,7 @@ export default function BuyersPage() {
                       />
                     </div>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[150px]">
+                      <SelectTrigger className="w-[135px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1503,7 +1503,7 @@ export default function BuyersPage() {
 
                   {/* Buyers Grid/List View */}
                   {buyerViewMode === "grid" ? (
-                    <ScrollArea className="h-[550px]">
+                    <ScrollArea className="h-[495px]">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
                         {filteredBuyers.map(buyer => {
                           const { performance, buyBox, documents } = getBuyerWithMetrics(buyer.id);
@@ -1616,17 +1616,17 @@ export default function BuyersPage() {
                     </ScrollArea>
                   ) : (
                     <Card className="overflow-hidden">
-                      <ScrollArea className="h-[550px]">
+                      <ScrollArea className="h-[495px]">
                         <Table>
                           <TableHeader className="sticky top-0 bg-white dark:bg-gray-900 z-10 border-b">
                             <TableRow className="hover:bg-transparent">
-                              <TableHead className="w-[250px]">Buyer</TableHead>
-                              <TableHead className="w-[180px]">Markets</TableHead>
-                              <TableHead className="w-[180px]">Buy Box</TableHead>
-                              <TableHead className="w-[150px]">Performance</TableHead>
-                              <TableHead className="w-[120px]">Documents</TableHead>
-                              <TableHead className="w-[120px]">Score</TableHead>
-                              <TableHead className="w-[50px]"></TableHead>
+                              <TableHead className="w-[225px]">Buyer</TableHead>
+                              <TableHead className="w-[162px]">Markets</TableHead>
+                              <TableHead className="w-[162px]">Buy Box</TableHead>
+                              <TableHead className="w-[135px]">Performance</TableHead>
+                              <TableHead className="w-[108px]">Documents</TableHead>
+                              <TableHead className="w-[108px]">Score</TableHead>
+                              <TableHead className="w-[45px]"></TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -1635,7 +1635,7 @@ export default function BuyersPage() {
                               const apiBuyerData = apiBuyers.find(b => b.id === buyer.id);
                               return (
                                 <TableRow key={buyer.id} className="hover:bg-muted/50">
-                                  <TableCell className="w-[250px]">
+                                  <TableCell className="w-[225px]">
                                     <div className="flex items-center gap-3">
                                       <Avatar>
                                         <AvatarFallback>{buyer.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
@@ -1654,7 +1654,7 @@ export default function BuyersPage() {
                                       </div>
                                     </div>
                                   </TableCell>
-                                  <TableCell className="w-[180px]">
+                                  <TableCell className="w-[162px]">
                                     <div className="text-sm">
                                       {buyer.markets.slice(0, 2).join(', ')}
                                       {buyer.markets.length > 2 && (
@@ -1662,7 +1662,7 @@ export default function BuyersPage() {
                                       )}
                                     </div>
                                   </TableCell>
-                                  <TableCell className="w-[180px]">
+                                  <TableCell className="w-[162px]">
                                     {buyBox ? (
                                       <div className="text-sm space-y-1">
                                         <p>${(buyBox.priceMin / 1000).toFixed(0)}k-${(buyBox.priceMax / 1000).toFixed(0)}k</p>
@@ -1672,7 +1672,7 @@ export default function BuyersPage() {
                                       <span className="text-muted-foreground text-sm italic">Not set</span>
                                     )}
                                   </TableCell>
-                                  <TableCell className="w-[150px]">
+                                  <TableCell className="w-[135px]">
                                     {performance ? (
                                       <div className="text-sm space-y-1">
                                         <p>{performance.dealsClosedCount} deals</p>
@@ -1682,7 +1682,7 @@ export default function BuyersPage() {
                                       <span className="text-muted-foreground text-sm italic">No history</span>
                                     )}
                                   </TableCell>
-                                  <TableCell className="w-[120px]">
+                                  <TableCell className="w-[108px]">
                                     <div className="flex items-center gap-2">
                                       {documents.find(d => d.type === 'pof' && d.verified) ? (
                                         <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800">
@@ -1700,13 +1700,13 @@ export default function BuyersPage() {
                                       )}
                                     </div>
                                   </TableCell>
-                                  <TableCell className="w-[120px]">
+                                  <TableCell className="w-[108px]">
                                     <div className="flex items-center gap-2">
                                       <Progress value={buyer.score} className="w-16 h-2" />
                                       <span className="text-sm font-medium">{buyer.score}</span>
                                     </div>
                                   </TableCell>
-                                  <TableCell className="w-[50px]">
+                                  <TableCell className="w-[45px]">
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="icon">
@@ -2200,7 +2200,7 @@ export default function BuyersPage() {
                           </p>
                         </div>
                       ) : (
-                        <ScrollArea className="h-[500px]">
+                        <ScrollArea className="h-[450px]">
                           <div className="space-y-3 p-6 pt-0">
                             {apiCampaigns.map(campaign => (
                               <div key={campaign.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">

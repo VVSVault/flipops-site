@@ -844,7 +844,7 @@ export default function DocumentsPage() {
                             <TableCell>
                               {doc.relatedName && (
                                 <div className="text-sm">
-                                  <div className="font-medium truncate max-w-[150px]">{doc.relatedName}</div>
+                                  <div className="font-medium truncate max-w-[135px]">{doc.relatedName}</div>
                                   <div className="text-xs text-muted-foreground capitalize">{doc.relatedEntity}</div>
                                 </div>
                               )}
@@ -980,7 +980,7 @@ export default function DocumentsPage() {
                               {docsInStatus.length}
                             </span>
                           </div>
-                          <div className="space-y-2 min-h-[200px]">
+                          <div className="space-y-2 min-h-[180px]">
                             {docsInStatus.map(doc => (
                               <DocumentCard
                                 key={doc.id}
@@ -1351,7 +1351,7 @@ export default function DocumentsPage() {
 
       {/* Document Viewer Sheet */}
       <Sheet open={showDocumentViewer} onOpenChange={setShowDocumentViewer}>
-        <SheetContent className="w-[540px] sm:max-w-[540px] bg-white dark:bg-gray-900 p-0 flex flex-col">
+        <SheetContent className="w-[486px] sm:max-w-[486px] bg-white dark:bg-gray-900 p-0 flex flex-col">
           <VisuallyHidden.Root>
             <SheetTitle>Document Details</SheetTitle>
           </VisuallyHidden.Root>

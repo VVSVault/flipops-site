@@ -1229,7 +1229,7 @@ export default function RenovationsPage() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[100px] sm:w-[140px] bg-white dark:bg-gray-900 flex-shrink-0">
+              <SelectTrigger className="w-[90px] sm:w-[126px] bg-white dark:bg-gray-900 flex-shrink-0">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -1326,7 +1326,7 @@ export default function RenovationsPage() {
                         {stageRenovations.length}
                       </Badge>
                     </div>
-                    <Card className="flex-1 rounded-t-none py-0 gap-0 border-t-0 min-h-[400px]">
+                    <Card className="flex-1 rounded-t-none py-0 gap-0 border-t-0 min-h-[360px]">
                       <ScrollArea className="h-full">
                         <div className="p-2 space-y-2">
                           {stageRenovations.length === 0 ? (
@@ -1378,7 +1378,7 @@ export default function RenovationsPage() {
 
       {/* Detail Sheet */}
       <Sheet open={detailSheetOpen} onOpenChange={setDetailSheetOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-[600px] p-0 flex flex-col bg-white dark:bg-gray-900">
+        <SheetContent side="right" className="w-full sm:max-w-[540px] p-0 flex flex-col bg-white dark:bg-gray-900">
           {selectedRenovation && (
             <>
               <SheetHeader className="p-4 border-b flex-shrink-0">
@@ -1812,7 +1812,7 @@ export default function RenovationsPage() {
 
       {/* Request Bid Dialog */}
       <Dialog open={requestBidDialogOpen} onOpenChange={setRequestBidDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-white dark:bg-gray-900">
+        <DialogContent className="sm:max-w-[450px] bg-white dark:bg-gray-900">
           <DialogHeader>
             <DialogTitle>Request Vendor Bid</DialogTitle>
             <DialogDescription>

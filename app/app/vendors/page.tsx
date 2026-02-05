@@ -625,7 +625,7 @@ function VendorDetailSheet({ vendor, open, onClose, onMessage, onContract, onInv
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-[540px] p-0 flex flex-col bg-white dark:bg-gray-900">
+      <SheetContent side="right" className="w-full sm:max-w-[486px] p-0 flex flex-col bg-white dark:bg-gray-900">
         <VisuallyHidden>
           <SheetTitle>Vendor Details: {vendor.name}</SheetTitle>
         </VisuallyHidden>

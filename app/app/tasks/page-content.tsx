@@ -409,7 +409,7 @@ function TaskTableRow({
                 ) : (
                   <Home className="h-3 w-3" />
                 )}
-                <span className="truncate max-w-[200px]">
+                <span className="truncate max-w-[180px]">
                   {task.linkedEntity.address || task.linkedEntity.name}
                 </span>
               </div>
@@ -507,7 +507,7 @@ function TaskGridCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col p-4 rounded-xl border bg-card transition-all cursor-pointer h-[180px]",
+        "group relative flex flex-col p-4 rounded-xl border bg-card transition-all cursor-pointer h-[162px]",
         "hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-600",
         task.status === "completed" && "opacity-60",
         isOverdue && "border-red-200 dark:border-red-900/50 bg-red-50/30 dark:bg-red-950/10"
@@ -558,7 +558,7 @@ function TaskGridCard({
           <div className="h-5 w-5 rounded-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center text-[9px] font-bold text-white">
             {task.assigneeName.split(" ").map(n => n[0]).join("")}
           </div>
-          <span className="text-xs text-muted-foreground truncate max-w-[80px]">
+          <span className="text-xs text-muted-foreground truncate max-w-[72px]">
             {task.assigneeName.split(" ")[0]}
           </span>
         </div>
@@ -618,7 +618,7 @@ function TaskDetailSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-[540px] sm:max-w-[540px] p-0 flex flex-col"
+        className="w-[486px] sm:max-w-[486px] p-0 flex flex-col"
       >
         {/* Hidden title for accessibility */}
         <SheetHeader className="sr-only">
@@ -861,7 +861,7 @@ function TaskDetailSheet({
                   placeholder="Add a comment..."
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
-                  className="resize-none min-h-[80px]"
+                  className="resize-none min-h-[72px]"
                 />
                 <Button
                   size="icon"
@@ -931,7 +931,7 @@ function TaskGridSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="flex flex-col p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 h-[180px]">
+        <div key={i} className="flex flex-col p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 h-[162px]">
           <div className="flex items-start justify-between">
             <Skeleton className="h-10 w-10 rounded-lg" />
             <Skeleton className="h-5 w-16" />
@@ -981,12 +981,12 @@ function EmptyState({ filter }: { filter: StatusFilter }) {
   const { title, desc } = messages[filter];
 
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-[400px] py-16 px-4">
+    <div className="flex flex-col items-center justify-center h-full min-h-[360px] py-16 px-4">
       <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900 flex items-center justify-center mb-4">
         <ListChecks className="h-8 w-8 text-zinc-400" />
       </div>
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-      <p className="text-sm text-muted-foreground mt-1 text-center max-w-[300px]">{desc}</p>
+      <p className="text-sm text-muted-foreground mt-1 text-center max-w-[270px]">{desc}</p>
     </div>
   );
 }
@@ -1300,7 +1300,7 @@ export default function TasksPageContent() {
                   placeholder="Search tasks..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-[240px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                  className="pl-9 w-[216px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
                 />
               </div>
 
@@ -1399,7 +1399,7 @@ export default function TasksPageContent() {
 
       {/* Create Task Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-[432px]">
           <DialogHeader>
             <DialogTitle>Create New Task</DialogTitle>
             <DialogDescription>

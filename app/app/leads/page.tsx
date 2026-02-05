@@ -1243,7 +1243,7 @@ export default function LeadsPage() {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full lg:w-[180px]">
+              <SelectTrigger className="w-full lg:w-[162px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -1259,7 +1259,7 @@ export default function LeadsPage() {
               </SelectContent>
             </Select>
             <Select value={sourceFilter} onValueChange={setSourceFilter}>
-              <SelectTrigger className="w-full lg:w-[160px]">
+              <SelectTrigger className="w-full lg:w-[144px]">
                 <SelectValue placeholder="Source" />
               </SelectTrigger>
               <SelectContent>
@@ -1306,7 +1306,7 @@ export default function LeadsPage() {
             )}
           </div>
         ) : (
-          <ScrollArea className="max-h-[495px] [&_[data-slot=scroll-area-viewport]>div]:!block" type="scroll">
+          <ScrollArea className="max-h-[446px] [&_[data-slot=scroll-area-viewport]>div]:!block" type="scroll">
             <Table>
               <TableHeader className="sticky top-0 bg-card z-10">
                 <TableRow className="hover:bg-transparent">
@@ -1915,7 +1915,7 @@ export default function LeadsPage() {
                   </Label>
                 </div>
 
-                <ScrollArea className="h-[300px] border rounded-lg">
+                <ScrollArea className="h-[270px] border rounded-lg">
                   <div className="divide-y">
                     {searchResults.map((property, index) => {
                       const uniqueKey = isReapiProperty(property)

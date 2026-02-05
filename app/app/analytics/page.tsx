@@ -790,7 +790,7 @@ export default function AnalyticsPage() {
                                     <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0 transition-transform group-hover:scale-125" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                                     <span className="text-[10px] whitespace-nowrap font-medium">{m.channel}:</span>
                                     <span className="text-[10px] text-muted-foreground tabular-nums">{m.leads}</span>
-                                    <div className="flex-1 h-1 bg-muted rounded ml-1 overflow-hidden min-w-[40px]">
+                                    <div className="flex-1 h-1 bg-muted rounded ml-1 overflow-hidden min-w-[36px]">
                                       <div
                                         className="h-full transition-all duration-300 group-hover:opacity-100 opacity-60"
                                         style={{ width: `${(m.leads / totalLeads) * 100}%`, backgroundColor: COLORS[i % COLORS.length] }}
@@ -1333,7 +1333,7 @@ export default function AnalyticsPage() {
                             <Table>
                               <TableHeader>
                                 <TableRow className="hover:bg-transparent">
-                                  <TableHead className="text-xs w-[200px]">
+                                  <TableHead className="text-xs w-[180px]">
                                     <button
                                       className="flex items-center gap-1 hover:text-foreground transition-colors"
                                       onClick={() => handleTeamSort('userName')}
@@ -1647,7 +1647,7 @@ export default function AnalyticsPage() {
                         <CardHeader className="pb-2 pt-3">
                           <CardTitle className="text-sm font-medium">Vendor Performance</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2 max-h-[420px] overflow-y-auto pr-2">
+                        <CardContent className="space-y-2 max-h-[378px] overflow-y-auto pr-2">
                           {vendorMetrics.map((vendor) => {
                             const isAlert = vendor.onTimePercentage < 80;
                             return (

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Bell,
   Clock,
@@ -159,8 +160,9 @@ export default function SettingsPage() {
 
           <div className="flex-1 min-h-0 mt-4">
             {/* Preferences - Consolidated Tab */}
-            <TabsContent value="preferences" className="h-full mt-0 overflow-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8 pr-4">
+            <TabsContent value="preferences" className="h-full mt-0">
+              <ScrollArea className="h-full">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8 pr-4">
                 {/* Left Column */}
                 <div className="space-y-6">
                   {/* Notifications */}
@@ -452,10 +454,12 @@ export default function SettingsPage() {
                   </Card>
                 </div>
               </div>
+              </ScrollArea>
             </TabsContent>
 
             {/* Integrations - Coming Soon */}
-            <TabsContent value="integrations" className="h-full mt-0 overflow-auto">
+            <TabsContent value="integrations" className="h-full mt-0">
+              <ScrollArea className="h-full">
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Rocket className="h-16 w-16 text-muted-foreground mb-6" />
                 <h3 className="text-xl font-semibold">Integrations & Automation</h3>
@@ -506,6 +510,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+              </ScrollArea>
             </TabsContent>
           </div>
         </Tabs>

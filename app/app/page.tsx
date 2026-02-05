@@ -31,6 +31,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { getInvestorTypeDisplayName, type InvestorType } from "@/lib/navigation-config";
 
@@ -930,36 +931,42 @@ export default function DashboardPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="h-full overflow-auto space-y-8">
-        {/* Header skeleton */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <Skeleton className="h-9 w-64" />
-            <Skeleton className="h-5 w-96" />
+      <div className="h-full flex flex-col overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="space-y-8 pr-4">
+            {/* Header skeleton */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-9 w-64" />
+                <Skeleton className="h-5 w-96" />
+              </div>
+              <Skeleton className="h-10 w-32" />
+            </div>
+
+            {/* KPI skeletons */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <KPICardSkeleton key={i} />
+              ))}
+            </div>
+
+            {/* Content skeletons */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <ActionCardSkeleton />
+              <ActionCardSkeleton />
+              <PipelineSkeleton />
+            </div>
           </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-
-        {/* KPI skeletons */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <KPICardSkeleton key={i} />
-          ))}
-        </div>
-
-        {/* Content skeletons */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <ActionCardSkeleton />
-          <ActionCardSkeleton />
-          <PipelineSkeleton />
-        </div>
+        </ScrollArea>
       </div>
     );
   }
 
   return (
-    <div className="h-full overflow-auto space-y-6">
-      {/* Header */}
+    <div className="h-full flex flex-col overflow-hidden">
+      <ScrollArea className="h-full">
+        <div className="space-y-6 pr-4">
+          {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-foreground">
@@ -973,7 +980,7 @@ export default function DashboardPage() {
               </Badge>
             )}
             <Badge variant="outline" className="ml-2 text-[10px] font-mono opacity-50">
-              v2.4.0
+              v2.5.0
             </Badge>
           </p>
         </div>
@@ -1178,12 +1185,14 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Pipeline + Notifications */}
-        <div className="flex flex-col gap-6">
-          <PipelineFunnel stages={pipelineStages} />
-          <NotificationsPreview notifications={notifications} />
+          {/* Pipeline + Notifications */}
+          <div className="flex flex-col gap-6">
+            <PipelineFunnel stages={pipelineStages} />
+            <NotificationsPreview notifications={notifications} />
+          </div>
         </div>
       </div>
+      </ScrollArea>
     </div>
   );
 }

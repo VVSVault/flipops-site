@@ -55,11 +55,17 @@
   }
   html {
     overflow-x: hidden;
+    /* Explicit font-size to prevent platform/browser scaling differences */
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
   body {
     background-color: oklch(1 0 0);
     color: oklch(0.145 0 0);
     overflow-x: hidden;
+    /* Ensure consistent line-height */
+    line-height: 1.5;
   }
   .dark body {
     background-color: oklch(0.08 0 0);

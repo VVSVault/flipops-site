@@ -980,7 +980,7 @@ export default function DashboardPage() {
               </Badge>
             )}
             <Badge variant="outline" className="ml-2 text-[10px] font-mono opacity-50">
-              v2.5.0
+              v2.6.0
             </Badge>
           </p>
         </div>

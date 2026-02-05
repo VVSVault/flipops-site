@@ -2,6 +2,17 @@
 @import "tailwindcss";
 
 /*
+ * CRITICAL: Force consistent base sizing BEFORE Tailwind preflight
+ * This prevents any environment-specific scaling differences
+ */
+html {
+  font-size: 16px !important;
+  -webkit-text-size-adjust: 100% !important;
+  -moz-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+
+/*
  * Define the dark variant for .dark class on html element
  */
 @custom-variant dark (&:where(.dark, .dark *));

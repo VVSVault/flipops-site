@@ -38,6 +38,42 @@ import { getInvestorTypeDisplayName, type InvestorType } from "@/lib/navigation-
 export const dynamic = 'force-dynamic';
 
 // ============================================================================
+// DEBUG COMPONENT - Shows computed CSS values to diagnose scaling issues
+// ============================================================================
+function DebugInfo() {
+  const [debugData, setDebugData] = useState<{
+    htmlFontSize: string;
+    bodyFontSize: string;
+    devicePixelRatio: number;
+    viewportWidth: number;
+    viewportHeight: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const computedHtml = window.getComputedStyle(html);
+    const computedBody = window.getComputedStyle(body);
+
+    setDebugData({
+      htmlFontSize: computedHtml.fontSize,
+      bodyFontSize: computedBody.fontSize,
+      devicePixelRatio: window.devicePixelRatio,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+    });
+  }, []);
+
+  if (!debugData) return null;
+
+  return (
+    <span className="ml-2 text-[9px] font-mono bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-1 rounded">
+      html:{debugData.htmlFontSize} | dpr:{debugData.devicePixelRatio} | {debugData.viewportWidth}x{debugData.viewportHeight}
+    </span>
+  );
+}
+
+// ============================================================================
 // SEED DATA - Demo data for new users
 // ============================================================================
 
@@ -980,8 +1016,10 @@ export default function DashboardPage() {
               </Badge>
             )}
             <Badge variant="outline" className="ml-2 text-[10px] font-mono opacity-50">
-              v2.6.0
+              v2.7.0
             </Badge>
+            {/* DEBUG: Show computed values */}
+            <DebugInfo />
           </p>
         </div>
         <Button
